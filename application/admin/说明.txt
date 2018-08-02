@@ -1,0 +1,104 @@
+﻿/***************ThinkPHP官方声明**************/
+ThinkPHP遵循Apache2开源协议发布，并提供免费使用。
+版权所有Copyright © 2006-2016 by ThinkPHP (http://thinkphp.cn)
+All rights reserved。
+ThinkPHP® 商标和著作权所有者为上海顶想信息科技有限公司。
+
+Apache Licence是著名的非盈利开源组织Apache采用的协议。
+该协议和BSD类似，鼓励代码共享和尊重原作者的著作权，
+允许代码修改，再作为开源或商业软件发布。需要满足
+的条件： 
+1． 需要给代码的用户一份Apache Licence ；
+2． 如果你修改了代码，需要在被修改的文件中说明；
+3． 在延伸的代码中（修改和有源代码衍生的代码中）需要
+带有原来代码中的协议，商标，专利声明和其他原来作者规
+定需要包含的说明；
+4． 如果再发布的产品中包含一个Notice文件，则在Notice文
+件中需要带有本协议内容。你可以在Notice中增加自己的
+许可，但不可以表现为对Apache Licence构成更改。 
+具体的协议参考：http://www.apache.org/licenses/LICENSE-2.0
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+/***************CLTPHP3.5开发说明**************/
+
+版本说明
+
+1.升级至thinkphp5.0.7
+
+2.新增数据库备份还原
+
+3.优化视图输出字符串内容替换(view_replace_str)
+
+4.优化安装插件,支持php5.5以上版本，包括php7.0
+
+
+安装配置
+
+建议访问路径：http://www.cltphp.com/
+
+不建议访问路径：http://www.cltphp.com/cltphp/ 或者 localhost/cltphp/
+
+一、方法一
+
+1.将程序拷贝到项目目录下
+
+2.运行安装
+
+3.默认登陆账号：admin  密码：安装时自己设置（MD5）
+
+
+二、方法二
+
+1.把install目录下的install.lock拷到public目录下
+
+2.创建数据库，导入install目录下的cltphp_db.sql
+
+3.修改app目录下的database.php的数据库配置
+
+4.运行，默认登陆账号：admin  密码：admin123
+
+
+
+安装过程中有什么问题从以下途径获取帮助
+
+QQ：1109305987 
+
+在http://cltphp.com/index/index/message.html 留言，
+
+QQ交流群：229455880
+
+我们一定会尽最大努力解决您的困扰
+
+
+
+另为，如果您对CLTPHP表示认同并且觉得对你有所帮助的话，请为CLTPHP捐赠您的一份力量，
+
+我们接受您任意金额的捐赠，支付宝 cltphp@foxmail.com 
+
+或等浏览 http://cltphp.com/index/index/message.html 支持我们，扫码捐赠
+
+感谢大家对我们的支持，只有得到大家的支持，我们才能在开源的道路上走的更远。
+
+
+
+
+
+
+
+
+
+
+
+

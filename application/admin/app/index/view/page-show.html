@@ -1,0 +1,15 @@
+{include file="common/head"/}
+<div id="content">
+    {include file="common/right"/}
+    <div class="zy_left">
+        <div class="left_bt">
+            <span>现在所在的位置：<a href="{:url('index/index')}">首页</a>><a href="{:url('index',array('catId'=>input('catId')))}">{$title}</a></span>
+            <img src="__HOME__/images/sub_03.jpg" />
+        </div>
+        <div class="left_nei">
+            {$info.content}
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+{include file="common/footer"/}

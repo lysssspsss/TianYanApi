@@ -1,0 +1,95 @@
+{include file="common/head"/}
+<style>
+    a{text-decoration: none;}
+    .table-list ul.pic { list-style: none;}
+    .table-list ul.pic li {float:left;position:relative;margin:5px 10px;_margin:5px 8px;}
+    .table-list ul.pic li span { width:82px;height:82px;display: block;border: 1px solid #dedede;}
+    .table-list ul.pic li span a {border:1px solid #eee;width:80px;height:80px;*font-size: 75px;display: table-cell; vertical-align: middle; overflow: hidden;}
+    .table-list ul.pic li img  {max-height:80px;max-width:80px ;_width:80px;_height:80px;}
+    .table-list ul.pic li  b {display:block;line-height:20px;height:20px;font-weight:normal;width:82px;overflow:hidden;}
+    .table-list ul.pic li  em {position:absolute;right:0;bottom:20px;font-style: normal;}
+</style>
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div style="padding-bottom: 15px;">
+                    <a href="{:url('index')}" class="btn btn-xs">{:strtoupper($viewSuffix)}</a>
+                    <a href="{:url('index',array('type'=>'css'))}" class="btn btn-xs">CSS</a>
+                    <a href="{:url('index',array('type'=>'js'))}" class="btn btn-xs">JS</a>
+                    <a href="{:url('images')}" class="btn btn-xs btn-danger">媒体文件</a>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="table-list">
+                            <ul class="pic">
+                                {if condition="$leve"}
+                                    <li>
+                                        <span><a href="{:url('images')}?folder={$uppath}"><img src="__STATIC__/img/upback.gif"></a></span>
+                                        <b><font color="#665aff">返回上一级</font></b></li>
+                                {/if}
+                                {volist name="folders" id="vo"}
+                                    <li>
+                                        <span><a href="{:url('images')}?folder={:input('folder')}{$vo['filename']}/"><img src="__STATIC__/img/folder.gif"></a></span>
+                                        <b>{$vo.filename}</b>
+                                        <em>
+                                        <a href="javascript:confirm_delete('{:input(folder)}','{$vo.filename}')">删除</a>
+                                        </em>
+                                    </li>
+                                {/volist}
+
+                                {volist name="files" id="vo"}
+                                    <li>
+                                        <span>
+                                            <a href="__STATIC__/home/images/{$_GET['folder']}{$vo.filename}" target="_blank">
+                                                {if condition="!empty($vo['ico'])"}
+                                                <img src="__STATIC__/home/images/ext/{$vo['ext']}.png">
+                                                {else /}
+                                                <img src="__STATIC__/home/images/{$_GET['folder']}{$vo.filename}" >
+                                                {/if}
+                                            </a>
+                                        </span>
+                                        <b>{$vo.filename}</b>
+                                        <em><a href="javascript:confirm_delete('{:input(folder)}','{$vo.filename}')">删除</a></em>
+                                    </li>
+                                {/volist}
+                            </ul>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {include file="common/foot" /}
+</div>
+
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+    function confirm_delete(folder,filename) {
+        layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+            layer.close(index);
+            $.post("{:url('imgDel')}",{folder:folder,filename:filename},function(data){
+                if(data.status==1){
+                    layer.alert(data.info, {icon: 6}, function(index){
+                        layer.close(index);
+                        location.replace(location.href);
+                    });
+                }else{
+                    layer.alert(data.info, {icon: 5}, function(index){
+                        layer.close(index);
+                    });
+                    return false;
+                }
+            })
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+{include file="common/head"/}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form class="form-horizontal" name="wesys" id="wesys" method="post" action="{:url('addwei')}">
+                            <input type="hidden" name="sys_id" value="1"/>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="wesys_name">公众号名称</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="wesys_name" name="wesys_name" value="{$sys.wesys_name}" placeholder="公众号名称" class="col-xs-12 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必填</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="wesys_id">公众号原始id</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="wesys_id" name="wesys_id" value="{$sys.wesys_id}" placeholder="公众号原始id" class="col-xs-12 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必填</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="wesys_number">微信号</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="wesys_number" name="wesys_number" value="{$sys.wesys_number}" placeholder="站点网址" class="col-xs-12 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必填</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="wesys_appid">AppID（公众号）</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="wesys_appid" name="wesys_appid" value="{$sys.wesys_appid}" placeholder="站点网址" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="wesys_appsecret">AppSecret</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="wesys_appsecret" name="wesys_appsecret" value="{$sys.wesys_appsecret}" placeholder="站点网址" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="wesys_type">微信号类型： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select name="wesys_type" id="wesys_type" class="col-md-3">
+                                        <option value="">请选择公众号类型</option>
+                                        <option value="1" {if condition="$sys['wesys_type'] eq 1"}selected{/if}>普通订阅号</option>
+                                        <option value="2" {if condition="$sys['wesys_type'] eq 2"}selected{/if}>普通服务号</option>
+                                        <option value="3" {if condition="$sys['wesys_type'] eq 3"}selected{/if}>认证订阅号</option>
+                                        <option value="4" {if condition="$sys['wesys_type'] eq 4"}selected{/if}>认证服务号</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="ace-icon fa fa-check bigger-110"></i>
+                                        提交
+                                    </button>
+
+                                    &nbsp; &nbsp; &nbsp;
+                                    <button class="btn" type="reset">
+                                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+</div>
+<script>
+    $(function () {
+        $('#wesys').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm() {
+            if ('' == $.trim($('#wesys_name').val())) {
+                layer.alert('公众号名称不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#wesys_name').focus();
+                });
+                return false;
+            }
+
+            if ('' == $.trim($('#wesys_id').val())) {
+                layer.alert('公众号原始ID不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#wesys_id').focus();
+                });
+                return false;
+            }
+
+            if ('' == $.trim($('#wesys_number').val())) {
+                layer.alert('微信号不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#wesys_number').focus();
+                });
+                return false;
+            }
+        }
+
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                });
+            } else {
+                layer.alert(data.info, {icon: 4}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+            }
+        }
+
+    });
+</script>
+</body>
+</html>

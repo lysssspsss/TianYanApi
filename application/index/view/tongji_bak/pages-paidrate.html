@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+	<meta charset="utf-8">
+	<title>{$title}</title>
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<meta name="robots" content="" />
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" href="/public/tongji/css/style.css" media="all" />
+	<!--[if IE]><link rel="stylesheet" href="/public/tonji/css/ie.css" media="all" /><![endif]-->
+</head>
+<body>
+<div class="testing">
+<header class="main">
+	<h1><strong>{$title} </strong></h1>
+	<input type="text" value="search" />
+</header>
+</div>
+<nav>
+	<ul>
+		<li><a href="#"><span class="icon">&#128711;</span> </a></li>
+		{volist name='daohang' id='lan'}
+		{if condition="$lan.lname eq $tname"}
+		<li class="section">{else}<li>{/if}
+				<a href="{$lan.url}"><span class="icon">{$lan.icon}</span> {$lan.lname}</a>
+			</li>
+		{/volist}
+	</ul>
+</nav>
+
+<!--<section class="alert">
+	<form method="link" action="page-new.html">
+		 <button class="green">Create new page</button>
+	</form>
+</section>-->
+<section class="content">
+	<section class="widget">
+		<header>
+			<span class="icon">&#128196;</span>
+			<hgroup>
+				<h1>{$tname.china}</h1>
+				<h2>-----------</h2>
+			</hgroup>
+			<form method="post" action="{$tname.url}">
+				<span style=""><input type="date" value="{$riqi}" style="margin-top:5px;" name="date"/><input type="submit" style="margin-top: 5px; float: right;width: 80px;" value="查询"></span>
+				<input type="hidden" value="{$tname.english}" name="tename">
+			</form>
+			<aside>
+
+			</aside>
+		</header>
+		<div class="content">
+			<table id="myTable" border="0" width="100">
+				<thead>
+					<tr>
+						{volist name='field' id='title'}
+						<th>{$title}</th>
+						{/volist}
+					</tr>
+				</thead>
+					<tbody>
+<!--
+					<tr style="background-color: lightgrey;font-size: 20px;">
+-->
+					{if condition="$sum neq 1"}
+						<tr style="font-weight:bold;">
+							<td>{$sum.channel_name}</td>
+							<td>{$sum.pay_frequency}</td>
+							<td>{$sum.pay_amount}</td>
+							<td>{$sum.recharge_amount}</td>
+							<td>{$sum.live}</td>
+							<td>{$sum.recharge_user}</td>
+							<td></td>
+							<td>{$sum.user_aurp}</td>
+							<td>{$sum.recharge_aurp}</td>
+							<td>{$sum.create_time}</td>
+						</tr>
+                    {/if}
+					</tbody>
+					<tbody>
+						{volist name='all' id='added'}
+							<tr>
+								<td>{$added.channel_name}</td>
+								<td>{$added.pay_frequency}</td>
+								<td>{$added.pay_amount}</td>
+								<td>{$added.recharge_amount}</td>
+								<td>{$added.live}</td>
+								<td>{$added.recharge_user}</td>
+								<td>{$added.conversion_recharge}</td>
+								<td>{$added.user_aurp}</td>
+								<td>{$added.recharge_aurp}</td>
+								<td>{$added.create_time}</td>
+							</tr>
+						{/volist}
+					</tbody>
+				</table>
+		</div>
+	</section>
+</section>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+<script src="/public/tongji/js/jquery.wysiwyg.js"></script>
+<script src="/public/tongji/js/custom.js"></script>
+<script src="/public/tongji/js/cycle.js"></script>
+<script src="/public/tongji/js/jquery.checkbox.min.js"></script>
+<script src="/public/tongji/js/flot.js"></script>
+<script src="/public/tongji/js/flot.resize.js"></script>
+<script src="/public/tongji/js/flot-graphs.js"></script>
+<script src="/public/tongji/js/flot-time.js"></script>
+<script src="/public/tongji/js/cycle.js"></script>
+<script src="/public/tongji/js/jquery.tablesorter.min.js"></script>
+</body>
+</html>

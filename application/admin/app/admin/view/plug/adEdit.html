@@ -1,0 +1,137 @@
+{include file="common/head"/}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>
+                        您当前操作
+                        <small>
+                            <i class="ace-icon fa fa-angle-double-right"></i>
+                            修改广告信息
+                        </small>
+                    </h1>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <form class="form-horizontal" name="adUpdate" id="adUpdate" method="post" action="{:url('adUpdate')}">
+                            <input type="hidden" name="ad_id" value="{$adInfo.ad_id}">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="type_id">所属位置：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select name="type_id" id="type_id" class="col-select col-xs-12 col-md-3 selector">
+                                        <option value="">请选择所属广告位</option>
+                                        {foreach name="adtype" item="v"}
+                                        <option value="{$v.type_id}" {if condition="$adInfo['type_id'] eq $v['type_id']" } selected {/if}>{$v.name}</option>
+                                        {/foreach}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="name">广告名称：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="name" id="name" value="{$adInfo.name}" placeholder="输入广告名称" class="col-xs-12 col-md-4"/>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right">广告图片：</label>
+                                <div class="col-md-4 col-sm-10 col-xs-12">
+                                    <div class="thumb_box" id="thumb_box">
+                                        <div id="thumb_aid_box"></div>
+                                        <a href="javascript:swfupload('thumb_uploadfile','thumb','文件上传',1,1,1,'jpeg,jpg,png,gif',3,2,yesdo,nodo)">
+                                            <img src="{$adInfo['picurl']}" id="thumb_pic" alt="{$adInfo.picurl}">
+                                        </a><br>
+                                        <input type="button" value="取消缩略图" onclick="javascript:clean_thumb('thumb');" class="btn btn-success btn-sm" style="margin-top: 5px;">
+                                        <input type="hidden" id="thumb" name="checkpic" value="{$adInfo.pic}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="url">链接URL：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="url" id="url" value="{$adInfo.url}" placeholder="输入链接URL" class="col-xs-12 col-md-4"/>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="sort"> 排序：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="sort" id="sort" value="{$adInfo.sort}" class="col-xs-12 col-md-4"/>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="ace-icon fa fa-check bigger-110"></i>
+                                        提交
+                                    </button>
+                                    <button class="btn" type="reset">
+                                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+</div>
+<script type="text/javascript" src="__STATIC__/assets/js/region.js"></script>
+<script>
+    //添加操作
+    $(function () {
+        $('#adUpdate').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm() {
+            if ('' == $(".selector").val()) {
+                layer.alert('所属广告位不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('.selector').focus();
+                });
+                return false;
+            }
+
+            if ('' == $.trim($('#name').val())) {
+                layer.alert('广告名称不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#name').focus();
+                });
+                return false;
+            }
+        }
+
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+            } else {
+                layer.alert(data.info, {icon: 5}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+                return false;
+            }
+        }
+    });
+</script>
+</body>
+</html>

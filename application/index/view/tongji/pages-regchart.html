@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+	<meta charset="utf-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>{$title}</title>
+
+	<script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+	<script src="https://img.hcharts.cn/highcharts/modules/exporting.js"></script>
+	<script src="https://img.hcharts.cn/highcharts/modules/series-label.js"></script>
+	<script src="https://img.hcharts.cn/highcharts/modules/oldie.js"></script>
+	<script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<meta name="robots" content="" />
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" href="/public/tongji/css/style.css" media="all" />
+	<!--[if IE]><link rel="stylesheet" href="/public/tonji/css/ie.css" media="all" /><![endif]-->
+</head>
+<body>
+<div class="testing">
+<header class="main">
+	<h1><strong>{$title} </strong><span class="button" style="float: right;padding-bottom: 10px;font-size: small;"><a href="/index.php/index/index/tuichu">退出登錄</a></span></h1>
+
+
+</header>
+</div>
+<nav>
+	<ul>
+		<li><a href="#"><span class="icon">&#128711;</span> </a></li>
+		{volist name='daohang' id='lan'}
+		{if condition="$lan.lname eq $tname"}
+		<li class="section">{else}<li>{/if}
+				<a href="{$lan.url}"><span class="icon">{$lan.icon}</span> {$lan.lname}</a>
+			</li>
+		{/volist}
+	</ul>
+</nav>
+
+<!--<section class="alert">
+	<form method="link" action="page-new.html">
+		 <button class="green">Create new page</button>
+	</form>
+</section>-->
+<section class="content">
+	<section class="widget">
+		<header>
+			<span class="icon">&#128196;</span>
+			<hgroup>
+				<h1>{$tname.china}</h1>
+				<h2>-----------</h2>
+			</hgroup>
+
+			<aside>
+
+			</aside>
+		</header>
+		<div class="content">
+			<!--图表开始-->
+
+			<div id="container" style="max-width:1600px;height:700px"></div>
+			<script>
+                // JS 代码
+
+                var chart = Highcharts.chart('container', {
+                    title: {
+                        text: '{$tname.china}'
+                    },
+                    subtitle: {
+                        text: '数据来源：ttzc'
+                    },
+                    yAxis: {
+                        title: {
+                            text: '数量'
+                        },
+                        allowDecimals:true
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: {
+                            day: '%Y-%m-%d'
+                        }
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'middle'
+                    },
+                    plotOptions: {
+                        series: {
+                            label: {
+                                connectorAllowed: false
+                            },
+                            pointStart: Date.UTC('{$d.year}', '{$d.moon}', '{$d.day}'), // 开始值
+                            pointInterval: 86400000 // 间隔一天
+                        }
+                    },
+                    series: JSON.parse('{$series}'),
+                    responsive: {
+                        rules: [{
+                            condition: {
+                                maxWidth: 500
+                            },
+                            chartOptions: {
+                                legend: {
+                                    layout: 'horizontal',
+                                    align: 'center',
+                                    verticalAlign: 'bottom'
+                                }
+                            }
+                        }]
+                    }
+                });
+			</script>
+
+			<!--图表结束-->
+		</div>
+	</section>
+</section>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+<script src="/public/tongji/js/jquery.wysiwyg.js"></script>
+<script src="/public/tongji/js/custom.js"></script>
+<script src="/public/tongji/js/cycle.js"></script>
+<script src="/public/tongji/js/jquery.checkbox.min.js"></script>
+<script src="/public/tongji/js/flot.js"></script>
+<script src="/public/tongji/js/flot.resize.js"></script>
+<script src="/public/tongji/js/flot-graphs.js"></script>
+<script src="/public/tongji/js/flot-time.js"></script>
+<script src="/public/tongji/js/cycle.js"></script>
+<script src="/public/tongji/js/jquery.tablesorter.min.js"></script>
+</body>
+</html>

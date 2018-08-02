@@ -1,0 +1,402 @@
+{include file="common/head"/}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="row maintop">
+                    <div class="col-xs-12 col-sm-2">
+                        <!-- 点击模态框（Modal） -->
+                        <button class="btn btn-xs btn-danger" data-toggle="modal" data-target="#myModal">
+                            <i class="ace-icon fa fa-plus bigger-110"></i>
+                            添加链接
+                        </button>
+                    </div>
+                    <form name="admin_list_sea" class="form-search" method="post" action="{:url('linkList')}">
+                        <div class="col-xs-12 col-sm-6 btn-sespan">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="ace-icon fa fa-search"></i>
+                                </span>
+                                <input type="text" name="val" id="val" class="form-control search-query admin_sea" value="{$val}" placeholder="输入链接名称或URL" />
+                                <span class="input-group-btn">
+                                    <button type="submit" class="btn btn-xs btm-input btn-purple">
+                                        搜索
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="input-group-btn">
+                            <a href="{:url('linkList')}">
+                                <button type="button" class="btn btn-xs all-btn btn-purple">
+                                    <span class="ace-icon fa fa-refresh icon-on-right bigger-110"></span>
+                                    显示全部
+                                </button>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <div class="row">
+                            <div class="col-xs-12">
+
+                                <div class="table-responsive">
+                                    <table id="simple-table" class="table table-striped table-bordered table-hover center">
+                                        <thead>
+                                        <tr>
+                                            <!--<th class="center visible-lg visible-md">登陆次数</th>-->
+                                            <th class="center">ID</th>
+                                            <th class="center">链接名称</th>
+                                            <th class="center visible-lg visible-md">链接URL</th>
+                                            <th class="center visible-lg visible-md">联系QQ</th>
+                                            <th class="center visible-lg visible-md">添加时间</th>
+                                            <th class="center">排序</th>
+                                            <th class="center">状态</th>
+                                            <th class="center" style="border-right:#CCC solid 1px;">操作</th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+                                        {volist name="link" id="v"}
+                                        <tr>
+                                            <td>{$v.link_id}</td>
+                                            <td>{$v.name}</td>
+                                            <td class="visible-lg visible-md"><a href="{$v.url}" target="_blank">{$v.url}</a></td>
+                                            <td class="visible-lg visible-md">{$v.qq}</td>
+                                            <td class="visible-lg visible-md">{$v.addtime|date='Y-m-d h:i:s',###}</td>
+                                            <td>{$v.sort}</td>
+                                            <td>
+                                                {if condition='$v["open"] eq 1'}
+                                                <a class="red" href="javascript:;" onclick="return stateyes({$v.link_id});" title="已开启">
+                                                    <div id="zt{$v.link_id}">
+                                                        <button class="btn btn-minier btn-yellow">
+                                                            状态开启
+                                                        </button>
+                                                    </div>
+                                                </a>
+                                                {else/}
+                                                <a class="red" href="javascript:;" onclick="return stateyes({$v.link_id});" title="已禁用">
+                                                    <div id="zt{$v.link_id}">
+                                                        <button class="btn btn-minier btn-danger">
+                                                            状态禁用
+                                                        </button>
+                                                    </div>
+                                                </a>
+                                                {/if}
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <a class="green"  href="javascript:;" onclick="return plug_link_edit({$v.link_id});"  title="修改">
+                                                        <i class="ace-icon fa fa-pencil bigger-130"></i>
+                                                    </a>
+                                                    <a class="red" href="javascript:;" onclick="return del({$v.link_id});" title="删除">
+                                                        <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {/volist}
+                                        <tr>
+                                            <td colspan="9" align="left">&nbsp;</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div><!-- /.span -->
+                        </div><!-- /.row -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+
+</div><!-- /.main-container -->
+<!-- 显示模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form class="form-horizontal" name="linkInsert" id="linkInsert" method="post" action="{:url('linkInsert')}">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">
+                        添加友情链接
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="name"> 链接名称：  </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="name" id="name" placeholder="输入链接名称" class="form-control col-xs-10 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必须是以字母开头，数字、符号组合</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="url"> 链接URL：  </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="url" id="url" placeholder="输入链接URL" class="form-control col-xs-10 col-sm-8" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必须是以http://开头</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="open"> 是否审核： </label>
+                                <div class="col-sm-10" style="padding-top:5px;">
+                                    <input name="open" id="open" value="1" class="ace ace-switch ace-switch-4 btn-flat" type="checkbox" />
+                                    <span class="lbl">&nbsp;&nbsp;默认关闭</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="qq"> 联系站长：  </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="qq" id="qq" placeholder="输入QQ或其他联系方式" class="col-xs-10 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="sort"> 排序：  </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="sort" id="sort" class="form-control col-xs-10 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>从小到大排序</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">提交保存</button>
+                    <button class="btn btn-info" type="reset">重置</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </form>
+</div><!-- /.modal -->
+
+
+<!-- 显示模态框（Modal） -->
+<div class="modal fade in" id="myModaledit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-backdrop fade in" id="gbbb" style="height: 100%;"></div>
+    <form class="form-horizontal" name="linkUpdate" id="linkUpdate" method="post" action="{:url('linkUpdate')}">
+        <input type="hidden" name="edit_link_id" id="edit_link_id" value="" />
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" id="gb"  data-dismiss="modal"
+                            aria-hidden="true">×
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        修改友情链接
+                    </h4>
+                </div>
+                <div class="modal-body">
+
+
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="edit_name"> 链接名称：  </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="edit_name" id="edit_name" value="" class="form-control col-xs-10 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必须是以字母开头，数字、符号组合</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="edit_url"> 链接URL：  </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="edit_url" id="edit_url" value="" class="form-control col-xs-10 col-sm-8" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必须是以http://开头</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="edit_qq"> 联系站长：  </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="edit_qq" id="edit_qq" value="" placeholder="输入QQ或其他联系方式" class="col-xs-10 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="edit_sort"> 排序：  </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="edit_sort" id="edit_sort" value="" class="col-xs-10 col-sm-3" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>从小到大排序</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        提交保存
+                    </button>
+                    <button type="button" class="btn btn-default"  id="gbb" >
+                        关闭
+                    </button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </form>
+</div><!-- /.modal -->
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+    function del(id){
+        layer.confirm('你确定要删除吗？', {icon: 3}, function(index){
+            layer.close(index);
+            window.location.href="{:url('linkDel')}?link_id="+id;
+        });
+    }
+
+    function stateyes(val){
+        $.post('{:url("linkState")}', {val:val}, function(data){
+            if(data.status){
+                if(data.info=='状态禁止'){
+                    var a='<button class="btn btn-minier btn-danger">状态禁用</button>'
+                    $('#zt'+val).html(a);
+                    return false;
+                }else{
+                    var b='<button class="btn btn-minier btn-yellow">状态开启</button>'
+                    $('#zt'+val).html(b);
+                    return false;
+                }
+            }
+        });
+        return false;
+    }
+
+    //修改模态框状态
+    $(document).ready(function(){
+        $("#myModaledit").hide();
+        $("#gb").click(function(){
+            $("#myModaledit").hide(200);
+        });
+        $("#gbb").click(function(){
+            $("#myModaledit").hide(200);
+        });
+        $("#gbbb").click(function(){
+            $("#myModaledit").hide(200);
+        });
+    });
+
+    function plug_link_edit(val){
+        $.post('{:url("linkEdit")}', {link_id:val}, function(data){
+            if(data.status==1){
+                $(document).ready(function(){
+                    $("#myModaledit").show(300);
+                    $("#edit_link_id").val(data.info.link_id);
+                    $("#edit_name").val(data.info.name);
+                    $("#edit_url").val(data.info.url);
+                    $("#edit_qq").val(data.info.qq);
+                    $("#edit_sort").val(data.info.sort);
+                });
+            }
+        });
+        return false;
+    }
+
+
+    $(function(){
+        $('#linkInsert').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm(){
+            if( '' == $.trim($('#name').val())){
+                layer.alert('友情链接名称不能为空', {icon: 5}, function(index){
+                    layer.close(index);
+                    $('#name').focus();
+                });
+                return false;
+            }
+            if( '' == $.trim($('#url').val())){
+                layer.alert('友情链接URL不能为空', {icon: 5}, function(index){
+                    layer.close(index);
+                    $('#url').focus();
+                });
+                return false;
+            }
+        }
+        function complete(data){
+            if(data.status==1){
+                layer.alert(data.info, {icon: 6}, function(index){
+                    layer.close(index);
+                    window.location.href=data.url;
+                });
+            }else{
+                layer.alert(data.info, {icon: 5}, function(index){
+                    layer.close(index);
+                    window.location.href=data.url;
+                });
+                return false;
+            }
+        }
+    });
+
+
+    $(function(){
+        $('#linkUpdate').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm(){
+            if( '' == $.trim($('#edit_name').val())){
+                layer.alert('友情链接名称不能为空', {icon: 5}, function(index){
+                    layer.close(index);
+                    $('#edit_name').focus();
+                });
+                return false;
+            }
+
+            if( '' == $.trim($('#edit_url').val())){
+                layer.alert('友情链接URL不能为空', {icon: 5}, function(index){
+                    layer.close(index);
+                    $('#edit_url').focus();
+                });
+                return false;
+            }
+        }
+        function complete(data){
+            if(data.status==1){
+                layer.alert(data.info, {icon: 6}, function(index){
+                    layer.close(index);
+                    window.location.href=data.url;
+                });
+            }else{
+                layer.alert(data.info, {icon: 5}, function(index){
+                    layer.close(index);
+                    window.location.href=data.url;
+                });
+                return false;
+            }
+        }
+
+    });
+</script>
+</body>
+</html>

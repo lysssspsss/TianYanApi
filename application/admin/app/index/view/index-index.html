@@ -1,0 +1,124 @@
+{include file="common/head"/}
+<div id="content">
+    <div class="content">
+        <UL style="width:1000px;">
+            <LI id="process"><a href="#"><img src="__HOME__/images/1.jpg" /></a></LI>
+            <LI id="process"><a href="#"><img src="__HOME__/images/2.jpg" /></a></LI>
+            <LI id="process"><a href="#"><img src="__HOME__/images/3.jpg" /></a></LI>
+            <LI id="process"><a href="#"><img src="__HOME__/images/4.jpg" /></a></LI>
+            <LI id="process"><a href="#"><img src="__HOME__/images/5.jpg" /></a></LI>
+            <LI id="process"><a href="#"><img src="__HOME__/images/6.jpg" /></a></LI>
+        </UL>
+    </div>
+    <div class="content">
+        <div class="about"><!-- 公司简介 -->
+            <div class="about_bt"><span><a href="#"><img src="__HOME__/images/more.jpg" /></a></span><img src="__HOME__/images/about.jpg" /></div>
+            <div class="about_nei">
+                <div class="nei_bian"><img src="__HOME__/images/main_14_05.jpg" /></div>
+                <div class="nei_con">
+                    <img src="{:imgUrl($about['thumb'])}" />
+                    <P>{:str_cut($about.content,150,'')}</P>
+                </div>
+                <div class="nei_bian"><img src="__HOME__/images/main_14_08.jpg" /></div>
+            </div>
+        </div>
+        <div class="about"><!-- 优惠活动 -->
+            <div class="about_bt"><span><a href="#"><img src="__HOME__/images/more.jpg" /></a></span><img src="__HOME__/images/hot.jpg" /></div>
+            <div class="about_nei">
+                <div class="nei_bian"><img src="__HOME__/images/main_14_05.jpg" /></div>
+                <div class="nei_con">
+                    <div class="yhhd"><a href="#"><img src="__HOME__/images/02.jpg" /></a></div>
+                    <H1><I>活动主题：</I>5月装修活动――相约夏天！</H1>
+                    <H1 style="font-weight:normal;"><I>活动时间：</I>2013.05.01至2013.05.05截止</H1>
+                </div>
+                <div class="nei_bian"><img src="__HOME__/images/main_14_08.jpg" /></div>
+            </div>
+        </div>
+        <div class="about" style="padding:0;"><!-- 联系我们 -->
+            <div class="about_bt"><span><a href="#"><img src="__HOME__/images/more.jpg" /></a></span><img src="__HOME__/images/contact.jpg" /></div>
+            <div class="about_nei">
+                <div class="nei_bian"><img src="__HOME__/images/main_14_05.jpg" /></div>
+                <div class="nei_con">
+                    <img src="__HOME__/images/main_18_05.jpg" />
+                    <div class="contact">{$contact.content}</div>
+                </div>
+                <div class="nei_bian"><img src="__HOME__/images/main_14_08.jpg" /></div>
+            </div>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="content">
+        <div class="news">
+            <div class="news_bt"><span><a href="#"><img src="__HOME__/images/more.jpg" /></a></span><img src="__HOME__/images/news_01.jpg" /></div>
+            <div class="news_nei">
+                <div class="news_01"></div>
+                <div class="news_li">
+                    <div class="news_img">
+                        <img src="__HOME__/images/main_22_05.jpg" />
+                        <div class="news_wen">
+                            <h2><a href="#">站长盈利必不可少的条件</a></h2>
+                            <h3>TIME:2013.04.15 | CLICK:26</h3>
+                            <P>网站的用户体验越来越受到站长们的重视，用户体验对于优化网站排名...</P>
+                            <I><a href="#"><img src="__HOME__/images/main_22_08.jpg" /></a></I>
+                        </div>
+                    </div>
+                    <UL>
+                        <LI><span>[2013.04.15]</span><a href="#">不适合做优化推广的网站有哪些</a></LI>
+                        <LI><span>[2013.04.15]</span><a href="#">网络营销要注意规避口碑营销</a></LI>
+                        <LI><span>[2013.04.15]</span><a href="#">企业网站网络营销效果显著的方法</a></LI>
+                    </UL>
+                </div>
+                <div class="news_02"></div>
+            </div>
+        </div>
+        <div class="news" style="float:right;">
+            <div class="news_bt"><span><a href="#"><img src="__HOME__/images/more.jpg" /></a></span><img src="__HOME__/images/news_01.jpg" /></div>
+            <div class="news_nei">
+                <div class="news_01"></div>
+                <div class="news_li">
+                    <img src="__HOME__/images/main_24_05.jpg" />
+                    <div class="news_list">
+                        <DL>
+                            <DT><a href="#">用户体验有哪些技巧？</a></DT>
+                            <DT><a href="#">公司建设什么样的网站能够留住客户</a></DT>
+                            <DT><a href="#">百度推语义搜索 提交描述可检索准确读音</a></DT>
+                            <DT><a href="#">企业网站需要维护的方面</a></DT>
+                            <DT><a href="#">三种情况会让网站慢性自杀！</a></DT>
+                            <DT><a href="#">网络营销 = 方法+技巧+独特的思路</a></DT>
+                            <DT><a href="#">导致网站运营失败的主观原因</a></DT>
+                            <DT><a href="#">收录只减少不增加的原因</a></DT>
+                        </DL>
+                    </div>
+                </div>
+                <div class="news_02"></div>
+            </div>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="case">
+        <div class="case_bt"><span><a href="#"><img src="__HOME__/images/more.jpg" /></a></span><img src="__HOME__/images/case.jpg" /></div>
+        <div class="case_01"></div>
+        <div class="case_nei">
+            <ul>
+                {volist name='picture' id="vo"}
+                <li>
+                    <a href="{:url('case/info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}" target="_blank">
+                        <img src="{:imgUrl($vo['thumb'])}" />
+                    </a>
+                    <p>
+                        <span>
+                            <a href="{:url('case/info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}" target="_blank">
+                                <img src="__HOME__/images/main_27_03_06.jpg" style="border:0;" />
+                            </a>
+                        </span>
+                        <a href="{:url('case/info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}" target="_blank">{$vo.title}</a>
+                    </p>
+                </li>
+                {/volist}
+            </ul>
+        </div>
+        <div class="case_02"></div>
+        <div class="clear"></div>
+    </div>
+</div>
+{include file="common/footer"/}

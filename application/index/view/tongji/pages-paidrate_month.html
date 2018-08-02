@@ -1,0 +1,55 @@
+{extend name="tongji/public" /}
+{block name="table_content"}
+<div class="content">
+	<table id="myTable" border="0" width="100">
+		<thead>
+		<tr>
+			{volist name='field' id='title'}
+			<th>{$title}</th>
+			{/volist}
+		</tr>
+		</thead>
+		{volist name='allbydate' id='content' key='i'}
+		    {if condition="empty($channel_name)"}
+			<tbody>
+				<tr style="font-weight:bold;">
+					<td >
+						<button id="jiahao{$content.sum.date}" type="button" onclick="content_show('{$content.sum.date}')">+</button>
+						<button id="jianhao{$content.sum.date}"  type="button" style="display: none;" onclick="content_hide('{$content.sum.date}')">-</button>
+					</td>
+					<td>{$content.sum.date}</td>
+					<td>{$content.sum.channel_name}</td>
+					<td>{$content.sum.pay_frequency}</td>
+					<td>{$content.sum.pay_amount}</td>
+					<td>{$content.sum.recharge_amount}</td>
+					<td>{$content.sum.live}</td>
+					<td>{$content.sum.recharge_user}</td>
+					<td>{$content.sum.conversion_recharge}%</td>
+					<td>{$content.sum.user_aurp}</td>
+					<td>{$content.sum.recharge_aurp}</td>
+					<td>{$content.sum.update_time}</td>
+				</tr>
+			</tbody>
+		    {/if}
+		<tbody id = "daycontent{$content.sum.date}"  {if condition="empty($channel_name)"}  style="display: none;"  {/if}  >
+				{volist name='content.all' id='added'}
+					<tr>
+						<td> </td>
+						<td>{$added.date}</td>
+						<td>{$added.channel_name}</td>
+						<td>{$added.pay_frequency}</td>
+						<td>{$added.pay_amount}</td>
+						<td>{$added.recharge_amount}</td>
+						<td>{$added.live}</td>
+						<td>{$added.recharge_user}</td>
+						<td>{$added.conversion_recharge}%</td>
+						<td>{$added.user_aurp}</td>
+						<td>{$added.recharge_aurp}</td>
+						<td>{$added.update_time}</td>
+					</tr>
+				{/volist}
+			</tbody>
+		{/volist}
+	</table>
+</div>
+{/block}

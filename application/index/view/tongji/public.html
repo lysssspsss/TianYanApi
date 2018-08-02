@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+	<meta charset="utf-8">
+	<title> {$title} </title>
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<meta name="robots" content="" />
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" href="/public/tongji/css/style.css" media="all" />
+	<!--[if IE]><link rel="stylesheet" href="/public/tongji/css/ie.css" media="all" /><![endif]-->
+	<style>
+		/* 手机等小屏幕手持设备 */
+		@media screen and (min-width: 320px) and (max-width: 480px) {
+			#myTable{
+				width: 60%;
+			}
+		}
+		/* 平板之类的宽度 1024 以下设备 */
+		@media only screen and (min-width: 321px) and (max-width: 1024px) {
+			#myTable{
+				width: 60%;
+			}
+		}
+		/* PC客户端或大屏幕设备: 1028px 至更大 */
+		@media only screen and (min-width: 1029px) {
+			/*body {
+				background: green;
+			}*/
+			#myTable{
+				width: 100%;
+			}
+		}
+		/* 竖屏 */
+		@media screen and (orientation:portrait) and (max-width: 720px) {}
+		/* 横屏 */
+		@media screen and (orientation:landscape){}
+
+		input[type="date"]::-webkit-calendar-picker-indicator {
+			background-image: url("/public/tongji/riqi.png");
+			width: 8px;
+			height: 12px;
+			color: rgba(255,255,255,0.0);/* 设置三角形透明*/
+			/*opacity:0.8;*/
+		}
+		input[type="date"]::-webkit-inner-spin-button{
+			display: none;
+
+		}
+
+	</style>
+</head>
+<body>
+<div class="testing">
+<header class="main">
+	<h1><strong>{$title}  </strong><span class="button" style="float: right;padding-bottom: 10px;font-size: small;background: #0099FF;border-color: #0a628f;"><a href="/index.php/index/index/tuichu">退出登錄</a></span></h1>
+	<!--<input type="text" value="search" />-->
+
+</header>
+</div>
+<nav>
+	<ul>
+		<li><a href="#"><span class="icon icon3">&#128711;</span> </a></li>
+		{volist name='daohang' id='lan'}
+		{if condition="$lan.lname eq $tname"}
+		<li class="section">{else}<li>{/if}
+				<a href="{$lan.url}"><span class="icon">{$lan.icon}</span> {$lan.lname}</a>
+			</li>
+		{/volist}
+		<!--
+		<li>
+			<a href="files.html"><span class="icon">&#127748;</span> 转化率统计 </a>
+		</li>
+		<li>
+			<a href="blog-timeline.html"><span class="icon">&#59160;</span> 留存统计</a>
+		</li>
+		<li><a href="statistics.html"><span class="icon">&#128202;</span> 折线图</a></li>
+		<li><a href="users.html"><span class="icon">&#128101;</span> Users <span class="pip">3</span></a></li>
+		<li>
+			<a href="ui-elements.html"><span class="icon">&#9881;</span> UI Elements</a>
+			<ul class="submenu">
+				<li><a href="icon-fonts.html">Icon fonts</a></li>
+			</ul>
+		</li>-->
+	</ul>
+</nav>
+
+<!--<section class="alert">
+	<form method="link" action="page-new.html">
+		 <button class="green">Create new page</button>
+	</form>
+</section>-->
+
+<section class="content">
+	<section class="widget">
+		<header>
+			<span class="icon" >&#128196;</span>
+			<hgroup>
+				<h1>{$tname.china}</h1>
+				<h2></h2>
+			</hgroup>
+			<form method="post" action="{$tname.url}">
+				<span style="">
+					<input class="chaxun_input" type="submit" style="margin-top: 5px; float: right;width: 8%; margin-left: 3px" value="查询">
+					<input class="end_date_input" type="date" value="{$riqi.end_date}" style="margin:5px 1% auto auto; float:right; width: 8%;" name="end_date"/>
+					<label style="font-weight:bold;color: white; float: right;margin:auto 1px auto auto;font-size: 30px;">-</label>
+					<input class="start_date_input" type="date" value="{$riqi.start_date}" style="margin:5px auto auto auto; float:right; width: 8%;" name="start_date"/>
+					<label class="riqi_label" style="font-weight:bold;color: white; float: right;margin:10px auto auto auto;font-size: 18px;">选择日期:</label>
+					<!--<input class="channel_name_input" type="text" value="" style="margin:5px 2% auto auto; float:right; width: 10%;" name="channel_name"/>-->
+					<select name="channel_name" id="channel_name" style="margin:5px 2% auto auto; float:right; width: 8%;border-radius: 15px;height: 28px;border: 0;">
+						<option value="">全部</option>
+						{volist name='channel_name_list' id='n'}
+							<option value='{$n}'  {if condition="$channel_name eq $n"} selected {/if}>{$n}</option>
+						{/volist}
+					</select>
+					<label class="qudao_label" style="font-weight:bold;color: white; float: right;margin:10px auto auto auto;font-size: 18px;">渠道名:</label>
+				</span>
+				<input type="hidden" value="{$tname.english}" name="tename">
+			</form>
+			<aside>
+
+			</aside>
+		</header>
+		{block name="table_content"}
+
+		{/block}
+	</section>
+</section>
+<script>
+
+    function content_show(date) {
+        var jiahaoid = 'jiahao'+date;
+        var jianhaoid = 'jianhao'+date;
+        var daycontentid = 'daycontent'+date;
+        $("#"+jiahaoid).hide();
+        $("#"+jianhaoid).show();
+        $("#"+daycontentid).show();
+    }
+
+    function content_hide(date) {
+        var jiahaoid = 'jiahao'+date;
+        var jianhaoid = 'jianhao'+date;
+        var daycontentid = 'daycontent'+date;
+        $("#"+jiahaoid).show();
+        $("#"+jianhaoid).hide();
+        $("#"+daycontentid).hide();
+    }
+</script>
+<!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>-->
+<script src="/public/tongji/js/jquery.wysiwyg.js"></script>
+<script src="/public/tongji/js/jquery.min.js"></script>
+<script src="/public/tongji/js/custom.js"></script>
+<script src="/public/tongji/js/cycle.js"></script>
+<script src="/public/tongji/js/jquery.checkbox.min.js"></script>
+<script src="/public/tongji/js/flot.js"></script>
+<script src="/public/tongji/js/flot.resize.js"></script>
+<script src="/public/tongji/js/flot-graphs.js"></script>
+<script src="/public/tongji/js/flot-time.js"></script>
+<script src="/public/tongji/js/cycle.js"></script>
+<script src="/public/tongji/js/jquery.tablesorter.min.js"></script>
+
+</body>
+</html>

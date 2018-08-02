@@ -1,0 +1,132 @@
+{include file="common/head"/}
+<style>
+    #pic_pic{width:127px;}
+</style>
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>
+                        微信管理
+                        <small>
+                            <i class="ace-icon fa fa-angle-double-right"></i>
+                            添加图文回复
+                        </small>
+                    </h1>
+                </div><!-- /.page-header -->
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form class="form-horizontal" role="form" name="updateImg" id="updateImg" method="post" action="{:url('updateImg')}">
+                            <input name="id" type="hidden" value="{$info.id}">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="keyword">关键词</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="keyword" id="keyword" placeholder="输入关键词" value="{$info.keyword}" class="col-xs-12 col-md-4"/>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="title">标题</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="title" id="title" placeholder="输入标题" value="{$info.title}" class="col-xs-12 col-md-4"/>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="url">url</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="url" id="url" placeholder="http://" value="{$info.url}" class="col-xs-12 col-md-4"/>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="pic">封面图片</label>
+                                <div class="col-md-4 col-sm-10 col-xs-12">
+                                    <div class="thumb_box" id="pic_box">
+                                        <a href="javascript:swfupload('thumb_uploadfile','pic','文件上传',1,1,1,'jpeg,jpg,png,gif',3,2,yesdo,nodo)">
+                                            <img src="{$info['thumb']}" id="pic_pic" >
+                                        </a><br>
+                                        <input type="button" value="取消缩略图" onclick="javascript:clean_thumb('pic');" class="btn btn-success btn-sm" style="margin-top: 5px;">
+                                        <input type="hidden" id="pic" name="pic" value="{$info.pic}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="desc">简介</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <textarea name="desc" style="padding-left: 4px;" placeholder="请输入简介" cols="20" class="col-xs-12 col-md-6" id="desc">{$info.desc}</textarea>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="ace-icon fa fa-check bigger-110"></i>
+                                        提交
+                                    </button>
+                                    <button class="btn" type="reset">
+                                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+</div>
+<script>
+    $(function () {
+        $('#updateImg').ajaxForm({
+            beforeSubmit: checkForm, //此方法主要是提交前执行的方法，根据需要设置
+            success: complete, //这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm() {
+            if ('' == $.trim($('#keyword').val())) {
+                layer.alert('关键词不能为空!', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#keyword').focus();
+                });
+                return false;
+            }
+            if ('' == $.trim($('#desc').val())) {
+                layer.alert('回复内容不能为空!', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#text').focus();
+                });
+                return false;
+            }
+        }
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+            } else {
+                layer.alert(data.info, {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#username').focus();
+                });
+                return false;
+            }
+        }
+    })
+
+</script>
+</body>
+</html>

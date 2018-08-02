@@ -1,0 +1,26 @@
+<nav>
+    <ul>
+        <li><a href="#"><span class="icon">&#128711;</span> </a></li>
+        {volist name='daohang' id='lan'}
+        {if condition="$lan.lname eq $tname"}
+        <li class="section">{else}<li>{/if}
+        <a href="{$lan.url}"><span class="icon">{$lan.icon}</span> {$lan.lname}</a>
+    </li>
+        {/volist}
+        <!--
+        <li>
+            <a href="files.html"><span class="icon">&#127748;</span> 转化率统计 </a>
+        </li>
+        <li>
+            <a href="blog-timeline.html"><span class="icon">&#59160;</span> 留存统计</a>
+        </li>
+        <li><a href="statistics.html"><span class="icon">&#128202;</span> 折线图</a></li>
+        <li><a href="users.html"><span class="icon">&#128101;</span> Users <span class="pip">3</span></a></li>
+        <li>
+            <a href="ui-elements.html"><span class="icon">&#9881;</span> UI Elements</a>
+            <ul class="submenu">
+                <li><a href="icon-fonts.html">Icon fonts</a></li>
+            </ul>
+        </li>-->
+    </ul>
+</nav>

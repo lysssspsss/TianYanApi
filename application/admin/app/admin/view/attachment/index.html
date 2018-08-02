@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+	<script type="text/javascript" src="__STATIC__/assets/js/jquery.1.11.1.min.js"></script>
+	<link href="__STATIC__/css/style.css" rel="stylesheet" type="text/css" />
+	<style>
+		html{_overflow-y:scroll}
+		.swfupload {position: absolute;z-index: 1;}
+		.mainnav_title {display:none;}
+		.tagli li{cursor: pointer;}
+	</style>
+	<link href="__STATIC__/swfupload/swfupload.css" rel="stylesheet" type="text/css" />
+	<script language="JavaScript">
+        <!--
+        var URLO= "{:url('attachment/index')}";
+        var URL = '/index.php/admin/article';
+        var APP	 =	 '/index.php';
+        var PUBLIC = '/public';
+        var ROOT = '__ROOT__';
+        //-->
+	</script>
+	<script type="text/javascript" src="__STATIC__/swfupload/swfupload.js"></script>
+	<script type="text/javascript" src="__STATIC__/swfupload/swfupload.queue.js"></script>
+	<script type="text/javascript" src="__STATIC__/swfupload/fileprogress.js"></script>
+	<script type="text/javascript" src="__STATIC__/swfupload/handlers.js"></script>
+	<script type="text/javascript" src="__STATIC__/my.js"></script>
+
+	<script type="text/javascript">
+		var file_limit = "{$file_limit}";
+		var swfu;
+ 		window.onload = function() {
+			var settings = {
+				flash_url : "__STATIC__/swfupload/swfupload.swf?"+Math.random(),
+				flash9_url : "__STATIC__/swfupload/swfupload_fp9.swf",
+				upload_url: "{:url('Attachment/upload')}",
+				file_post_name : "filedata",
+				post_params: {"isthumb" : "<?php echo $isthumb;?>","moduleid" : "<?php echo $moduleid?>","addw":$('#addw').val()},
+				file_size_limit : "<?php echo $file_size;?> MB",
+				file_types : "<?php echo $file_types;?>",
+				file_types_description : "All Files",
+				file_upload_limit : "<?php echo $file_limit;?>",
+				file_queue_limit : 0,
+				custom_settings : {
+					progressTarget : "fsUploadProgress",
+					cancelButtonId : "btnCancel",
+					tdFilesQueued : document.getElementById("tdFilesQueued"),
+					tdFilesUploaded : document.getElementById("tdFilesUploaded"),
+					tdErrors : document.getElementById("tdErrors")
+				},
+				debug: false,
+				button_image_url : "",
+				button_placeholder_id: "spanButtonPlaceHolder",
+				button_width: 75,
+				button_height: 29,
+                //use_query_string : true,
+                button_text : '',
+				button_text_style : '',
+				button_text_top_padding: 0,
+				button_text_left_padding: 0,
+				button_window_mode: SWFUpload.WINDOW_MODE.TRANSPARENT,
+				button_cursor: SWFUpload.CURSOR.HAND,
+				// The event handler functions are defined in handlers.js
+				swfupload_preload_handler : preLoad,
+				swfupload_load_failed_handler : loadFailed,
+				file_queued_handler : fileQueued,
+				file_queue_error_handler : fileQueueError,
+				upload_start_handler : uploadStart,
+				upload_progress_handler : uploadProgress,
+				upload_error_handler : uploadError,
+				upload_success_handler : uploadSuccess,
+				upload_complete_handler : uploadComplete
+
+			};
+			swfu = new SWFUpload(settings);
+	     };
+
+$.ajaxSetup ({ cache: false });
+function ajaxload(typeid,page,inputid,isthumb)
+{
+    var data = {typeid:typeid,page:page,inputid:inputid,isthumb:isthumb};
+    var url =  "{:url('Attachment/filelist')}";
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: data,
+         success: function(msg){
+			$('#'+inputid).html(msg);
+			for(var i=0;i<ids.length;i++){
+				$('#on_'+ids[i]).addClass("on");
+			}
+         }
+    });
+}
+</script>
+	<div class="mainbox">
+<div id="content">
+<div id="tabs">
+	<div class="title">
+		<ul class="tagli">
+			<li class="on">文件上传</li>
+			<li>网络地址</li>
+			<?php $more = input('more');?>
+			{if condition="!empty($more)"}
+			<li onclick="ajaxload(1,1,'filelist',{$isthumb});">浏览库</li>
+			<li onclick="ajaxload(0,1,'nouselist',{$isthumb});">未处理文件</li>
+			{/if}
+		</ul>
+	</div>
+
+	<div class="content_1">
+		<div class="tabbox" style="display:block;">
+			<div id="divMovieContainer">
+				<div class="selectbut"><span id="spanButtonPlaceHolder"></span></div>
+				<input type="button" value="开始上传" id="uploadbut" onclick="swfu.startUpload();"/>
+				<div style="color:#959595;line-height:24px;height:24px;background:url() no-repeat;padding-left:20px;"> 支持 <font color="red">{$file_types}</font> 格式
+				</div>
+				<br>
+				<div style="color:#454545;clear:both;line-height:24px;height:24px;"> 最多上传 <font color="red">{$file_limit}</font> 个附件,单文件最大 <font color="red">{$file_size}</font>	MB</div>
+			</div>
+			<div id="divStatus">
+				共选择了<span id="tdFilesQueued">0</span>个附件,上传失败<span id="tdErrors">0</span> 个,成功上传<span id="tdFilesUploaded">0</span> 个
+			</div>
+			<fieldset  id="swfupload-box">
+				<legend>文件列表</legend>
+				<ul id="fsUploadProgress"></ul>
+				<ul class="attachment-list"  id="thumbnails"></ul>
+			</fieldset>
+		</div>
+		<div class="tabbox">
+		 <br>
+			请输入网络地址: <input type="text" id="fileurl" name="fileurl" class="input-text" value=""  style="width:350px; "  onblur="addfileurl(this,{:input('isthumb')})">
+			<br><br><br>
+		</div>
+		<div class="tabbox">
+			<div id="filelist"></div>
+		</div>
+		<div class="tabbox">
+			<div id="nouselist"></div>
+		</div>
+	</div>
+</div>
+<input type="hidden" name="addw" id="addw" value="0">
+<div  id="myuploadform" style="display:none;" ></div>
+
+<script>
+	$('body').on('click','#addwater',function(){
+        if($(this).is(':checked')) {
+            $('#addw').val(1);
+        }else{
+            $('#addw').val(0);
+		}
+
+	});
+new Tabs("#tabs",".title ul li",".content_1",".tabbox","on",1);
+function addfileurl(obj,isthumb) {
+	var strs = $(obj).val() ?  $(obj).val() : '';
+	if(strs){
+		var datas='<div id="uplist_1" class="col-md-2 ">' +
+			'<div class="upimg"><img src="'+strs+'"></div>'+
+			'<input type="hidden" id="aids" name="aids"  value="0" style="margin-bottom:5px;" />' +
+			'<input type="hidden"  id="filedata" name="filedata" value="'+strs+'"  />' +
+			'<input type="hidden"  id="isthumb" name="isthumb" value="'+isthumb+'"  />' +
+			'<input type="text" class="form-control" id="namedata" name="namedata" value="'+strs+'"  /> &nbsp;' +
+			'<a href="javascript:remove_this(\'uplist_1\');" class="btn btn-danger btn-block btn-xs">移除</a> ' +
+			'</div>';
+		$('#myuploadform').html(datas);
+		$('#thumbnails   a ').removeClass("on");
+		$('.img a ').removeClass("on");
+	}else{
+		$('#myuploadform').html('');
+	}
+}
+function Tabs(id,title,content,box,on,action){
+	if(action){
+		$(id+' '+title).click(function(){
+			$(this).addClass(on).siblings().removeClass(on);
+			$(content+" > "+box).eq($(id+' '+title).index(this)).show().siblings().hide();
+		});
+	}else{
+		$(id+' '+title).mouseover(function(){
+			$(this).addClass(on).siblings().removeClass(on);
+			$(content+" > "+box).eq($(id+' '+title).index(this)).show().siblings().hide();
+		});
+	}
+}
+</script>

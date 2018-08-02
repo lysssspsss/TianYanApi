@@ -1,0 +1,25 @@
+{include file="common/head"/}
+<div id="content">
+    {include file="common/right"/}
+    <div class="zy_left">
+        <div class="left_bt">
+            <span>现在所在的位置：<a href="{:url('index/index')}">首页</a>><a href="{:url('index',array('catId'=>input('catId')))}">{$title}</a></span>
+            <img src="__HOME__/images/sub_03.jpg" />
+        </div>
+        <div class="left_nei"><!-- 子页样式・新闻内容 -->
+            <div class="zynei">
+                <div class="tite">{$info.title}</div>
+                <div class="zytime"><i>发布者：{$info.username}</i><i>发布日期：{:toDate($info['createtime'],'Y-m-d H:i')}</i><i>点击：{$info.hits}次</i></div>
+                <div class="new01_nei">{$info.content}</div>
+                <div class="zytime">
+                    <span style="float:left; text-align:left;">上一篇：<a href="{$front.url}">{$front.title}</a></span>
+                    <span style="float:right; text-align:right;">下一篇：<a href="{$after.url}">{$after.title}</a></span>
+                </div>
+                <div class="clear"></div>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+{include file="common/footer"/}

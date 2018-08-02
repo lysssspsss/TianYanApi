@@ -1,0 +1,24 @@
+{include file="common/head"/}
+<div id="content">
+    {include file="common/right"/}
+    <div class="zy_left">
+        <div class="left_bt">
+            <span>现在所在的位置：<a href="{:url('index/index')}">首页</a>><a href="{:url('index',array('catId'=>input('catId')))}">{$title}</a></span>
+            <img src="__STATIC__/home/images/sub_03.jpg" />
+        </div>
+        <div class="left_nei"><!-- 子页样式・新闻列表 -->
+            <ul class="team-list">
+                {volist name="$list" id="vo"}
+                <LI>
+                    <div class="avatar"><a href="{:url('info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}" title="{$vo.title}" target="_blank"><img src="__HOME__"/> </a></div>
+                    <div class="title"><a href="{:url('info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}" title="{$vo.title}" target="_blank">{$vo.title}</a></div>
+                    <div class="info">{:str_cut($vo.description,50)}</div>
+                </LI>
+                {/volist}
+            </ul>
+            {$page}
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+{include file="common/footer"/}                                                                                                                                                                                                                        
