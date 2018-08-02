@@ -1,0 +1,177 @@
+{include file="common/head"/}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>
+                        您当前操作
+                        <small>
+                            <i class="ace-icon fa fa-angle-double-right"></i>
+                            添加系统管理员
+                        </small>
+                    </h1>
+                </div><!-- /.page-header -->
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form class="form-horizontal" role="form" name="editAdmin" id="editAdmin" method="post" action="{:url('adminUpdate')}">
+                            <input name="admin_id" id="admin_id" type="hidden" value="{$info.admin_id}"/>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="group_id">所属用户组</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select name="group_id" id="group_id" {if condition="$info['username'] eq 'admin'"}disabled{/if} class="col-select col-xs-12 col-sm-4">
+                                        <option value="">请选择所属用户组</option>
+                                        {foreach name="auth_group" id="v"}
+                                        <option value="{$v.group_id}" {if condition='$v["group_id"] eq $info.group_id'}selected {/if}>{$v.title}</option>
+                                        {/foreach}
+                                    </select>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必选</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="username">登录用户名</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="username" id="username" {if condition="$info['username'] eq 'admin'"}disabled{/if} value="{$info.username}" placeholder="输入登录用户名" class="col-xs-12 col-md-4"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>用户名必须是以字母开头，数字、符号组合</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="pwd">登录密码</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="password" name="pwd" id="pwd" placeholder="输入登录密码" class="col-xs-12 col-md-4"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>密码必须大于6位，小于15位</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="email">用户邮箱</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="email" id="email" value="{$info.email}" placeholder="输入用户邮箱" class="col-xs-12 col-md-4"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>用于密码找回，请认真填写</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="tel">手机号</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="tel" id="tel" value="{$info.tel}" placeholder="输入手机号码" class="col-xs-12 col-md-4"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>只能填写数字</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="open"> 是否审核： </label>
+                                <div class="col-sm-10 col-xs-12" style="padding-top:5px;">
+                                    <label>
+                                        <input name="open" id="open" {if condition='$info["open"] eq 1'}checked{/if} value="1" class="ace ace-switch ace-switch-5" type="checkbox">
+                                        <span class="lbl">&nbsp;&nbsp;默认关闭</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="ace-icon fa fa-check bigger-110"></i>
+                                        提交
+                                    </button>
+
+                                    &nbsp; &nbsp; &nbsp;
+                                    <button class="btn" type="reset">
+                                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+</div>
+<script>
+    $(function () {
+        $('#editAdmin').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+        function checkForm() {
+            if ('' == $.trim($('#group_id').val())) {
+                layer.alert('请选择用户组!', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#group_id').focus();
+                });
+                return false;
+            }
+            if ('' == $.trim($('#username').val())) {
+                layer.alert('登录用户名不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#username').focus();
+                });
+                return false;
+            }
+
+            var username = $.trim($('input[name="username"]').val()); //获取INPUT值
+            var myReg = /^[\u4e00-\u9fa5]+$/;//验证中文
+            if (username.indexOf(" ") >= 0) {
+                layer.alert('登录用户名包含了空格，请重新输入', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#username').focus();
+                });
+                return false;
+            }
+
+            if (myReg.test(username)) {
+                layer.alert('用户名必须是字母，数字，符号', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#username').focus();
+                });
+                return false;
+            }
+
+            if ('' == $.trim($('#email').val())) {
+                layer.alert('用户邮箱不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#email').focus();
+                });
+                return false;
+            }
+
+            if ('' == $.trim($('#tel').val())) {
+                layer.alert('手机号码不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#tel').focus();
+                });
+                return false;
+            }
+        }
+
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+            } else {
+                alert(data.msg);
+                return false;
+            }
+        }
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="oto">
+<title><{:C('SYSTEM_NAME')}></title>
+<include file="Common:head" />
+</head>
+<body class="easyui-layout">
+<style>
+/*	.window{
+		width: 289px !important;
+	}*/
+
+
+</style>
+<!-- 头部 -->
+<div id="toparea" data-options="region:'north',border:false,height:38">
+	<div id="topmenu" class="easyui-panel" data-options="fit:true,border:false">
+		<a class="logo"><{:C('SYSTEM_NAME')}></a>
+		<ul class="nav">
+			<foreach name="menuList" item="menu">
+				<li><a href="javascript:;" onclick="baseModule.getLeft(<{$menu.id}>,'<{$menu.name}>', this)"><{$menu.name}></a></li>
+			</foreach>
+			<li><a href="http://ttzctj.xxyya.cn:9530" target="_blank">数据统计</a></li>
+		</ul>
+		<ul class="nav-right">
+			<li>
+                <a href="javascript:;" class="easyui-linkbutton" data-options="plain:true,iconCls:'icons-other-house'" onclick="window.open('<{:U('/')}>')">访问首页</a>
+                <a href="javascript:;" class="easyui-splitbutton" data-options="menu:'#toparea-user-info-box',iconCls:'icons-user-user'"><{$userInfo.rolename}></a>
+				<a href="javascript:;" class="easyui-splitbutton" data-options="menu:'#toparea-help-box',iconCls:'icons-other-help'">帮助</a>
+
+				<div id="toparea-user-info-box">
+					<div><{$userInfo.username}></div>
+					<div class="menu-sep"></div>
+					<div onclick="baseModule.userinfo()">个人信息</div>
+					<div onclick="baseModule.password()">修改密码</div>
+					<div class="menu-sep"></div>
+					<div onclick="baseModule.logout()">退出登录</div>
+				</div>
+
+				<div id="toparea-help-box">
+					<div onclick="$.messager.alert('问题反馈', '请发邮件到674086532@qq.com提交反馈，谢谢！', 'info');">问题反馈</div>
+					<div class="menu-sep"></div>
+					<div onclick="baseModule.clearCache()">更新缓存</div>
+					<div>
+						<span>切换主题</span>
+						<div id="toparea-help-theme-box">
+							<div onclick="baseModule.theme(this)" theme="default">系统默认</div>
+							<div onclick="baseModule.theme(this)" theme="gray">Gray</div>
+							<div onclick="baseModule.theme(this)" theme="bootstrap">Bootstrap</div>
+							<div onclick="baseModule.theme(this)" theme="metro">Metro</div>
+						</div>
+					</div>
+					<div class="menu-sep"></div>
+					<div onclick="baseModule.systemInfo()">服务器信息</div>
+					<div onclick="$.messager.alert('关于', '版本号：<{:C('SYSTEM_VERSION')}><br /><br />联系QQ：674086532', 'info');">关于</div>
+				</div>
+			</li>
+		</ul>
+		<div style="clear:both;border-bottom:none;border-left:none;border-right:none"></div>
+	</div>
+</div>
+
+<!-- 左侧菜单 -->
+<div id="leftarea" data-options="iconCls:'icons-application-application_side_boxes',region:'west',title:'加载中...',split:true,width:220">
+	<div id="leftmenu" class="easyui-accordion" data-options="fit:true,border:false"></div>
+</div>
+
+<!-- 内容 -->
+<div id="mainarea" data-options="region:'center'">
+
+	<div id="pagetabs" class="easyui-tabs" data-options="tabPosition:'top',fit:true,border:false,plain:false">
+
+		<div title="后台首页" href="<{:U('Index/public_main')}>" data-options="cache:false">
+			
+
+
+
+		</div>
+	</div>
+</div>
+<!-- tab 右键菜单 -->
+<div id="tabmenu" class="easyui-menu" style="width:120px;">
+	<div id="reloadtab" iconCls="icon-reload">重新载入标签</div>
+	<div class="menu-sep"></div>
+	<div id="closethis" >关闭当前标签</div>
+	<div id="closeall" >关闭全部标签</div>
+</div>
+
+<!-- 公共部分 -->
+<div id="globel-dialog-div" class="word-wrap" style="line-height:1.5"></div>
+<div id="globel-dialog2-div" class="word-wrap" style="line-height:1.5"></div> <!-- 特殊情况可能需要弹出第2个弹出层 -->
+
+<script type="text/javascript">
+
+	window.tabs = $('#pagetabs').tabs({
+		onContextMenu: function (e, title, i) {
+			$('#tabmenu').menu('show', {
+				left: e.pageX,
+				top: e.pageY
+			});
+			$('#pagetabs').tabs('select', title);
+			e.preventDefault();
+		}
+	});
+//    window.onload = function () {
+//        <if condition="$call_display =='Y'">
+//            setKsNotification();
+//			setKjNotification();
+//			setCpNotification();
+//			setSmrzNotification();
+//			setTxNotification();
+//		</if>
+//    };
+
+    function showNotice(permission,info,title) {
+        if (window.Notification) {
+            if (permission === 'granted') {
+                var notification = new Notification(
+                    title,
+                    {
+                        dir: 'auto',
+                        body: info,
+                        icon: 'http://caipiao.91zibo.com/Public/images/logo2.png'
+                    }
+                );
+                notification.onclick = function () {
+                    this.close();
+                };
+            }
+        }
+    }
+    /*
+    *桌面提醒任务
+    */
+    function setKsNotification() {//开售
+        var ks ='ks';
+       setInterval(function () {
+            $.post('<{:U('Index/public_sessionTaskKs')}>', {task_type: ks}, function (res) {
+                //$.messager.progress('close');
+                if (res.status == 1) {
+                    if (Notification.permission == "granted") {
+                        var  title ='赛程开售提醒';
+                        showNotice(Notification.permission,res.info,title);
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission(function (permission) {
+                            showNotice(permission);
+                        });
+                    }
+                }
+            }, 'json'
+            );
+        }, 10000);
+    }
+    /*赛事开奖*/
+    function setKjNotification() {//开奖
+        var kj ='kj';
+        setInterval(function () {
+            $.post('<{:U('Index/public_sessionTaskKj')}>', {task_type: kj}, function (res) {
+                //$.messager.progress('close');
+                if (res.status == 1) {
+                    if (Notification.permission == "granted") {
+                        var  title ='赛程开奖提醒';
+                        showNotice(Notification.permission,res.info,title);
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission(function (permission) {
+                            showNotice(permission);
+                        });
+                    }
+                }
+            }, 'json'
+            );
+        }, 10000);
+    }
+    /*出票*/
+    function setCpNotification() {//出票
+        var cp ='cp';
+        setInterval(function () {
+            $.post('<{:U('Index/public_sessionTaskCp')}>', {task_type: cp}, function (res) {
+                //$.messager.progress('close');
+                if (res.status == 1) {
+                    if (Notification.permission == "granted") {
+                        var  title ='出票提醒';
+                        showNotice(Notification.permission,res.info,title);
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission(function (permission) {
+                            showNotice(permission);
+                        });
+                    }
+                }
+            }, 'json'
+            );
+        }, 6000);
+    }
+
+    /*实名认证*/
+    function setSmrzNotification() {//出票
+        var smrz ='smrz';
+        setInterval(function () {
+            $.post('<{:U('Index/public_sessionTaskSm')}>', {task_type: smrz}, function (res) {
+                //$.messager.progress('close');
+                if (res.status == 1) {
+                    if (Notification.permission == "granted") {
+                        var  title ='实名认证提醒';
+                        showNotice(Notification.permission,res.info,title);
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission(function (permission) {
+                            showNotice(permission);
+                        });
+                    }
+                }
+            }, 'json'
+            );
+        }, 5000);
+    }
+
+	/*用户提现*/
+    function setTxNotification() {//提现
+        var tx ='tx';
+        setInterval(function () {
+            $.post('<{:U('Index/public_sessionTaskTx')}>', {task_type: tx}, function (res) {
+                //$.messager.progress('close');
+                if (res.status == 1) {
+                    if (Notification.permission == "granted") {
+                        var  title ='用户提现提醒';
+                        showNotice(Notification.permission,res.info,title);
+                    } else if (Notification.permission !== 'denied') {
+                        Notification.requestPermission(function (permission) {
+                            showNotice(permission);
+                        });
+                    }
+                }
+            }, 'json'
+            );
+        }, 4000);
+    }
+
+window.baseModule = {
+	dialog:   '#globel-dialog-div',
+	//初始化
+	init: function(){
+        //站长初次登录需要修改密码
+        var is_modified = <{$userInfo.is_modified}>;
+        var roleid = <{$userInfo.roleid}>;
+        if(roleid == 3 && is_modified == 0){
+            this.initpassword();
+            return;
+        }
+		$('#topmenu > ul.nav > li:first > a:first').click(); //默认选中第一个菜单
+		this.sessionLife();
+		this.tip();
+		// this.sessionKjTask();
+		// this.sessionCpTask();
+		// this.sessionKsTask();
+	},
+
+	//登录默认提示
+	tip: function(){
+		$.messager.show({
+			title:'登录提示',
+			msg:'<p style="font-size:20px">您好！<{$userInfo.username}> 欢迎回来！<br/>最后登录时间：<if condition="$userInfo['lastlogintime']"><{$userInfo.lastlogintime|date='Y-m-d H:i:s',###}><else/>-</if><br/>最后登录IP：<{$userInfo.lastloginip}></p>',
+			timeout:5000,
+			showType:'slide',
+			width: 300,
+            height: 200,
+		});
+	},
+
+	//切换主题
+	theme: function(that){
+		var theme = that.getAttribute('theme');
+		$('link[rel*=style][title]').each(function(i){
+			this.disabled = true;
+			if (this.getAttribute('title') == theme) this.disabled = false;
+		});
+		$('iframe').contents().find('link[rel*=style][title]').each(function(i){
+			this.disabled = true;
+			if (this.getAttribute('title') == theme) this.disabled = false;
+		});
+		$.cookie('theme', theme, {path:'/', expires:3650});
+	},
+
+	//移除左侧栏目  TODO 发现需要执行两次才能彻底清除
+	removeLeft: function(stop, titles){
+		var pp = $("#leftmenu").accordion("panels");
+		$.each(pp, function(i, n) {
+			if(n){
+				var t = n.panel("options").title;
+				if(titles && titles.length){
+					for(var k = 0; k < titles.length; k++){
+						if(titles[k] == t) $("#leftmenu").accordion("remove", t);
+					}
+				}else{
+					$("#leftmenu").accordion("remove", t);
+				}
+			}
+		});
+		var pp = $('#leftmenu').accordion('getSelected');
+		if(pp) {
+			var t = pp.panel('options').title;
+			if(titles && titles.length){
+				for(var k = 0; k < titles.length; k++){
+					if(titles[k] == t) $("#leftmenu").accordion("remove", t);
+				}
+			}else{
+				$("#leftmenu").accordion("remove", t);
+			}
+		}
+		if(!stop) this.removeLeft(true, titles);
+	},
+
+	//获取左侧栏目
+	getLeft: function(menuid, title, object){
+		var that = this;
+		//加个判断，防止多次点击重复加载
+		var options = $('body').layout('panel', 'west').panel('options');
+		if(title == options.title) return false;
+
+		//开始获取左侧栏目
+		$.ajax({
+			type: 'POST',
+			url: '<{:U('Index/public_menuLeft')}>',
+			data: {menuid: menuid},
+			cache: false,
+			beforeSend: function(){
+				that.removeLeft();
+				//更新标题名称
+				$('body').layout('panel', 'west').panel({title: title});
+				var loading = '<div class="panel-loading">Loading...</div>';
+				$("#leftmenu").accordion("add", {content: loading});
+			},
+			success: function(data){
+				console.log(data);
+				that.removeLeft();
+				//左侧内容更新
+				$.each(data, function(i, menu) {
+					var content = '';
+					if(menu.son){
+						var treedata = $.toJSON(menu.son);
+						content = '<ul class="easyui-tree" data-options=\'data:' + treedata + ',animate:true,lines:true,onClick:function(node){baseModule.openUrl(node.url, node.text)}\'></ul>';
+					}
+					$("#leftmenu").accordion("add", {title: menu.name, content: content, iconCls:'icons-application-application_side_list'});
+				});
+			}
+		});
+		//默认选中头部菜单
+		if(object){
+			$('#topmenu .nav li').each(function(){
+				$(this).children().removeClass('focus');
+			});
+			$(object).addClass('focus');
+		}
+
+		//如果左侧隐藏则进行展开
+		if($('body').layout('panel', 'west').panel("options").collapsed){
+			$('body').layout('expand', 'west');
+		}
+	},
+
+	//显示打开内容
+	openUrl: function(url, title){
+		// 不显示纵向滚动条
+		var options = $('#pagetabs').tabs({'border': false}).tabs('options');
+		var height = parseInt(options.height) - parseInt(options.tabHeight) - 10;
+		var width = parseInt(options.width) - 5;
+		if($('#pagetabs').tabs('exists', title)){
+
+			var tab = $('#pagetabs').tabs('getTab', title);
+			if (url.indexOf('_inframe_/1') != -1) {
+				// 在独立 iframe 中打开标签页
+				$("#pagetabs").tabs('update',{
+					tab: tab,
+					options:{
+						content: '<iframe src="' + url + '" frameborder="0" height="' + height + 'px" width="' + width + 'px" marginwidth="0" marginheight="0" scrolling="no" seamless></iframe>',
+					}
+				});
+			} else {
+				$("#pagetabs").tabs('update',{
+					tab: tab,
+					options:{
+						href: url
+					}
+				});
+			}
+		    //tab.panel('refresh');
+		    $('#pagetabs').tabs('select', title);
+		}else{
+			if (url.indexOf('_inframe_/1') != -1) {
+				$('#pagetabs').tabs('add', {
+					title: title,
+					content: '<iframe src="' + url + '" frameborder="0" height="' + height + 'px" width="' + width + 'px" marginwidth="0" marginheight="0" scrolling="no" seamless></iframe>',
+					closable: true,
+					cache: true
+				});
+			} else {
+				$('#pagetabs').tabs('add', {title: title, href: url, closable: true, cache: true});
+			}
+		}
+
+		$('#pagetabs').tabs('getTab', title).panel({border: false});
+	},
+
+	/**
+	 * tag 右键菜单
+	 * @param e
+	 * @param title
+     */
+	tagContextMenu: function(e, title) {
+		console.log(e, title);
+	},
+
+	//更新缓存
+	clearCache: function(){
+		$.post('<{:U('Index/public_clearCatche')}>', function(data){
+			var type = data.status ? 'info' : 'error';
+			$.app.method.tip('提示信息', data.info, type);
+		}, 'json');
+	},
+
+	//退出登录
+	logout: function(){
+		$.messager.confirm('提示信息', '确定要退出登录吗？', function(result){
+			if(result) window.location.href = '<{:U('Index/logout')}>';
+		});
+	},
+
+	//服务器信息
+	systemInfo: function(type){
+		var that = this;
+		$(that.dialog).dialog({
+			title: '服务器信息',
+			iconCls: 'icons-application-application_view_detail',
+			width: 550,
+			height: 400,
+			cache: false,
+			href: '<{:U('Index/systemInfo')}>',
+			modal: true,
+			collapsible: false,
+			minimizable: false,
+			resizable: true,
+			maximizable: true,
+			buttons:[{
+				text: '关闭',
+				iconCls: 'icons-arrow-cross',
+				handler: function(){
+					$(that.dialog).dialog('close');
+				}
+			}]
+		});
+	},
+
+	//防止登录超时
+	sessionLife: function(){
+		setInterval(function(){
+			$.post('<{:U('Index/public_sessionLife')}>', function(data){
+				if(!data.status){
+					$.messager.show({
+						title: '系统提示',
+						msg: data.info,
+						timeout:3000,
+						showType:'slide'
+					});
+					setTimeout(function(){
+						window.location.href = data.url;
+					}, 3000);
+				}
+			}, 'json');
+		}, 15000);
+	},
+
+
+	/*
+	 *查询出票消息队列，弹出提示
+	 */
+    sessionCpTask: function () {
+        var cp ='cp';
+//        var repeat = 1;  // 限制执行次数为5次
+        var timer = setInterval(function () {
+            $.post('<{:U('Index/public_sessionTaskCp')}>',{task_type:cp}, function (res) {
+                //$.messager.progress('close');
+                if (res.status==1) {
+//                    if(repeat==0){ clearInterval(timer);}else{ repeat--;
+					$.messager.show({
+						title:'任务提醒',
+						msg:'<p style="font-size:20px">'+res.info+'</p>',
+						timeout:4000,
+						showType:'slide',
+						width: 300,
+			            height: 200
+					});
+                    // $.app.method.tip('任务提醒', res.info, 'info',4000)
+//                }
+                }
+            }, 'json'
+        );
+        }, 8000);
+
+    },
+    /*
+     *查询赛程开售消息队列，弹出提示
+     */
+    sessionKsTask: function () {
+        var ks ='ks';
+        setInterval(function () {
+            $.post('<{:U('Index/public_sessionTaskKs')}>',{task_type:ks}, function (res) {
+                //$.messager.progress('close');
+                if (res.status==1) {
+                   $.messager.show({
+						title:'任务提醒',
+						msg:'<p style="font-size:20px">'+res.info+'</p>',
+						timeout:4000,
+						showType:'slide',
+						width: 300,
+			            height: 200
+					});
+
+                }
+            }, 'json'
+            );
+        }, 10000);
+
+    },
+    /*
+     *查询开奖消息队列，弹出提示
+     */
+    sessionKjTask: function () {
+        var kj ='kj';
+//        var repeat = 1;  // 限制执行次数为5次
+        var timer = setInterval(function () {
+//            if(repeat==0){ clearInterval(timer);}else{ repeat--;
+            $.post('<{:U('Index/public_sessionTaskKj')}>',{task_type:kj}, function (res) {
+                //$.messager.progress('close');
+                if (res.status==1) {
+                  	$.messager.show({
+						title:'任务提醒',
+						msg:'<p style="font-size:20px">'+res.info+'</p>',
+						timeout:4000,
+						showType:'slide',
+						width: 300,
+			            height: 200
+					});
+
+                }
+            }, 'json'
+        );
+//        }
+
+        }, 12000);
+
+    },
+
+	//个人信息
+
+	userinfo: function(){
+
+		var that = this;
+		$(that.dialog).dialog({
+			title: '个人信息',
+			iconCls: 'icons-application-application_view_detail',
+			width: 360,
+			height: 270,
+			cache: false,
+			href: '<{:U('Admin/public_editInfo')}>',
+			modal: true,
+			collapsible: false,
+			minimizable: false,
+			resizable: false,
+			maximizable: false,
+
+			buttons:[{
+				text:'关闭',
+				iconCls:'icons-arrow-cross',
+				handler: function(){
+					$(that.dialog).dialog('close');
+				}
+			}]
+		});
+
+	},
+
+	//修改密码
+	password: function(){
+		var that = this;
+		$(that.dialog).dialog({
+			title: '修改密码',
+			iconCls: 'icons-application-application_form_edit',
+			width: 360,
+			height: 270,
+			cache: false,
+			href: '<{:U('Admin/public_editPwd')}>',
+			modal: true,
+			collapsible: false,
+			minimizable: false,
+			resizable: false,
+			maximizable: false,
+			buttons:[{
+				text: '确定',
+				iconCls: 'icons-other-tick',
+				handler: function(){
+					$(that.dialog).find('form').eq(0).form('submit', {
+						onSubmit: function(){
+							var isValid = $(this).form('validate');
+							if (!isValid) return false;
+
+							$.messager.progress({text:'处理中，请稍候...'});
+							$.post('<{:U('Admin/public_editPwd?dosubmit=1')}>', $(this).serialize(), function(res){
+								$.messager.progress('close');
+								if(!res.status){
+									$.app.method.tip('提示信息', res.info, 'error');
+								}else{
+									$.messager.confirm('提示信息', res.info, function(result){
+										if(result) window.location.href = res.url;
+									});
+								}
+							}, 'json');
+
+							return false;
+						}
+					});
+				}
+			},{
+				text: '取消',
+				iconCls: 'icons-arrow-cross',
+				handler: function(){
+					$(that.dialog).dialog('close');
+				}
+			}]
+		});
+	},
+    //首次登录修改密码
+    initpassword: function(){
+        var that = this;
+        $(that.dialog).dialog({
+            title: '首次登录需要修改密码',
+            iconCls: 'icons-application-application_form_edit',
+            width: 360,
+            height: 270,
+            cache: false,
+            href: '<{:U('Admin/public_editPwd')}>',
+                modal: true,
+                collapsible: false,
+                minimizable: false,
+                resizable: false,
+                maximizable: false,
+                draggable: false, //拖拽操作
+                closable: false,//显示关闭按钮
+                buttons:[{
+            text: '确定',
+            iconCls: 'icons-other-tick',
+            handler: function(){
+                $(that.dialog).find('form').eq(0).form('submit', {
+                    onSubmit: function(){
+                        var isValid = $(this).form('validate');
+                        if (!isValid) return false;
+
+                        $.messager.progress({text:'处理中，请稍候...'});
+                        $.post('<{:U('Admin/public_editPwd?dosubmit=1')}>', $(this).serialize(), function(res){
+                            $.messager.progress('close');
+                            if(!res.status){
+                                $.app.method.tip('提示信息', res.info, 'error');
+                            }else{
+                                $.messager.confirm('提示信息', res.info, function(result){
+                                    if(result) window.location.href = res.url;
+                                });
+                            }
+                        }, 'json');
+
+                        return false;
+                    }
+                });
+            }
+        }]
+    });
+    }
+};
+	$(function () {
+		baseModule.init();
+
+		/**
+		 * 去掉 url 地址中的参数
+		 * 例如请求的 url 为 'http://www.cailebang.com/index.php?a=1&b=2'
+		 * 返回的 url 为 http://www.cailebang.com/index.php
+		 *
+		 * @author liuchao
+		 * @returns {string} 每个请求参数的 name 和 value
+		 */
+		function removeRequest(url){
+			if (typeof url == 'string') {
+				var index = url.indexOf('?');
+				return index == -1 ? url : url.substring(0, index);
+			}
+		}
+
+		/**
+		 * 重新加载标签页
+		 * @author liuchao
+		 */
+		$('#reloadtab').click(function () {
+			// 不显示纵向滚动条
+			var options = $('#pagetabs').tabs('options');
+			var height = parseInt(options.height) - parseInt(options.tabHeight) - 10;
+			var width = parseInt(options.width) - 5;
+
+			var pageTabs = $('#pagetabs');
+			var currTab = pageTabs.tabs('getSelected');
+			console.log(currTab);
+			var url = removeRequest(currTab.panel('options').href);
+
+			if (url != undefined) {
+				currTab.panel('refresh', url);
+			} else {
+				// 在 iframe 中加载的标签页，使用下面的方式获取 url
+				url = removeRequest($(currTab.panel('options').content).attr('src'));
+				pageTabs.tabs('update', {
+					tab: currTab,
+					options: {
+						content: '<iframe src="' + url + '" frameborder="0" height="' + height + 'px" width="' + width + 'px" marginwidth="0" marginheight="0" scrolling="no" seamless></iframe>'
+					}
+				});
+			}
+		});
+
+		/**
+		 * 关闭当前标签页
+		 * @author liuchao
+		 */
+		$('#closethis').click(function () {
+			var pageTabs = $('#pagetabs');
+			var currTab = pageTabs.tabs('getSelected');
+			if (currTab.panel('options').closable) {
+				pageTabs.tabs('close', currTab.panel('options').title);
+			}
+		});
+
+		/**
+		 * 关闭所有标签页
+		 * @author liuchao
+		 */
+		$('#closeall').click(function () {
+			var pageTabs = $('#pagetabs');
+			var taball = pageTabs.tabs('tabs');
+			var title = [];
+
+			for (var i = 0; i < taball.length; i++) {
+				if (taball[i].panel('options').closable) {
+					// TODO 为什么不能再这个循环中直接关闭？
+					title.push(taball[i].panel('options').title);
+				}
+			}
+
+			for (var v = 0; v < title.length; v++) {
+				pageTabs.tabs('close', title[v]);
+			}
+		});
+	});
+</script>
+</body>
+</html>

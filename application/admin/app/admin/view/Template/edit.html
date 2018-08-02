@@ -1,0 +1,95 @@
+{include file="common/head"/}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>
+                        您当前操作
+                        <small>
+                            <i class="ace-icon fa fa-angle-double-right"></i>
+                            修改模版内容
+                        </small>
+                    </h1>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <form class="form-horizontal" role="form" name="temUpdate" id="temUpdate" method="post" action="{:url('update')}">
+                            <input TYPE="hidden" name="file" value="{$filename}">
+                            <input TYPE="hidden" name="type" value="{:input('param.type')}">
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-1 control-label no-padding-right">文件名称：</label>
+                                <div class="col-sm-11 col-xs-12">
+                                    <input type="text" value="{$filename}" disabled class="col-xs-12 col-md-4"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-1 control-label no-padding-right">内容：</label>
+                                <div class="col-sm-11 col-xs-12">
+                                    <textarea id="content" name="content"  style="width:95%; height:400px">
+                                        {$content}
+                                    </textarea>
+                                </div>
+                            </div>
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-1 col-md-11">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="ace-icon fa fa-check bigger-110"></i>
+                                        提交
+                                    </button>
+                                    <button class="btn" type="reset">
+                                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+</div>
+<script type="text/javascript" src="__STATIC__/assets/js/region.js"></script>
+<script>
+    $(function(){
+        $('#temUpdate').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+        function checkForm(){
+            if( '' == $("#content").val()){
+                layer.alert('内容不能为空', {icon: 5}, function(index){
+                    layer.close(index);
+                    $('#content').focus();
+                });
+                return false;
+            }
+        }
+        function complete(data){
+            if(data.status==1){
+                layer.alert(data.info, {icon: 6}, function(index){
+                    layer.close(index);
+                    window.location.href=data.url;
+                });
+            }else{
+                layer.alert(data.info, {icon: 5}, function(index){
+                    layer.close(index);
+                });
+                return false;
+            }
+        }
+
+    });
+
+</script>
+</body>
+</html>

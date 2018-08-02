@@ -1,0 +1,22 @@
+<div id="thumbnails1" ><ul class="attachment-list" style="padding:0;margin:0;">
+{volist name="list" id="vo" key="k"}
+    <li>
+        <div id="attachment_{$vo[aid]}" class="img">
+
+            <a href="javascript:void(0);" id="on_{$vo[aid]}" onclick="javascript:add_file(this,{$vo['aid']},{$vo['isthumb']},{$vo['status']})">
+                <div class="icon"></div>
+                {if condition="in_array($vo['fileext'],explode(',', 'jpg,gif,png,jpeg,bmp,ttf,tif'))"}
+                    <img src="__PUBLIC__{$vo['filepath']}" path="{$vo['filepath']}" title="{$vo['filename']}" alt="{$vo['filename']}" imgid="{$vo[aid]}" imgsize="{$vo[filesize]}" width=80>
+                {else/}
+                    <img src="__STATIC__/img/ext/{$vo.fileext}.png" path="{$vo['filepath']}" title="{$vo['filename']}" alt="{$vo['filename']}" imgid="{$vo[aid]}" imgsize="{$vo[filesize]}" width=80>
+                {/if}
+
+            </a>
+        </div>
+    </li>
+{/volist}
+</ul></div>
+<style>
+    .pagination li{display: inline-block;}
+</style>
+<div id="pages" class="page">{$page}</div>

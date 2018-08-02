@@ -1,0 +1,235 @@
+{include file="common/head" /}
+<script type="text/javascript">
+    try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+</script>
+<div class="main-container" id="main-container">
+    {include file="common/left" /}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav" /}
+            <div class="page-content">
+                <div class="page-header">
+                    <div class="pull-right">
+                        <a href="{:url('field',array('id'=>input('param.moduleid')))}" class="btn btn-xs btn-danger">字段列表</a>
+                    </div>
+                    <h1>
+                        您当前操作
+                        <small>
+                            <i class="ace-icon fa fa-angle-double-right"></i>
+                            修改字段
+                        </small>
+                    </h1>
+
+                </div>
+                <div class="row">
+
+                    <div class="col-xs-12">
+                        <form class="form-horizontal" name="fieldUpdate" id="fieldUpdate" method="post" action="{:url('fieldUpdate')}">
+                            <input type="hidden" id="moduleid" name="moduleid" value="{$moduleid}"/>
+
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right" for="name">字段类型： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select id="type" name="type" class="required" id="type" minlength="1" onchange="javascript:field_setting(this.value);" disabled>
+                                        <option value='' >请选择字段类型</option>
+                                        <option value="catid">栏目</option>
+                                        <option value="title">标题</option>
+                                        <option value="typeid">类别</option>
+                                        <option value="text" >单行文本</option>
+                                        <option value="textarea" >多行文本</option>
+                                        <option value="editor" >编辑器</option>
+                                        <option value="select" >下拉列表</option>
+                                        <option value="radio" >单选按钮</option>
+                                        <option value="checkbox" >复选框</option>
+                                        <option value="image" >单张图片</option>
+                                        <option value="images" >多张图片</option>
+                                        <option value="file" >单文件上传</option>
+                                        <option value="files" >多文件上传</option>
+                                        <option value="number" >数字</option>
+                                        <option value="datetime" >日期和时间</option>
+                                        <option value="posid" >推荐位</option>
+                                        <option value="groupid" >会员组</option>
+                                        <option value="linkage" >联动菜单</option>
+                                        <option value="template" >模板选择</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right" for="field"> 字段名： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="field" name="field" placeholder="必填：字段名"  value="{$info.field}" class="col-xs-12 col-sm-4">
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span></span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="name"> 别名： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="name" id="name" placeholder="必填：别名" value="{$info.name}" class="col-xs-12 col-sm-4"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span></span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right">字段相关设置： </label>
+                                <div class="col-sm-10 col-xs-12" id="field_setup">
+
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right" for="class">字段class名称： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="class" name="class" value="{$info.class}" size="10" class="col-xs-12 col-sm-4" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right">必填： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <label class="radio-inline" for="required1">
+                                        <input type="radio" name="required" id="required1" value="1" {if condition="$info['required']==1"}checked{/if}>是
+                                    </label>
+                                    <label class="radio-inline" for="required2">
+                                        <input type="radio" name="required" id="required2" value="0" {if condition="$info['required']==0"}checked{/if}>否
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right" for="class">验证规则： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select id="pattern" name="pattern">
+                                        {foreach name="pattern" item="vo"}
+                                        <option {if condition="$key eq $info[pattern]"}selected{/if} value="{$key}">{$vo}</option>
+                                        {/foreach}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right">限制字符串长度范围： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <div class="input-group col-md-3">
+                                        <span class="input-group-addon">最小</span>
+                                        <input type="text" id="minlength" name="minlength" value="{$info.minlength}" class="form-control" aria-describedby="sizing-addon1">
+                                        <span class="input-group-addon">最大</span>
+                                        <input type="text" id="maxlength" name="maxlength" value="{$info.maxlength}" class="form-control" aria-describedby="sizing-addon1">
+                                        <span class="input-group-addon">个字符</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right" for="errormsg">验证失败错误信息： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="errormsg" name="errormsg" value="{$info.errormsg}" class="col-xs-12 col-sm-4"  size="50" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2  control-label no-padding-right">在前台投稿中显示： </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <label class="radio-inline" for="ispost">
+                                        <input type="radio" name="ispost" id="ispost" value="1" {if condition="$info['ispost']==1"}checked{/if}>是
+                                    </label>
+                                    <label class="radio-inline" for="ispost2">
+                                        <input type="radio" name="ispost" id="ispost2" value="0" {if condition="$info['ispost']==0"}checked{/if}>否
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-2 col-md-10">
+                                    {if condition="$info['id']!=''"}
+                                        <input type="hidden" name="type" value="{$info.type}" />
+                                        <input type="hidden" name="oldfield" value="{$info.field}" />
+                                        <input TYPE="hidden" name="id" value="{$info.id}">
+                                    {/if}
+                                    <button class="btn btn-info" type="submit"><i class="ace-icon fa fa-check bigger-110"></i>保存</button>
+                                    &nbsp; &nbsp; &nbsp;
+                                    <button class="btn" type="reset"><i class="ace-icon fa fa-undo bigger-110"></i>重置</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="hr hr-24"></div>
+            </div>
+        </div>
+    </div>
+    {include file="common/foot" /}
+    <script>
+        field_setting('{$info["type"]}');
+        function field_setting(type)
+        {
+            var data =  {$info["setup"]|json_encode};
+            var url =  "{:url('fieldAdd')}?isajax=1&moduleid={$moduleid}&type="+type+"&name={$info.field}";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: data,
+                beforeSend:function(){
+                    $('#field_setup').html('<img src="__PUBLIC__/static/img/msg_loading.gif">');
+                },
+                success: function(msg){
+                    $('#field_setup').html(msg);
+                },
+                complete:function(){
+                },
+                error:function(){
+                }
+            });
+        }
+        $('#type').val("{$info['type']}");
+        $(function () {
+            $('#fieldUpdate').ajaxForm({
+                beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+                success: complete, // 这是提交后的方法
+                dataType: 'json'
+            });
+
+            function checkForm() {
+                if ('' == $.trim($('#field').val())) {
+                    layer.alert('字段名不能为空',{icon:0},function(index){
+                        layer.close(index);
+                        $('#field').focus();
+                    });
+                    return false;
+                }
+                if ('' == $.trim($('#name').val())) {
+                    layer.alert('别名不能为空',{icon:0},function(index){
+                        layer.close(index);
+                        $('#name').focus();
+                    });
+                    return false;
+                }
+            }
+
+            function complete(data) {
+                if (data.status == 1) {
+                    layer.alert(data.info, {icon: 6}, function (index) {
+                        layer.close(index);
+                        window.location.href = data.url;
+                    });
+                } else {
+                    layer.msg(data.info);
+                    return false;
+                }
+            }
+
+        });
+    </script>
+
+</div><!-- /.main-container -->
+</body>
+</html>

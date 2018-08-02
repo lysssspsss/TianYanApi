@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>{$title}-{$sys.sys_title}</title>
+    <link href="__HOME__/css/css.css" rel="stylesheet" type="text/css" />
+    <script src="__HOME__/js/jquery-1.4.4.min.js"></script>
+    <script src="__HOME__/js/slides.min.jquery.js"></script>
+    <script src="__HOME__/js/js.js"></script>
+</head>
+<body>
+<div id="header">
+    <div class="top">
+        <div class="logo"><a href="#"><img src="__HOME__/images/main_02_01.jpg" /></a></div>
+        <div class="top_hot">
+            <div class="hot">
+                <UL>
+                    <LI><a href="javascript:void(0);" onclick="SetHome(this,'{:config('url_domain_root')}');">设为首页</a></LI>
+                    <LI><a href="javascript:void(0);" onclick="AddFavorite('{:config('sys_name')}','{:config('url_domain_root')}')">加入收藏</a></LI>
+                    <LI><a href="{:url('contact/index','catId=43')}">联系我们</a></LI>
+                </UL>
+                <div class="clear"></div>
+            </div>
+            <div class="hot">
+                <form id="hot_from" method="post" action="#">
+                    <input type="text" id="hot_s" value="Search..." class="swap_value" />
+                    <input type="image" src="__HOME__/images/main_02_12.png" id="hot_go" alt="Search" title="Search" />
+                </form>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+    <div class="nav">
+        <UL>
+            <LI><A href="{:url('index/index')}" {if condition="$action eq 'home'"}id="nav_li"{/if}>网站首页</A></LI>
+            {volist name="category" id="vo"}
+            <LI>
+                <A href="{:url('index/'.$vo['catdir'].'/'.$vo['first'],['catId'=>$vo['firstId']] )}" {if condition="$controller eq $vo['catdir']"}id="nav_li"{/if}>{$vo.catname}</A>
+            </LI>
+            {/volist}
+        </UL>
+    </div>
+    <div id="banner">
+        <div id="container">
+            <div id="example" class="png_bg">
+                <div id="slides">
+                    <div class="slides_container">
+                        {volist name="adList" id="vo"}
+                        <div><img src="{:imgUrl($vo['pic'])}" />
+                            <div class="caption">
+                                <p>{$vo.name}</p>
+                            </div>
+                        </div>
+                        {/volist}
+                    </div>
+                    <a href="#" class="prev"><img src="__HOME__/images/arrow-prev.png" alt="Arrow Prev"></a>
+                    <a href="#" class="next"><img src="__HOME__/images/arrow-next.png" alt="Arrow Next"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

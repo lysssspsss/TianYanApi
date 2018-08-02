@@ -1,0 +1,363 @@
+{switch name="type" }
+{case value="title"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">是否使用标题图片</td>
+        <td><input type="radio" name="setup[thumb]" value="1" > 是 <input type="radio" name="setup[thumb]" value="0" checked> 否</td>
+    </tr>
+    <tr>
+        <td>是否使用标题样式</td>
+        <td><input type="radio" name="setup[style]" value="1" > 是 <input type="radio" name="setup[style]" value="0" checked> 否</td>
+    </tr>
+    <tr>
+        <td>文本框长度</td>
+        <td><input type="text" class="input-text" size="5" name="setup[size]" value="" /></td>
+    </tr>
+</table>
+{/case}
+{case value="text" }
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">文本框长度</td>
+        <td><input type="text" class="input-text" size="5" name="setup[size]" value="" /></td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td> <input type="text" class="input-text" size="50"  name="setup[default]" value="" /></td>
+    </tr>
+    <tr>
+        <td>是否为密码框</td>
+        <td><input type="radio" name="setup[ispassword]" value="1" > 是 <input type="radio" name="setup[ispassword]" value="0" checked> 否</td>
+    </tr><input type="hidden" id="varchar" name="setup[fieldtype]" value="varchar"/>
+</table>
+{/case}
+{case value="textarea" }
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td>字段类型</td>
+        <td>
+            <select name="setup[fieldtype]">
+                <option value="mediumtext" selected>MEDIUMTEXT</option>
+                <option value="text">TEXT</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td width="120">文本域行数</td>
+        <td><input type="text"  class="input-text" size="5" name="setup[rows]" value="" /></td>
+    </tr>
+    <tr>
+        <td>文本域列数</td>
+        <td><input type="text"  class="input-text" size="5" name="setup[cols]" value="" /></td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td><textarea  name="setup[default]" rows="3" cols="40"></textarea></td>
+    </tr>
+</table>
+{/case}
+{case value="select" }
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">选项列表:<br>例: <font color="red">选项名称|值</font></td>
+        <td><textarea  name="setup[options]" rows="5" cols="40"></textarea></td>
+    </tr>
+    <tr>
+        <td>选项类型</td>
+        <td><input type="radio" name="setup[multiple]" value="0" checked> 下拉框 <input type="radio" name="setup[multiple]" value="0"> 多选列表框</td>
+    </tr>
+    <tr>
+        <td>字段类型</td>
+        <td>
+            <select name="setup[fieldtype]" onchange="javascript:numbertype(this.value);">
+                <option value="varchar" selected>字符 VARCHAR</option>
+                <option value="tinyint">整数 TINYINT(3)</option>
+                <option value="smallint">整数 SMALLINT(5)</option>
+                <option value="mediumint">整数 MEDIUMINT(8)</option>
+                <option value="int">整数 INT(10)</option>
+            </select> <span id="numbertype" style="display:none;"  > <input type="checkbox" id="" name = "setup[numbertype]" value="1" checked />不包括负数</span>
+        </td>
+    </tr>
+    <tr>
+        <td>可见选项的数目</td>
+        <td><input type="text" class="input-text" size="5" name="setup[size]" value="" /></td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td> <input type="text" class="input-text" size="5"  name="setup[default]" value="" /></td>
+    </tr>
+</table>
+
+{/case}
+{case value="editor"}
+
+{/case}
+{case value="datetime"}
+
+{/case}
+{case value="groupid"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">选项类型</td>
+        <td> <input type="radio" name="setup[inputtype]" value="checkbox"> 复选框 <input type="radio" name="setup[inputtype]" value="select"> 下拉列表框
+            <input type="radio" name="setup[inputtype]" value="radio" checked> 单选框
+        </td>
+    </tr>
+    <tr>
+        <td>字段类型</td>
+        <td>
+            <select name="setup[fieldtype]"  onchange="javascript:numbertype(this.value);">
+                <option value="varchar" selected>字符 VARCHAR</option>
+                <option value="tinyint">整数 TINYINT(3)</option>
+            </select>
+            <span id="numbertype" style="display:none;"  >
+                <input type="checkbox" id="" name = "setup[numbertype]" value="1" checked />不包括负数
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <td>复选框或单选框时宽度</td>
+        <td> <input type="text" class="input-text" size="10"  name="setup[labelwidth]" value="" /></td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td> <input type="text" class="input-text" size="5"  name="setup[default]" value="" /></td>
+    </tr>
+</table>
+
+{/case}
+{case value="typeid"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">选项类型</td>
+        <td> <input type="radio" name="setup[inputtype]" value="checkbox"> 复选框 <input type="radio" name="setup[inputtype]" value="select"> 下拉列表框
+            <input type="radio" name="setup[inputtype]" value="radio" checked> 单选框
+        </td>
+    </tr>
+    <tr>
+        <td>字段类型</td>
+        <td>
+            <select name="setup[fieldtype]"  onchange="javascript:numbertype(this.value);">
+                <option value="varchar" selected>字符 VARCHAR</option>
+                <option value="tinyint" >整数 TINYINT(3)</option>
+                <option value="smallint" >整数 SMALLINT(5)</option>
+            </select><span id="numbertype" style="display:none;"  > <input type="checkbox" id="" name = "setup[numbertype]" value="1" checked />不包括负数</span>
+        </td>
+    </tr>
+    <tr>
+        <td>复选框或单选框时宽度</td>
+        <td> <input type="text" class="input-text" size="10"  name="setup[labelwidth]" value="" /></td>
+    </tr>
+    <tr>
+        <td>顶级类别ID</td>
+        <td> <input type="text" class="input-text" size="5"  name="setup[default]" value="" /></td>
+    </tr>
+</table>
+{/case}
+{case value="posid"}
+
+{/case}
+{case value="radio"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">选项列表:<br>例: <font color="red">选项名称|值</font></td>
+        <td><textarea  name="setup[options]" rows="5" cols="40"></textarea></td>
+    </tr>
+    <tr>
+        <td>字段类型</td>
+        <td>
+            <select name="setup[fieldtype]" onchange="javascript:numbertype(this.value);">
+                <option value="varchar" selected>字符 VARCHAR</option>
+                <option value="tinyint">整数 TINYINT(3)</option>
+                <option value="smallint">整数 SMALLINT(5)</option>
+                <option value="mediumint">整数 MEDIUMINT(8)</option>
+                <option value="int">整数 INT(10)</option>
+            </select> <span id="numbertype" style="display:none;"  > <input type="checkbox" id="" name = "setup[numbertype]" value="1" checked />不包括负数</span>
+        </td>
+    </tr>
+    <tr>
+        <td>宽度</td>
+        <td> <input type="text" class="input-text" size="10"  name="setup[labelwidth]" value="" /></td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td> <input type="text" class="input-text" size="5"  name="setup[default]" value="" /></td>
+    </tr>
+</table>
+
+{/case}
+{case value="checkbox"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">选项列表:<br>例: <font color="red">选项名称|值</font></td>
+        <td><textarea  name="setup[options]" rows="5" cols="40"></textarea></td>
+    </tr>
+    <tr>
+        <td>字段类型</td>
+        <td>
+            <select name="setup[fieldtype]" onchange="javascript:numbertype(this.value);">
+                <option value="varchar" selected>字符 VARCHAR</option>
+                <option value="tinyint">整数 TINYINT(3)</option>
+                <option value="smallint">整数 SMALLINT(5)</option>
+                <option value="mediumint">整数 MEDIUMINT(8)</option>
+                <option value="int">整数 INT(10)</option>
+            </select> <span id="numbertype" style="display:none;"  > <input type="checkbox" id="" name = "setup[numbertype]" value="1" checked />不包括负数</span>
+        </td>
+    </tr>
+    <tr>
+        <td>宽度</td>
+        <td> <input type="text" class="input-text" size="10"  name="setup[labelwidth]" value="" /></td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td> <input type="text" class="input-text" size="5"  name="setup[default]" value="" /></td>
+    </tr>
+</table>
+
+{/case}
+{case value="number"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">文本框长度</td>
+        <td><input type="text" class="input-text" size="5" name="setup[size]" value="" /></td>
+    </tr>
+    <tr>
+        <td>是否包括负数：</td>
+        <td><input type="checkbox" id="" name = "setup[numbertype]" value="1" checked />不包括负数</td>
+    </tr>
+    <tr>
+        <td>小数位数：</td>
+        <td>
+            <select name="setup[decimaldigits]">
+                <option value="0"selected>0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td><input type="text" name="setup[default]" value="" size="40" class="input-text"></td>
+    </tr>
+</table>
+{/case}
+{case value="image"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">文本框长度</td>
+        <td><input type="text" name="setup[size]" value="" size="10" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td><input type="text" name="setup[default]" value="" size="40" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>允许上传的文件大小</td>
+        <td><input type="text" name="setup[upload_maxsize]" value="" size="5" class="input-text">MB </td>
+    </tr>
+    <tr>
+        <td>允许上传的文件类型</td>
+        <td><input type="text" name="setup[upload_allowext]" value="jpg,jpeg,gif,png" size="40" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>是否添加水印</td>
+        <td><input type="radio" name="setup[watermark]" value="1"> 是 <input type="radio" name="setup[watermark]" value="0" checked> 否</td>
+    </tr>
+    <tr>
+        <td>是否从已上传中选择</td>
+        <td><input type="radio" name="setup[more]" value="1" > 是 <input type="radio" name="setup[more]" value="0" checked> 否</td>
+    </tr>
+</table>
+{/case}
+{case value="images"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td>默认值</td>
+        <td><input type="text" name="setup[default]" value="" size="40" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>最多允许上传几张图片</td>
+        <td><input type="text" name="setup[upload_maxnum]" value="" size="5" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>允许上传的图片大小</td>
+        <td><input type="text" name="setup[upload_maxsize]" value="" size="5" class="input-text">MB </td>
+    </tr>
+    <tr>
+        <td>允许上传的图片类型</td>
+        <td><input type="text" name="setup[upload_allowext]" value="jpg,jpeg,gif,png" size="40" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>是否在图片上添加水印</td>
+        <td><input type="radio" name="setup[watermark]" value="1"> 是 <input type="radio" name="setup[watermark]" value="0" checked> 否</td>
+    </tr>
+    <tr>
+        <td>是否从已上传中选择</td>
+        <td><input type="radio" name="setup[more]" value="1"> 是 <input type="radio" name="setup[more]" value="0" checked> 否</td>
+    </tr>
+</table>
+{/case}
+{case value="file"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td width="120">文本框长度</td>
+        <td><input type="text" name="setup[size]" value="" size="10" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>默认值</td>
+        <td><input type="text" name="setup[default]" value="" size="40" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>允许上传的文件大小</td>
+        <td><input type="text" name="setup[upload_maxsize]" value="" size="5" class="input-text">MB </td>
+    </tr>
+    <tr>
+        <td>允许上传的文件类型</td>
+        <td><input type="text" name="setup[upload_allowext]" value="zip,rar,doc,ppt" size="40" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>是否从已上传中选择</td>
+        <td><input type="radio" name="setup[more]" value="1"> 是 <input type="radio" name="setup[more]" value="0" checked> 否</td>
+    </tr>
+</table>
+{/case}
+{case value="files"}
+<table cellpadding="2" cellspacing="1" width="100%">
+    <tr>
+        <td>默认值</td>
+        <td><input type="text" name="setup[default]" value="" size="40" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>最多允许上传的文件个数</td>
+        <td><input type="text" name="setup[upload_maxnum]" value="" size="5" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>允许上传的文件大小</td>
+        <td><input type="text" name="setup[upload_maxsize]" value="" size="5" class="input-text">MB </td>
+    </tr>
+    <tr>
+        <td>允许上传的文件类型</td>
+        <td><input type="text" name="setup[upload_allowext]" value="zip,rar,doc,ppt" size="40" class="input-text"></td>
+    </tr>
+    <tr>
+        <td>是否从已上传中选择</td>
+        <td><input type="radio" name="setup[more]" value="1"> 是 <input type="radio" name="setup[more]" value="0" checked> 否</td>
+    </tr>
+</table>
+{/case}
+{default /}
+{/switch}
+
+<script>
+    function numbertype(fieldtype){
+
+        if(fieldtype=='varchar'){
+            $('#numbertype').hide();
+        }else{
+            $('#numbertype').show();
+        }
+    }
+</script>

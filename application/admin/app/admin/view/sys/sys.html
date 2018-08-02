@@ -1,0 +1,179 @@
+{include file="common/head"/}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>
+                        您当前操作
+                        <small>
+                            <i class="ace-icon fa fa-angle-double-right"></i>
+                            站点设置
+                        </small>
+                    </h1>
+                </div><!-- /.page-header -->
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form class="form-horizontal" role="form" name="sys" id="sys" method="post" action="{:url('runsys')}">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="sys_name">站点名称</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="sys_name" name="sys_name" value="{$sys.sys_name}" placeholder="站点名称" class="col-xs-12 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必填</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="sys_url">站点网址</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="sys_url" name="sys_url" value="{$sys.sys_url}" placeholder="站点网址" class="col-xs-12 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必填</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="sys_url">首页SEO标题</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="sys_title" name="sys_title" value="{$sys.sys_title}" placeholder="站点网址" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="sys_key">首页SEO关键字</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <textarea name="sys_key" style="padding-left: 4px;" cols="20" class="col-xs-12 col-md-6 limited" id="sys_key" maxlength="120">{$sys.sys_key}</textarea>
+                                    <div class="help-inline col-md-12">
+                                        <span class="middle charsLef" id="charsLeft"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="sys_des">首页SEO描述</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <textarea name="sys_des" style="padding-left: 4px;" cols="20" class="col-xs-12 col-md-6 limitedone" id="sys_des" maxlength="200">{$sys.sys_des}</textarea>
+
+                                    <div class="help-inline col-md-12">
+                                        <span class="middle charsLeftone" id="charsLeftone"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="bah">备案号</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="bah" name="bah" value="{$sys.bah}" placeholder="备案号" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="copyright">Copyright</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="copyright" name="copyright" value="{$sys.copyright}" placeholder="Copyright" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="ads">公司地址</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="ads" name="ads" value="{$sys.ads}" placeholder="公司地址" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="tel">联系电话</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="tel" name="tel" value="{$sys.tel}" placeholder="联系电话" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="email">邮箱</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="email" name="email" value="{$sys.email}" placeholder="邮箱" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+
+                            <div class="space-4"></div>
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="ace-icon fa fa-check bigger-110"></i>
+                                        提交
+                                    </button>
+                                    <button class="btn" type="reset">
+                                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+</div>
+<script>
+    $(function () {
+        $('textarea.limitedone').inputlimiter({
+            boxId: "charsLeftone",
+            boxClass: "charsLeftone",
+            remText: '还可以输入 %n 个字符,以英文 , 号隔开！',
+            limitText: ''
+        });
+        $('textarea.limited').inputlimiter({
+            boxId: "charsLeft",
+            boxClass: "charsLeft",
+            remText: '还可以输入 %n 个字符,以英文 , 号隔开！',
+            limitText: ''
+        });
+        $('#sys').ajaxForm({
+            beforeSubmit: checkForm, //此方法主要是提交前执行的方法，根据需要设置
+            success: complete, //这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm() {
+            if ('' == $.trim($('#sys_name').val())) {
+                layer.alert('网站名称不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#sys_name').focus();
+                });
+                return false;
+            }
+            if ('' == $.trim($('#sys_url').val())) {
+                layer.alert('网址不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#sys_url').focus();
+                });
+                return false;
+            }
+
+        }
+
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    //window.location.href = "{:url('Sys/sys')}";
+                });
+            } else {
+                layer.alert(data.info, {icon: 5}, function (index) {
+                    layer.close(index);
+                    //window.location.href = "{:url('Sys/sys')}";
+                });
+            }
+        }
+    })
+
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{include file="common/head"/}
+<div id="content">
+    {include file="common/right"/}
+    <div class="zy_left">
+        <div class="left_bt">
+            <span>现在所在的位置：<a href="{:url('index/index')}">首页</a>><a href="{:url('index',array('catId'=>input('catId')))}">{$title}</a></span>
+            <img src="__HOME__/images/sub_03.jpg" />
+        </div>
+        <div class="left_nei"><!-- 子页样式・新闻列表 -->
+            {if condition="$pos"}
+            <div class="nei_list"> <img src="{:imgUrl($pos['thumb'])}" width="225" height="130" />
+                <h3><a href="{:url('info',array('id'=>$pos['id'],'catId'=>$pos['catid']))}">{$pos.title}</a></h3>
+                <h4><I>News Time:2013.04.11</I><I>Click:38</I></h4>
+                <P>{:str_cut($pos['description'],80)}</P>
+                <span><a href="{:url('info',array('id'=>$pos['id'],'catId'=>$pos['catid']))}" title="详细"><img src="__HOME__/images/main_22_08.jpg" style="border:0;" /></a></span>
+                <div class="clear"></div>
+            </div>
+            {/if}
+            <ul class="list">
+                {volist name="$list" id="vo"}
+                    <LI>
+                        <span>{:toDate($vo['createtime'],'Y-m-d')}</span>
+                        <a href="{:url('info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}" title="{$vo.title}" target="_blank">{$vo.title}</a>
+                    </LI>
+                {/volist}
+            </ul>
+            {$page}
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+{include file="common/footer"/}                                                                                                                                                                                    

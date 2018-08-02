@@ -1,0 +1,32 @@
+{include file="common/head"/}
+<div id="content">
+    {include file="common/right"/}
+    <div class="zy_left">
+        <div class="left_bt">
+            <span>现在所在的位置：<a href="{:url('index/index')}">首页</a>><a href="{:url('index',array('catId'=>input('catId')))}">{$title}</a></span>
+            <img src="__HOME__/images/sub_03.jpg" />
+        </div>
+        <div class="left_nei"><!-- 子页样式・图片列表 -->
+            <dl>
+                {volist name="$list" id="vo"}
+                    <dt>
+                        <a href="{:url('info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}" title="{$vo.title}">
+                            <img src="{:imgUrl($vo['thumb'])}" width="215" height="110"/>
+                        </a>
+                        <p>
+                            <span>
+                                <a href="{:url('info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}">
+                                    <img src="__HOME__/images/main_27_03_06.jpg" style="border:0;" />
+                                </a>
+                            </span>
+                            <a href="{:url('info',array('id'=>$vo['id'],'catId'=>$vo['catid']))}">{$vo.title}</a>
+                        </p>
+                    </dt>
+                {/volist}
+            </dl>
+            {$page}
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+{include file="common/footer"/}

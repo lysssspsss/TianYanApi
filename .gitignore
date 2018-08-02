@@ -1,0 +1,10 @@
+!.gitignore
+runtime/
+.project
+application/database.php
+admin/Admin/Common/Conf/config.php
+application/logs/
+application/log/
+.idea/
+.DS_Store
+.idea

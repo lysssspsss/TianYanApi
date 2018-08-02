@@ -1,0 +1,287 @@
+{include file="common/head"/}
+<style>
+    #image_pic{width:127px;}
+</style>
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>
+                        您当前操作
+                        <small>
+                            <i class="ace-icon fa fa-angle-double-right"></i>
+                            添加栏目
+                        </small>
+                    </h1>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <form class="form-horizontal" role="form" name="catInsert" id="catInsert" method="post" action="{:url('insert')}">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="moduleid">请选择模型：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select name="moduleid" id="moduleid" class="col-select col-xs-12 col-sm-2" onchange="changetemplate(this.value);">
+                                        {volist name="modulelist" id="vo"}
+                                            <option value="{$vo.id}" {if condition="$module['moduleid'] eq $vo['id']"}selected{/if}>{$vo.title}</option>
+                                        {/volist}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="parentid">上级栏目：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select name="parentid" id="parentid" class="col-select col-xs-12 col-sm-2">
+                                        <option value="">作为一级栏目</option>
+                                        {$categorys}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="catname">栏目名称：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="catname" id="catname" placeholder="输入栏目名称" class="col-xs-12 col-md-4"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span></span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="catdir">栏目目录：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="catdir" id="catdir" placeholder="输入栏目目录" class="col-xs-12 col-md-4"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span></span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right">缩略图：  </label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <div class="thumb_box" id="image_box">
+                                        <a href="javascript:swfupload('thumb_uploadfile','image','文件上传',1,1,1,'jpeg,jpg,png,gif',3,2,yesdo,nodo)">
+                                            <img src="__STATIC__/img/admin_upload_thumb.png" id="image_pic">
+                                        </a><br>
+                                        <input type="button" value="取消缩略图" onclick="javascript:clean_thumb('image');" class="btn btn-success btn-sm">
+                                        <input type="hidden" id="image" name="image" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="child"> SEO标题： </label>
+                                <div class="col-sm-10 col-xs-12" style="padding-top:5px;">
+                                    <input type="text" name="title" id="title" placeholder="输入SEO标题" class="col-xs-12 col-md-4"/>
+                                    <span class="lbl">&nbsp;&nbsp</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="keywords"> SEO关键字： </label>
+                                <div class="col-sm-10 col-xs-12" style="padding-top:5px;">
+                                    <input type="text" name="keywords" id="keywords" placeholder="输入SEO关键字" class="col-xs-12 col-md-4"/>
+                                    <span class="lbl">&nbsp;&nbsp</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="description"> SEO描述： </label>
+                                <div class="col-sm-10 col-xs-12" style="padding-top:5px;">
+                                    <textarea name="description" id="description" placeholder="输入SEO描述" class="col-xs-12 col-md-4"></textarea>
+                                    <span class="lbl">&nbsp;&nbsp</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="child"> 多栏目设置： </label>
+                                <div class="col-sm-10 col-xs-12" style="padding-top:5px;">
+                                    <label>
+                                        <input name="child" id="child" value="1" class="ace ace-switch ace-switch-5" type="checkbox">
+                                        <span class="lbl">&nbsp;&nbsp;将以下设置应用到所有子栏目</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right"> 导航： </label>
+                                <div class="col-sm-10 col-xs-12" style="padding-top:5px;">
+                                    <label>
+                                        <input name="ismenu" type="radio" value="1" checked class="ace" />
+                                        <span class="lbl"> 是 </span>&nbsp;&nbsp;
+                                    </label>
+                                    <label>
+                                        <input name="ismenu" type="radio" value="2" class="ace" />
+                                        <span class="lbl"> 否 </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right"> 访问权限：</label>
+                                <div class="col-sm-10 col-xs-12">
+
+                                    {volist name="rlist" id="item"}
+                                    <div class="checkbox" style="display: inline-block">
+                                        <label>
+                                            <input name="readgroup[]" type="checkbox" class="ace" value="{$item.group_id}">
+                                            <span class="lbl">{$item.title}</span>
+                                        </label>
+                                    </div>
+                                    {/volist}
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="pagesize"> 分页条数：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" name="pagesize" id="pagesize" placeholder="输入分页条数" class="col-xs-12 col-md-2" />
+                                    <span class="lbl">&nbsp;&nbsp;为空时默认值为系统设置的值</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="parentid">列表页模板：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select name="templates" id="template_list" class="col-select col-xs-12 col-sm-2">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="parentid">内容页模板：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select name="templates" id="template_show" class="col-select col-xs-12 col-sm-2">
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="ace-icon fa fa-check bigger-110"></i>
+                                        提交
+                                    </button>
+
+                                    &nbsp; &nbsp; &nbsp;
+                                    <button class="btn" type="reset">
+                                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+</div>
+<script type="text/javascript" src="__STATIC__/assets/js/region.js"></script>
+<script>
+    $(function(){
+        $('#catInsert').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm(){
+            if( '' == $("#catname").val()){
+                layer.alert('栏目名称不能为空', {icon: 5}, function(index){
+                    layer.close(index);
+                    $('#catname').focus();
+                });
+                return false;
+            }
+
+            if( '' == $.trim($('#catdir').val())){
+                layer.alert('栏目目录不能为空', {icon: 5}, function(index){
+                    layer.close(index);
+                    $('#catdir').focus();
+                });
+                return false;
+            }
+        }
+        function complete(data){
+            if(data.status==1){
+                layer.alert(data.info, {icon: 6}, function(index){
+                    layer.close(index);
+                    window.location.href=data.url;
+                });
+            }else{
+                layer.alert(data.info, {icon: 5}, function(index){
+                    layer.close(index);
+                });
+                return false;
+            }
+        }
+
+    });
+
+</script>
+<script>
+    var modulearr = new Array();
+    {volist name="modulelist" id="mdate"}
+      modulearr[{$mdate['id']}] = "{$mdate['name']}";
+    {/volist}
+    var templatearr = new Array();
+    {volist name="templates" id="tem"}
+    templatearr[{$i}] = "{$tem['value']},{$tem['filename']}";
+    {/volist}
+
+
+    var datas = "<option value=''>请选择</option>";
+    var moduleid =  $('#moduleid').val();
+
+
+    showtemplist(moduleid,{if condition="empty($module[listtype])"}0{else /}{$module.listtype}{/if});
+    function showtemplist(m,t){
+        var type='-list';
+        if(t){
+            type='-index';
+        }
+        var mtlist = modulearr[m]+type;
+        var mtshow = modulearr[m]+'-show';
+        if(modulearr[m]=='page'){
+            mtlist=mtshow ='page';
+        }
+        $('#template_list').html(datas);
+        $('#template_show').html(datas);
+        listdatas = showdatas ='';
+        for(i=1;i<templatearr.length;i++){
+            data = templatearr[i].split(',');
+            if(data[0].indexOf(mtlist)  >= 0){
+                listdatas  ="<option value='"+data[0]+"'>"+data[1]+"</option>";
+                $('#template_list').append(listdatas);
+            }
+            if(data[0].indexOf(mtshow)  >= 0){
+                showdatas ="<option value='"+data[0]+"'>"+data[1]+"</option>";
+                $('#template_show').append(showdatas);
+            }
+        }
+    }
+    function changetemplate(m){
+        showtemplist(m,0);
+    }
+    function templatetype(){
+        var moduleid = $('#moduleid').val();
+        if($("#listtype").attr('checked')==true){
+            showtemplist(moduleid,1);
+        }else{
+            showtemplist(moduleid,0);
+        }
+    }
+
+</script>
+</body>
+</html>

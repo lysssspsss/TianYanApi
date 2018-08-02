@@ -1,0 +1,184 @@
+{include file="common/head"/}
+<style>
+    #qr_pic{width:127px;}
+</style>
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>
+                        微信管理
+                        <small>
+                            <i class="ace-icon fa fa-angle-double-right"></i>
+                            账号设置
+                        </small>
+                    </h1>
+                </div><!-- /.page-header -->
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form class="form-horizontal" role="form" name="weixinform" id="weixinform" method="post" action="{:url('weixin')}">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" >URL(服务器地址)：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input readonly type="text" value="{$apiurl}" placeholder="URL(服务器地址)" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="w_token">Token：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="w_token" name="w_token" value="{$info.w_token}" placeholder="Token" class="col-xs-12 col-sm-5" />
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>必填</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="wxname">公众号名称：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="wxname" name="wxname" value="{$info.wxname}" placeholder="公众号名称" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="wxid">公众号原始ID：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="wxid" name="wxid" value="{$info.wxid}" placeholder="公众号原始ID" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="weixin">微信号：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="weixin" name="weixin" value="{$info.weixin}" placeholder="微信号" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right">头像地址：</label>
+                                <div class="col-md-4 col-sm-10 col-xs-12">
+                                    <div class="thumb_box" id="thumb_box">
+                                        <a href="javascript:swfupload('thumb_uploadfile','thumb','文件上传',1,1,1,'jpeg,jpg,png,gif',3,2,yesdo,nodo)">
+                                            <img src="{$info['headerpicurl']}" id="thumb_pic" alt="{$info.headerpicurl}">
+                                        </a><br>
+                                        <input type="button" value="取消缩略图" onclick="javascript:clean_thumb('thumb');" class="btn btn-success btn-sm" style="margin-top: 5px;">
+                                        <input type="hidden" id="thumb" name="headerpic" value="{$info.headerpic}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="appid">AppID：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="appid" name="appid" value="{$info.appid}" placeholder="AppID" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="appsecret">AppSecret：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <input type="text" id="appsecret" name="appsecret" value="{$info.appsecret}" placeholder="AppSecret" class="col-xs-12 col-sm-5" />
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="qr">二维码：</label>
+                                <div class="col-md-4 col-sm-10 col-xs-12">
+                                    <div class="thumb_box" id="qr_box">
+                                        <a href="javascript:swfupload('thumb_uploadfile','qr','文件上传',1,1,1,'jpeg,jpg,png,gif',3,2,yesdo,nodo)">
+                                            <img src="{$info['qrurl']}" id="qr_pic" >
+                                        </a><br>
+                                        <input type="button" value="取消缩略图" onclick="javascript:clean_thumb('qr');" class="btn btn-success btn-sm" style="margin-top: 5px;">
+                                        <input type="hidden" id="qr" name="qr" value="{$info.qr}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="type">微信号类型：</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <select name="type" id="type" class="col-select col-xs-12 col-sm-2">
+                                        <option {if condition="$info['type'] eq 1"}selected{/if} value="1">订阅号</option>
+                                        <option {if condition="$info['type'] eq 2"}selected{/if} value="2">认证订阅号</option>
+                                        <option {if condition="$info['type'] eq 3"}selected{/if} value="3">服务号</option>
+                                        <option {if condition="$info['type'] eq 4"}selected{/if} value="4">认证服务号</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right">微信接入状态</label>
+                                <div class="col-sm-10 col-xs-12">
+                                    <label class="radio-inline">
+                                        <input type="radio" name="wait_access" {if condition="$info['wait_access'] eq 0"}checked="checked"{/if} value="0"> 等待接入
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="wait_access" {if condition="$info['wait_access'] eq 1"}checked="checked"{/if} value="1"> 已接入
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="space-4"></div>
+                            <div class="clearfix form-actions">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button class="btn btn-info" type="submit">
+                                        <i class="ace-icon fa fa-check bigger-110"></i>
+                                        提交
+                                    </button>
+                                    <button class="btn" type="reset">
+                                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                                        重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+</div>
+<script>
+    $(function () {
+        $('#weixinform').ajaxForm({
+            beforeSubmit: checkForm, //此方法主要是提交前执行的方法，根据需要设置
+            success: complete, //这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm() {
+            if ('' == $.trim($('#w_token').val())) {
+                layer.alert('Token不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#sys_name').focus();
+                });
+                return false;
+            }
+        }
+
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    window.location.href = "{:url('index')}";
+                });
+            } else {
+                layer.alert(data.info, {icon: 5}, function (index) {
+                    layer.close(index);
+                });
+            }
+        }
+    })
+
+</script>
+</body>
+</html>

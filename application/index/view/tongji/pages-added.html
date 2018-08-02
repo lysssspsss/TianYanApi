@@ -1,0 +1,64 @@
+{extend name="tongji/public" /}
+{block name="table_content"}
+<div class="content">
+	<table id="myTable" border="0">
+		<thead>
+		<tr>
+			{volist name='field' id='title'}
+			<th>{$title}</th>
+			{/volist}
+		</tr>
+		</thead>
+		<!--
+            <tr style="background-color: lightgrey;font-size: 20px;">
+-->
+
+		{volist name='allbydate' id='content' key='i'}
+
+		{if condition="empty($channel_name)"}
+		<tbody>
+		<tr style="font-weight:bold;">
+			<td >
+				<button id="jiahao{$content.sum.date}" type="button" onclick="content_show('{$content.sum.date}')">+</button>
+				<button id="jianhao{$content.sum.date}"  type="button" style="display: none;" onclick="content_hide('{$content.sum.date}')">-</button>
+			</td>
+			<td>{$content.sum.date}</td>
+			<td>{$content.sum.channel_name}</td>
+			<td>{$content.sum.add}</td>
+			<td>{$content.sum.reg}({$content.sum.reg_app}/{$content.sum.reg_wx})</td>
+			<td>{$content.sum.reg_rate}%</td>
+			<td>{$content.sum.live}</td>
+			<td>{$content.sum.recharge_amount}({$content.sum.recharge_amount_new}/{$content.sum.recharge_amount_pasd})</td>
+			<td>{$content.sum.buy_num}({$content.sum.buy_num_new}/{$content.sum.buy_num_pasd})</td>
+			<td>{$content.sum.buy_amount}({$content.sum.buy_amount_new}/{$content.sum.buy_amount_pasd})</td>
+			<td>{$content.sum.win_amount}</td>
+			<td>{$content.sum.withdraw_amount}</td>
+			<td>{$content.sum.withdraw_user}</td>
+			<td>{$content.sum.create_time}</td>
+		</tr>
+		</tbody>
+		{/if}
+		<tbody id = "daycontent{$content.sum.date}" {if condition="empty($channel_name)"}  style="display: none;" {/if}>
+			{volist name='content.all' id='added'}
+				<tr>
+					<td> </td>
+					<td>{$added.date}</td>
+					<td>{$added.channel_name}</td>
+					<td>{$added.add}</td>
+					<td>{$added.reg}({$added.reg_app}/{$added.reg_wx})</td>
+					<td>{$added.reg_rate}%</td>
+					<td>{$added.live}</td>
+					<td>{$added.recharge_amount}({$added.recharge_amount_new}/{$added.recharge_amount_pasd})</td>
+					<td>{$added.buy_num}({$added.buy_num_new}/{$added.buy_num_pasd})</td>
+					<td>{$added.buy_amount}({$added.buy_amount_new}/{$added.buy_amount_pasd})</td>
+					<td>{$added.win_amount}</td>
+					<td>{$added.withdraw_amount}</td>
+					<td>{$added.withdraw_user}</td>
+					<td>{$added.create_time}</td>
+				</tr>
+			{/volist}
+		</tbody>
+		{/volist}
+	</table>
+</div>
+{/block}

@@ -1,0 +1,122 @@
+{include file="common/head"/}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="row maintop">
+                    <div class="col-xs-12 col-sm-2">
+                        <a href="{:url('groupAdd')}">
+                            <button class="btn btn-xs btn-danger">
+                                <i class="ace-icon fa fa-plus bigger-110"></i>
+                                添加用户组
+                            </button>
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="table-responsive">
+                                    <table id="simple-table" class="table table-striped table-bordered table-hover center">
+                                        <thead>
+                                        <tr>
+                                            <th class="center" style="width: 45px;">ID</th>
+                                            <th class="center">用户组名</th>
+                                            <th class="center">状态</th>
+                                            <th class="center visible-lg visible-md">添加时间</th>
+                                            <th class="center" style="border-right:#CCC solid 1px;width: 100px;">操作</th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+                                        {volist name="list" id="v"}
+                                        <tr>
+                                            <td>{$v.group_id}</td>
+                                            <td>{$v.title}</td>
+                                            <td>
+                                                {if condition='$v["status"] eq 1'}
+                                                <a class="red" href="javascript:;" onclick="return stateyes({$v.group_id});" title="已开启">
+                                                    <div id="zt{$v.group_id}">
+                                                        <button class="btn btn-minier btn-yellow">状态开启</button>
+                                                    </div>
+                                                </a>
+                                                {else/}
+                                                <a class="red" href="javascript:;" onclick="return stateyes({$v.group_id});" title="已禁用">
+                                                    <div id="zt{$v.group_id}">
+                                                        <button class="btn btn-minier btn-danger">状态禁用</button>
+                                                    </div>
+                                                </a>
+                                                {/if}
+                                            </td>
+
+
+                                            <td class="visible-lg visible-md">{$v.addtime|date='Y-m-d',###}</td>
+
+
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <a class="blue" href="{:url('groupAccess',array('id'=>$v['group_id']))}" title="配置规则">
+                                                        <i class="ace-icon fa fa-cog bigger-130"></i>
+                                                    </a>
+                                                    <a class="green" href="{:url('groupEdit',['id'=>$v['group_id']])}" title="修改">
+                                                        <i class="ace-icon fa fa-pencil bigger-130"></i> </a>
+                                                    <a class="red" href="javascript:;" onclick="return del({$v.group_id});" title="删除">
+                                                        <i class="ace-icon fa fa-trash-o bigger-130"></i> </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {/volist}
+                                        <tr>
+                                            <td colspan="6" align="left">&nbsp;</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div><!-- /.span -->
+                        </div><!-- /.row -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+
+</div><!-- /.main-container -->
+
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+    function del(id) {
+        layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+            layer.close(index);
+            window.location.href = "{:url('groupDel')}?id=" + id ;
+        });
+    }
+    function stateyes(id) {
+        $.post('{:url("groupState")}',{'id': id},function (data) {
+            if (data.status==1) {
+                if (data.info == '状态禁止') {
+                    var a = '<button class="btn btn-minier btn-danger">状态禁用</button>'
+                    $('#zt' + id).html(a);
+                    return false;
+                } else {
+                    var b = '<button class="btn btn-minier btn-yellow">状态开启</button>'
+                    $('#zt' + id).html(b);
+                    return false;
+                }
+            }else{
+                layer.alert(data.info, {icon: 4});
+                return false;
+            }
+        });
+        return false;
+    }
+</script>
+</body>
+</html>

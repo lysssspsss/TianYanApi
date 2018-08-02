@@ -1,0 +1,9 @@
+<div id="footer">
+    <div class="subnav">
+        {volist name="linkList" id="vo"}<a href="{$vo.url}" target="_blank">{$vo.name}</a>|{/volist}
+        <a href="{:url('contact/index','catId=43')}">联系我们</a>
+    </div>
+    <div class="copyright">Copyright {$sys.copyright} 版权所有 {$sys.sys_name} 备案号 {$sys.bah} 地址:{$sys.ads}<br />联系电话：{$sys.tel} 邮箱：{$sys.email}</div>
+</div>
+</body>
+</html>                                    

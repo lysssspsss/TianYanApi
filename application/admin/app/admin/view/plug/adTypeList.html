@@ -1,0 +1,333 @@
+{include file="common/head"/}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left"}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common/header_nav"}
+            <div class="page-content">
+                <div class="row maintop">
+                    <div class="col-xs-12 col-sm-2">
+                        <!-- 点击模态框（Modal） -->
+                        <button class="btn btn-xs btn-danger" data-toggle="modal" data-target="#myModal">
+                            <i class="ace-icon fa fa-plus bigger-110"></i>
+                            添加广告位
+                        </button>
+                    </div>
+                    <form name="admin_list_sea" class="form-search" method="post" action="{:url('adTypeList')}">
+                        <div class="col-xs-12 col-sm-6 btn-sespan">
+                            <div class="input-group">
+                                <span class="input-group-addon">
+                                    <i class="ace-icon fa fa-search"></i>
+                                </span>
+                                <input type="text" name="key" id="key" class="form-control search-query admin_sea" value="{$testkey}" placeholder="输入广告位名称！" />
+                                <span class="input-group-btn">
+                                    <button type="submit" class="btn btn-xs btm-input btn-purple">
+                                        搜索
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="input-group-btn">
+                            <a href="{:url('adTypeList')}">
+                                <button type="button" class="btn btn-xs all-btn btn-purple">
+                                    <span class="ace-icon fa fa-refresh icon-on-right bigger-110"></span>
+                                    显示全部
+                                </button>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <form id="plug_adtype_allorder" name="plug_adtype_allorder" method="post" action="{:url('adTypeOrder')}">
+                                <div class="table-responsive">
+                                    <table id="dynamic-table" class="table table-striped table-bordered table-hover center">
+                                        <thead>
+                                        <tr>
+                                            <!--<th class="center visible-lg visible-md">登陆次数</th>-->
+                                            <th class="center wh50">ID</th>
+                                            <th class="center">广告位名称</th>
+                                            <th class="center">排序</th>
+                                            <th class="center" style="border-right:#CCC solid 1px;">操作</th>
+                                        </tr>
+                                        </thead>
+
+                                        <tbody>
+                                        {volist name="adTypeList" id="v"}
+                                        <tr>
+                                            <td>{$v.type_id}</td>
+                                            <td>{$v.name}</td>
+                                            <td><input name="{$v.type_id}" value=" {$v.sort}" class="list_order"/></td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <a class="green" href="javascript:;" onclick="return plug_adtype_edit({$v.type_id});" title="修改">
+                                                        <i class="ace-icon fa fa-pencil bigger-130"></i>
+                                                    </a>
+                                                    <a class="red" href="javascript:;" onclick="return del({$v.type_id});" title="删除">
+                                                        <i class="ace-icon fa fa-trash-o bigger-130"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {/volist}
+                                        <tr>
+                                            <td height="50" align="left">
+                                                <button id="btnorder" class="btn btn-white btn-yellow btn-sm">排序</button>
+                                            </td>
+                                            <td height="50" colspan="3" align="right">{$page}</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                </form>
+                            </div><!-- /.span -->
+                        </div><!-- /.row -->
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.page-content -->
+        </div>
+    </div><!-- /.main-content -->
+    {include file="common/foot" /}
+
+</div><!-- /.main-container -->
+<!-- 显示模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <form class="form-horizontal" name="adtypeAdd" id="adtypeAdd" method="post" action="{:url('addTypeInsert')}">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        添加广告位
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="name">
+                                    广告位名称： </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="name" id="name" placeholder="输入广告位名称" class="col-xs-10 col-sm-5"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>建议格式: 【首页】顶部通栏</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="sort">
+                                    排序： </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="sort" id="sort" value="50" class="col-xs-10 col-sm-3"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>从小到大排序</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">提交保存</button>
+                    <button class="btn btn-info" type="reset">重置</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </form>
+</div><!-- /.modal -->
+
+<!-- 显示模态框（Modal） -->
+<div class="modal fade in" id="myModaledit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-backdrop fade in" id="gbbb" style="height:100%;"></div>
+    <form class="form-horizontal" name="addTypeUpdate" id="addTypeUpdate" method="post" action="{:url('addTypeUpdate')}">
+        <input type="hidden" name="type_id" id="type_id" value=""/>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" id="gb" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        修改广告位
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="adtype_name">广告位名称： </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="name" id="adtype_name" placeholder="输入广告位名称" class="col-xs-10 col-sm-5"/>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label no-padding-right" for="adtype_order">排序： </label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="sort" id="adtype_order" class="col-xs-10 col-sm-3"/>
+                                    <span class="lbl">&nbsp;&nbsp;<span class="red">*</span>从小到大排序</span>
+                                </div>
+                            </div>
+                            <div class="space-4"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">提交保存</button>
+                    <button type="button" class="btn btn-default" id="gbb">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </form>
+</div><!-- /.modal -->
+
+
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+
+    function del(id) {
+        layer.confirm('你确定要删除吗？', {icon: 3}, function (index) {
+            layer.close(index);
+            window.location.href = "{:url('adTypeDel')}?type_id=" + id;
+        });
+    }
+    $(function () {
+        $('#adtypeAdd').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm() {
+            if ('' == $.trim($('#name').val())) {
+                layer.alert('广告位名称不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#name').focus();
+                });
+                return false;
+            }
+
+            if ('' == $.trim($('#sort').val())) {
+                layer.alert('广告位排序不能为空', {icon: 6}, function (index) {
+                    layer.close(index);
+                    $('#sort').focus();
+                });
+                return false;
+            }
+        }
+
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+            } else {
+                layer.alert(data.info, {icon: 5}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+                return false;
+            }
+        }
+    });
+
+
+    //修改模态框状态
+    $(document).ready(function () {
+        $("#myModaledit").hide();
+        $("#gb").click(function () {
+            $("#myModaledit").hide(200);
+        });
+        $("#gbb").click(function () {
+            $("#myModaledit").hide(200);
+        });
+        $("#gbbb").click(function () {
+            $("#myModaledit").hide(200);
+        });
+    });
+
+    function plug_adtype_edit(val) {
+        $.post('{:url("adTypeEdit")}', {type_id: val}, function (data) {
+            if (data.status == 1) {
+                $(document).ready(function () {
+                    $("#myModaledit").show(300);
+                    $("#type_id").val(data.type_id);
+                    $("#adtype_name").val(data.name);
+                    $("#adtype_order").val(data.sort);
+                });
+            }
+        });
+        return false;
+    }
+
+
+    $(function () {
+        $('#addTypeUpdate').ajaxForm({
+            beforeSubmit: checkForm, // 此方法主要是提交前执行的方法，根据需要设置
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+
+        function checkForm() {
+            if ('' == $.trim($('#adtype_name').val())) {
+                layer.alert('广告位名称不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#adtype_name').focus();
+                });
+                return false;
+            }
+
+            if ('' == $.trim($('#adtype_order').val())) {
+                layer.alert('广告位排序不能为空', {icon: 5}, function (index) {
+                    layer.close(index);
+                    $('#adtype_order').focus();
+                });
+                return false;
+            }
+        }
+
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+            } else {
+                layer.alert(data.info, {icon: 5}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+                return false;
+            }
+        }
+
+    });
+
+    //批量排序
+    $(function () {
+        $('#plug_adtype_allorder').ajaxForm({
+            success: complete, // 这是提交后的方法
+            dataType: 'json'
+        });
+        function complete(data) {
+            if (data.status == 1) {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+            } else {
+                layer.alert(data.info, {icon: 6}, function (index) {
+                    layer.close(index);
+                    window.location.href = data.url;
+                });
+            }
+        }
+    });
+</script>
+</body>
+</html>

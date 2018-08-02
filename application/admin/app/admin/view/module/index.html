@@ -1,0 +1,105 @@
+{include file="common/head" /}
+<div class="main-container" id="main-container">
+    <script type="text/javascript">
+        try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+    </script>
+    {include file="common/left" /}
+    <div class="main-content">
+        <div class="main-content-inner">
+            {include file="common:header_nav"}
+            <div class="page-content">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <form id="alldel" name="alldel" method="post" action="{:url('newsAllDel')}">
+                            <div class="table-responsive">
+                                <table id="simple-table" class="table table-striped table-bordered table-hover center">
+                                    <thead>
+                                    <tr>
+                                        <th class="center">ID</th>
+                                        <th class="center">模型名称</th>
+                                        <th class="center">模型表名</th>
+                                        <th class="center visible-lg visible-md">模型简介</th>
+                                        <th class="center">状态</th>
+                                        <th class="center" style="border-right:#CCC solid 1px;width: 180px;">管理操作</th>
+                                    </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                    {foreach name="list" item="v"}
+                                    <tr>
+                                        <td align="center">{$v.id}</td>
+                                        <td>{$v.title}</td>
+                                        <td>{$v.name}</td>
+                                        <td class="visible-lg visible-md">{$v.description}</td>
+                                        <td>
+                                            {if condition='$v["status"] eq 1'}
+                                            <a class="red" href="javascript:;" onclick="return stateyes({$v.id});" title="已开启">
+                                                <div id="zt{$v.id}">
+                                                    <button class="btn btn-minier btn-yellow">开启</button>
+                                                </div>
+                                            </a>
+                                            {else/}
+                                            <a class="red" href="javascript:;" onclick="return stateyes({$v.id});" title="已禁用">
+                                                <div id="zt{$v.id}">
+                                                    <button class="btn btn-minier btn-danger">禁用</button>
+                                                </div>
+                                            </a>
+                                            {/if}
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a class="green" href="{:url('field',array('id'=>$v['id']))}" title="模型字段">
+                                                    模型字段
+                                                </a>
+                                                <a class="green" href="{:url('edit',array('id'=>$v['id']))}" title="修改">
+                                                    修改
+                                                </a>
+                                                <a class="red" href="javascript:;" onclick="return del({$v.id});" title="删除">
+                                                    删除
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {/foreach}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function del(id) {
+            layer.confirm('你确定要删除改模型吗？', {icon: 3}, function (index) {
+                layer.close(index);
+                window.location.href = "{:url('moduleDel')}?id="+id ;
+            });
+        }
+        function stateyes(id) {
+            $.post('{:url("moduleState")}', {id: id}, function (data) {
+                if (data.status) {
+                    if (data.info == '状态禁止') {
+                        layer.msg(data.info,{icon:5});
+                        var a = '<button class="btn btn-minier btn-danger">禁用</button>'
+                        $('#zt' + id).html(a);
+                        return false;
+                    } else {
+                        layer.msg(data.info,{icon:6});
+                        var b = '<button class="btn btn-minier btn-yellow">开启</button>'
+                        $('#zt' + id).html(b);
+                        return false;
+                    }
+
+                }
+            });
+            return false;
+        }
+    </script>
+    {include file="common/foot" /}
+</div>
+</body>
+</html>
