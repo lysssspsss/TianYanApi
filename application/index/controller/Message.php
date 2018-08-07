@@ -63,9 +63,14 @@ class Message extends Base
 
     /**
      * 发送短信
-     * @return stdClass
+     * @param $number  手机号码
+     * @param $code 验证码
+     * @param string $product 商家码
+     * @param string $sign 名称（签名）
+     * @param string $temp_code 短信模板
+     * @return mixed|\SimpleXMLElement
      */
-    public static function sendSms($number,$code,$product = ALIYUN_PRODUCT,$sign = ALIYUN_SIGN,$temp_code = ALIYUN_TEMP_CODE1) {
+    public static function sendSms($number,$code,$temp_code = ALIYUN_TEMP_CODE1,$product = ALIYUN_PRODUCT,$sign = ALIYUN_SIGN) {
 
         // 初始化SendSmsRequest实例用于设置发送短信的参数
         $request = new SendSmsRequest();

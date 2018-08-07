@@ -11,6 +11,94 @@
 
 // 应用公共文件
 
+if (!function_exists('encode_sign')) {
+    /**
+     * 加密
+     * @param $values
+     * @return string
+     */
+    function encode_sign($values)
+    {
+        $pub_key = RSA_PUBLIC_KEY;
+        //签名步骤一：按字典序排序参数
+        if(is_array($values)){
+            ksort($values);
+            $string = to_url_params($values);
+        }else{
+            $string = (string)$values;
+        }
+        //签名步骤二：MD5加密
+        $string = md5($string);
+        //签名步骤三：所有字符转为大写
+        $result = strtoupper($string);
+        //签名步骤四：用公钥对result签名
+        //echo "The result after MD5 is:".$result."</br>";
+        $pubkey = openssl_pkey_get_public($pub_key);
+        //echo "pubkey is:".$pubkey."</br>";
+        $encrypted = ''; //用来存放加密后的内容
+        openssl_public_encrypt($result, $encrypted, $pubkey);
+        $encrypted = base64_encode($encrypted);
+        return $encrypted;
+    }
+
+}
+
+if (!function_exists('decode_sign')) {
+    /**
+     * 解密
+     * @param $sign
+     * @return string
+     */
+    function decode_sign($sign)
+    {
+        $private_key = RSA_PRIVATE_KEY;
+        //解密结果对比
+        $pi_key = openssl_pkey_get_private($private_key);
+        //echo "pikey is:".$pi_key."</br>";
+        $decrypted = '';
+        $encryResult2 = base64_decode($sign);
+        openssl_private_decrypt($encryResult2, $decrypted, $pi_key);
+        return $decrypted;
+    }
+}
+
+if (!function_exists('to_url_params')) {
+    /**
+     * 拼接字符串
+     * @param $content
+     * @return string
+     */
+    function to_url_params($content)
+    {
+        $buff = "";
+        foreach ($content as $k => $v) {
+            if ($k != "sign" && $v != "" && !is_array($v)) {
+                $buff .= $k . "=" . $v . "&";
+            }
+        }
+        $buff = trim($buff, "&");
+        return $buff;
+    }
+}
+
+if (!function_exists('vsign')) {
+    /**
+     * 签名验证
+     * @param $sign
+     * @param $content
+     * @return bool
+     */
+    function vsign($sign, $content)
+    {
+        $sign = decode_sign($sign);
+        $content_md5 = md5(to_url_params($content));
+        if ($sign == $content_md5) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
 
 
 if (!function_exists('dump')) {
@@ -101,19 +189,13 @@ if (!function_exists('get_city')) {
     function get_city($getIp)
     {
         // 获取当前位置所在城市
-        //$getIp = $this->getClientIP();
         $content = file_get_contents("http://api.map.baidu.com/location/ip?ak=2TGbi6zzFm5rjYKqPPomh9GBwcgLW5sS&ip={$getIp}&coor=bd09ll");
         $json = json_decode($content);
         if(empty($json->{'address'})){
             return false;
         }
-        //$address = $json->{'content'}->{'address'};//按层级关系提取address数据
         $address = $json->{'address'};//按层级关系提取address数据
         $address = explode('|',$address);
-        //$data['address'] = $address;
-        /*$return['country'] = mb_substr($data['address'], 0, 3, 'utf-8');
-        $return['province'] = mb_substr($data['address'], 0, 3, 'utf-8');
-        $return['city'] = mb_substr($data['address'], 3, 3, 'utf-8');*/
         return $address;
     }
 }

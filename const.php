@@ -2,14 +2,11 @@
 const MY_CHANNEL_NAME = "TD_CHANNEL_ID";
 const FING_TAG = 0;//发现fragment控制标示
 
-const TOKEN_USER_LIVE_TIME  =  1;        //会员toekn超时时间，单位：小时
-const USER_BANK_PWD_ERROR   = 5;        //取款密码错误次数
-
 
 /**
  * 网络请求端口
  */
-const SERVER_URL = "";//http://abc.52zhibow.com:8182
+const SERVER_URL = "";
 const SERVER_URL_BACK = "";// 备用
 
 /**
@@ -23,9 +20,22 @@ const ALIYUN_TEMP_CODE3 = 'SMS_141115013';//登录异常验证码
 const ALIYUN_TEMP_CODE4 = 'SMS_141115012';//用户注册验证码
 const ALIYUN_TEMP_CODE5 = 'SMS_141115011';//修改密码验证码
 const ALIYUN_TEMP_CODE6 = 'SMS_141115010';//信息变更验证码
-const ALIYUN_SIGN = '阿里云短信测试专用';//
+const ALIYUN_SIGN_TEST = '阿里云短信测试专用';
+const ALIYUN_SIGN = '天雁商学院';
 const ALIYUN_PRODUCT = '456';
 
+/**
+ * Redis
+ */
+const REDIS_HOST = '127.0.0.1';
+const REDIS_PORT = 6379;
+const REDIS_TIMEOUT = 20;
+const REDIS_AUTH = '';
+const REDIS_PUBLIC_KEY = 1;//公库
+const REDIS_PRIVATE_KEY = 2;//私库
+const REDIS_EXPIRE_1 = 3600;          // 过期时间 1 小时
+const REDIS_EXPIRE_24 = 86400;        // 过期时间 1 天
+const REDIS_EXPIRE_48 = 172800;       // 过期时间 2 天
 
 /**
  * 七牛云 相关
@@ -40,13 +50,37 @@ const QINIU_TYPE_VIDEO = 2;  // 上传视频
 const QINIU_TYPE_FACE = 3;  // 上传头像
 const QINIU_TYPE_AUTH_PIC_POSITIVE = 4;  // 上传认证图片正面
 const QINIU_TYPE_AUTH_PIC_NEGATIVE = 5;  // 上传认证图片反面
-
 const RESULT_CODE_200 = 200;  // 返回码
 
 /**
  *  接口請求 token密钥
  */
-const TOKEN_KEY = 'KqHDDFrdJ2e7DfEwQIw';
+const USER_TOKEN_KEY = 'KqHDDFrdJ2e7DfEwQIw';
+const RSA_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDu0FN8odEtZ0aAY5cLHugCW5AQ
+Ba5Uy/fVZiehl4sDuQ7Jzn0v5OL4bsl0UKGJ6oKUJ+QJByLOXy55B41LTVQ2MKNT
+cyi9PhLBhkhS/9uNopT1i1wjcu/wymjCeKVTXLlkJTCSZMySTsR63fuh9FZMaFaC
+3utnr2gytVE7M6tP1wIDAQAB
+-----END PUBLIC KEY-----";
+
+const RSA_PRIVATE_KEY = "-----BEGIN PRIVATE KEY-----
+MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAO7QU3yh0S1nRoBj
+lwse6AJbkBAFrlTL99VmJ6GXiwO5DsnOfS/k4vhuyXRQoYnqgpQn5AkHIs5fLnkH
+jUtNVDYwo1NzKL0+EsGGSFL/242ilPWLXCNy7/DKaMJ4pVNcuWQlMJJkzJJOxHrd
++6H0VkxoVoLe62evaDK1UTszq0/XAgMBAAECgYBqX9FQSqPqHX6B4dp90Z52rmJV
+QLKOguw52e79Q4tgdSXpLlkE5GdVUcPaU7AgxpyzcbFZdBxE4JDKyFpfmGpRfMA8
+RSljrwweD1MPFqjFCPNiIGhY4FmpykyD5O5gjJp8HI5nRx7EGkSybD6UQqI95pre
+JupcNaVgIQLKiDlJAQJBAPmFKEqnDoWHgLrNJtULFaFYE8S9S7L/595crk217MTq
+pQ5XILwwKoZ4Xmi9Mtad3tB0RElATisFxb8GDpS8zDECQQD1A/3KPLYnUoWodqBU
+suaOUXsapVslbnAEVgoNcxsmIMC2FPkU8wUiOwWmIkwHAMEkVGrEdUMwmqPolmu8
+J0KHAkEA3MCG1g0YVuB77khkK6Wj3FutGakTmOi4vcynVQ83yzuBDb/dsUC3zsId
+XHLO0HtZTnkelOP0hDGWMptsOQETcQJBANxiw7RWWa4TD0BRu7OT28glyGpWVB7e
+MInl7lLct43bJhxhzw4l7fc1ScZ+0Q33gsMv331o0I/2ePqr2qo6Uh8CQQDjy0Il
+EOwmfzCwsmimuXn1xIe9gaem2Ga3pl5IKxvnGVftpdjHMrct2ORuN5SJuKygk45G
+NV8c7axaWU1MxZjk
+-----END PRIVATE KEY-----";
+
+
 
 /**
  * 超时时间
@@ -60,7 +94,103 @@ const JSON_SUCESS = true;// 网络请求成功
 const JSON_FAIL = false;// 网络请求失败
 const REQUEST_FAIL = -1;// 网络请求失败
 const REQUEST_REPEAT = 304;// 数据重复提交
-const E_OP_FAIL     = 423;      // 操作失败!
+
+
+const OSS_URL = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com';
+const DEFAULT_IMG = OSS_URL.'/Public/img/center/xiu.png';
+
+
+/* 接口返回状态码 */
+const OK            = '200';      // 请求成功！
+const OK_OLINE      = '201';      // 充值成功标识！
+const OK_RED        = '202';      // 红包已抢完
+const OK_OLINE_MAX  = '205';      // 支付方式限额上限！
+const E_DATA_REPEAT = '304';      // 数据重复提交!
+const E_SIGN       = '400';      //  接口请求 验签失败!
+const E_TOKEN       = '401';      // 校验错误, 未受权调用!
+const E_POWER       = '402';      // 校验错误, 越权调用!
+const E_DENY        = '403';      // 拒绝访问!
+const E_API_NO_EXIST = '404';     // 接口不存在!
+const E_METHOD      = '405';      // 请求方法不支持!
+const E_DATA_INVALID = '420';     // 无效数据!
+const E_DATA_EMPTY  = '421';      // 无数据!
+const E_ARGS        = '422';      // 参数错误!
+const E_OP_FAIL     = '423';      // 操作失败!
+const E_YZM_CHECK   = '425';      // 需要验证码
+const E_NOOP        = '429';      // 无操作!
+const E_SYS         = '503';      // 系统错误, 请联系管理员!
+const E_SYS_1       = '504';      // 系统错误1!
+const E_UNKNOW      = '999';      // 未知错误!
+
+const TOKEN_TIME_OUT = 600;     // TOKEN超时
+const TOKEN_BE_OUTED = 601;     // token被踢出，也就是用户被踢出
+const BLACK_IP = 602;           // IP被列入黑名单
+const ADMIN_ACCESS_IP = 603;    // IP无法访问管理员后台
+const LOGOUT = 604;             // 退出
+
+
+
+/* 用户信息长度限制 */
+const USER_USERNAME_MIN_LENGTH = 4;     //用户最小长度
+const USER_USERNAME_MAX_LENGTH = 14;    //用户最大长度
+const USER_PWD_MIN_LENGTH = 6;          //用户密码最小长度
+const USER_PWD_MAX_LENGTH = 18;         //用户密码最大长度
+const USER_PWD_ERROR_AND_LOCK = 5;      // 用户输入错多少次，锁定用户
+const EXTENSION = 'intr';               // 代理推广url传递参数keys
+
+/* token的后台，前台区分 */
+const TOKEN_PRIVATE_KEY_TIME = 3600;    //获取token的键值的生存时间
+const TOKEN_PRIVATE_KEY_CHECK_MIN_TIME = 3;//获取token的键值的生存时间
+const TOKEN_CODE_AUTH = 'AuthGC';       //后台
+const TOKEN_CODE_ADMIN = 'Admin';       //后台
+const TOKEN_CODE_USER = 'User';         //会员
+const TOKEN_CODE_AGENT = 'Agent';       //代理
+const TOKEN_ADMIN_LIVE_TIME = 24;       //管理员超时时间，单位：小时
+const TOKEN_USER_LIVE_TIME  =  1;        //会员toekn超时时间，单位：小时
+const TOKEN_USER_OFF_LINE   = 15;       //会员自动离线时间，单位：分钟
+const USER_BANK_PWD_ERROR   = 5;        //取款密码错误次数
+/*密钥*/
+const TOKEN_PRIVATE_ADMIN_KEY = 123456; // 管理员token密钥
+const TOKEN_PRIVATE_USER_KEY = 234567;  // 会员token密钥
+
+/* IP */
+const BLACK_IP_LIVE = 86400;            // 黑名单IP生存时间
+const CODE_IP_TIMES = 3  ;              // 连续输错多少次密码加验证码
+const BLACK_IP_TIMES = 20;              // 连续输错多少次密码IP列为黑色单
+
+/*验证码*/
+const VERIDY_CODE_LENGTH = 4;           // 验证码的长度
+const VERIDY_CODE_RANGE = '0123456789'; // 验证码的长度
+//const VERIDY_CODE_RANGE = '0123456789';// 验证码的范围
+const VERIDY_CODE_LIVE_TIME = 600;      // 验证码生存时间
+
+
+/** 会员中心／充值记录 选项集 */
+const INCOME_OPT_ALL = 0;       // 全部
+const INCOME_OPT_COMPANY = 1;   // 转账汇款
+const INCOME_OPT_ONLINE = 2;    // 在线充值
+const INCOME_OPT_CARD = 3;      // 彩豆充值
+
+/** 来源 */
+const FROM_IOS = 1;     // IOS
+const FROM_ANDROID = 2; // 安卓
+const FROM_PC = 3;      // PC
+const FROM_WAP = 4;     // 手机浏览器
+const FROM_UNKNOW = 5;  // 未知
+const FROM_H5APP = 6;   // h5-app(ios h5 打包app)
+
+const AUTO_INSERT_NUM = false;      //是否开启自动插入开奖号码的功能
+
+const APP_IS_CHENK       = 0;       //app 是否开启审核 0:关闭 1 :开启
+const CASH_REQUEST_TIME  = 2;       //入款提交时间间隔  s
+const IN_COMPANY_COUNT  = 3;        //公司入款次数
+const CASH_AUTO_EXPIRATION = 180;   //出入款自动过期时间   单位: 分钟
+const IP_EXPIRE = 2592000;     //ip过期时间
+
+const SHOW_BET_WIN_ROWS = 49;		// 显示中奖数据行数
+const ADMIN_QUERY_TIME_SPAN = 5359280;	// 后端查询数据时间跨度限制62*86440
+const OUT_BOUNODS_TIME = 86400;	// 出款手续费扣除手续费时间 24小时
+
 
 /**
  * 标记加载或刷新
@@ -76,249 +206,6 @@ const REQUEST_CHOOSE_OTHER_URL = 1;// 选取备用url
 /**
  * 所有的action
  */
-    const REQUEST_ACTION_LOGIN = 10001;// 登录
-    const REQUEST_ACTION_TAG = 10002;// 获取TAG标签
-    const REQUEST_ACTION_REGISTER = 10003;// 注册
-    const REQUEST_ACTION_AUTHPHONE = 10004;// 绑定手机
-    const REQUEST_ACTION_AUTOLOGIN = 10005;// 自动登录
-    const REQUEST_ACTION_HEARTBEAT = 10006;// 在线心跳
-    const REQUEST_ACTION_FIND = 10007;// 发现
-    const REQUEST_ACTION_SP = 10008;// 私拍
-    const REQUEST_ACTION_MESSAGE = 10009;// 消息
-    const REQUEST_ACTION_FIND_PASSWORD = 10010;// 消息
-    const REQUEST_ACTION_CALL_LOG = 10011;// 通话记录
-    const REQUEST_ACTION_QINIU_TOKEN = 10012;// 获取七牛上传凭证
-    const REQUEST_ACTION_UPDATE_USER = 10013;// 更新个人信息
-    const REQUEST_ACTION_REG_BASE = 10014;// 注册基本信息
-    const REQUEST_ACTION_TOKEN_LOG = 10015;// 私拍记录
-    const REQUEST_ACTION_MY_TOKEN = 10016;// 我的私拍
-    const REQUEST_ACTION_MY_TOKEN_DETAIL = 10017;// 私拍详细
-    const REQUEST_ACTION_OTHER_INFO = 10018;// 私拍详细
-    const REQUEST_ACTION_GET_PIC = 10019;// 获取图片和视频
-    const REQUEST_ACTION_GZ = 10020;// 关注
-    const REQUEST_ACTION_SETTING_PRICE_LIST = 10021;// 收费设置价格列表
-    const REQUEST_ACTION_PAY_LIST = 10022;// 获取商品列表
-    const REQUEST_ACTION_BINDING_BANK = 10023;// 用户绑定银行卡
-    const REQUEST_ACTION_FEEDBACK = 10024;// 意见反馈
-    const REQUEST_ACTION_MY_INCOME = 10025;// 我的收益
-    const REQUEST_ACTION_ALL_EVALUATE = 10026;// 所有评价
-    const REQUEST_ACTION_CHECK_UPDATE = 10027;// 检查更新
-    const REQUEST_ACTION_PAY = 10028;// 请求支付
-    const REQUEST_ACTION_QUREY_ORDER = 10029;// 查询支付订单
-    const REQUEST_ACTION_LH = 10030;// 拉黑
-    const REQUEST_ACTION_RECOMMEND = 10031;// 推荐
-    const REQUEST_ACTION_GIFT_LIST = 10032;// 礼物列表
-    const REQUEST_ACTION_TIP = 10033;// 拉黑并举报
-    const REQUEST_ACTION_LOGIN_AUTH = 10034;//第三方登录认证
-    const REQUEST_ACTION_VIDEO_PAY = 10035;//视频支付
-    const REQUEST_ACTION_GIFT_BUY = 10036;//购买礼物并赠送
-    const REQUEST_ACTION_WE_VIDEO_PAY = 10037;//判断是否需要支付
-    const REQUEST_ACTION_DELETE_RESOURCE = 10038;//删除上传到服务器上的资源
-    const REQUEST_ACTION_IM_USERINFO = 10039;//根据环信id获得用户信息
-    const REQUEST_ACTION_UPLOAD_ZHIBO_STATE = 10040;//上传直播连接状态
-    const REQUEST_ACTION_INIT_STATE = 10041;//初始化请求
-    const REQUEST_ACTION_GET_VIDEO_COMMENT = 10042;//获取视频评论列表
-    const REQUEST_ACTION_VIDEO_COMMENT = 10043;//评论视频
-    const REQUEST_ACTION_PAY_WEIXIN = 10044;//是否已付费看微信
-    const REQUEST_ACTION_PAY_WEIXIN_RESULT = 10045;//看微信支付
-    const REQUEST_ACTION_VIDEO_ID_INFOR = 10046;//根据ID获取私拍信息
-    const REQUEST_ACTION_EVALUATE = 10047;//上报用户评价
-    const REQUEST_ACTION_USER_TAG_LIST = 10048;//获取用户标签列表
-    const REQUEST_ACTION_VIDEO_DESCRIP = 10049;//视频描述
-    const REQUEST_ACTION_CHECK_SENSITIVEDATABASE = 10050;//敏感詞
-    const REQUEST_ACTION_INVITE_FRIEND = 10051;//邀请好友
-    const REQUEST_ACTION_SEARCH_INFO = 10052;//搜索
-    const REQUEST_ACTION_GET_FANS = 10053;//获取粉丝
-    const REQUEST_ACTION_GET_ATTANTION = 10054;//获取关注
-    const REQUEST_ACTION_VERIFY_BANK = 10055;//验证用户输入的银行卡号对应的银行
-    const REQUEST_ACTION_ABOUT_US = 10056;//关于我们
-    const REQUEST_ACTION_AUTH_STATE = 10057;//获取认证状态
-    const REQUEST_ACTION_SENTWARN = 10058;//异常信息上报
-    const REQUEST_ACTION_CALLCUSTOMER = 10059;//呼叫客服
-    const REQUEST_ACTION_TOURISRLOGIN=10060;//游客登录
-    /**
-     * 请求协议
-     */
-    const LONGIN_URL = "0/api/user/login";//登录
-    const TAG_URL = "/api/user/showTag";//获取TAG标签
-    const REGISTER_URL = "/api/user/reg";//注册
-    const AUTHPHONE_URL = "/api/user/authPhone";//绑定手机
-    const AUTOLOGIN_URL = "/api/user/autoLogin";//自动登录
-    const HEARTBEAT_URL = "/api/user/online/heartbeat";//在线心跳
-    const FIND_URL = "/api/user/find";//发现页面的标签
-    const SP_URL = "/api/video/list";//私拍
-    const MESSAGE_URL = "/api/sns/chatList";//消息
-    const FIND_PASSWORD = "/api/user/updatePwd";//找回密码
-    const CALL_LOG_URL = "/api/sns/callLog";//通话记录
-    const GET_QINIU_TOKEN = "/api/sys/upload/token";//获取七牛Token
-    const GET_UPDATE_USER = "/api/user/update";//更新个人信息
-    const REG_BASE = "/api/user/regBase";//注册基本信息
-    const CALL_TOKEN_URL = "/api/video/playLog";//通话记录
-    const MY_TOKEN_URL = "/api/video/person";//我的私拍
-    const TOKEN_DETAIL_URL = "/api/video/person/details";//我的私拍
-    const OTHER_INFORMATION_URL = "/api/user/index";//获取他人信息
-    const GRT_PIC_URL = "/api/user/getPhotoVideoList";//拉取图片和视频
-    const GRT_GZ_URL = "/api/user/follow";//关注
-    const SETTING_PRICE_LIST = "/api/setting/price/list";//收费设置价格列表
-    const GET_PAY_LIST = "/api/pay/item/list";//获取商品列表
-    const BINDING_BANK = "/api/user/exchangeCash";//用户绑定银行卡
-    const FEEDBACK = "/api/user/feedback/add";//意见反馈
-    const MY_INCOME = "/api/user/myIncome";//我的收益
-    const ALL_EVALUATE = "/api/user/userComments";//所有评价
-    const CHECK_UPDATE = "/api/sys/android/update";//检查更新
-    const PAY = "/pay/order";//支付接口
-    const QUREY_ORDER = "/pay/payResult";//查询订单支付状态
-    const LH_URL = "/api/user/blacklist";//拉黑
-    const RECOMMEND_URL = "/api/user/recommend";//推荐
-    const GET_GIFT_LIST = "/api/gift/list";//礼物列表
-    const TIP_URL = "/api/user/complaint";//举报
-    const LOGIN_AUTH = "/api/user/auth/login";//第三方登录认证
-    const VIDEO_PAY_URL = "/api/video/deductBalance";//视频支付
-    const GIFT_BUY = "/api/gift/buy";//购买礼物并赠送
-    const VIDEO_WE_PAY_URL = "/api/video/payState";//判断视频是否支付
-    const DELETE_RESOURCE = "/api/user/delPhotoVideo";//删除上传到服务器的资源
-    const IM_USERINFO_URL = "/api/user/imInfo";//根据imid获得用户信息
-    const UPLOAD_ZHIBO_STATE = "/api/liveVideo/upload";//上传直播连接状态
-    const VIDEO_COMMENT = "/api/video/listComment";//视频评论列表
-    const DO_VIDEO_COMMENT = "/api/video/comment";//评论视频
-    const WEHT_WEIXIN_PAY = "/api/user/check/wx/state";//是否已支付微信费用
-    const WEHT_WEIXIN_PAY_RESULT = "/api/user/check/wx/deduct";//支付微信
-    const DO_VIDEO_ID_INFOR = "/api/video/get";//根据videoid获取数据
-    const DO_VIDEO_DES = "/api/video/update";//根据描述视频
-    const INIT_URL = "/api/init";//初始化请求
-    const EVALUATE = "/api/user/report/evaluate";//上报用户评价
-    const USER_TAG_LIST = "/api/user/tag/list";//获取用户标签列表
-    const CHECK_SENSITIVEDATABASE_URL = "/keyWord/update";//更新敏感词数据库
-    const INVITE_FRIEND = "/api/sys/invite";//邀请好友
-    const SEARCH_URL = "/api/user/search";//搜索
-    const GET_FANS = "/api/user/fans/list";//获取粉丝列表
-    const GET_ATTANTION = "/api/user/attention/list";//获取关注列表
-    const GET_VERIFY_BANK_URL = "https://ccdcapi.alipay.com/validateAndCacheCardInfo.json";//验证用户输入的银行卡号对应的银行
-    const GET_ABOUT_US = "/api/sys/aboutUs";//获取粉丝列表
-    const GET_AUTH_STATE = "/api/user/auth/state";//获取认证状态
-    const SENT_WARN = "/api/monitor/sentWarn";//异常信息上报
-    const CALL_CUSTOMER = "/api/user/askCustomer";//呼叫客服
-    const TOURISR_LOGIN="/api/user/visitorLogin";//游客登录
-
-    /**
-     * OK标识
-     */
-    const OK = "ok";
-
-    /**
-     * header名称
-     */
-    const HEADER_MOBILE_MODEL = "mobile_model";
-    const HEADER_OS_VERSION = "os_version";
-    const HEADER_NET_MODE = "net_mode";
-    const HEADER_PACKAGE = "package";
-    const HEADER_APPNAME = "appname";
-    const HEADER_IMSI = "imsi";
-    const HEADER_IMEI = "uuid";
-    const HEADER_SCREEN = "screen";
-    const HEADER_ICCID = "iccid";
-    const HEADER_LAC = "lac";
-    const HEADER_MAC = "mac";
-    const HEADER_MIP = "mip";
-    const HEADER_UA = "ua";
-    const HEADER_SIGNATURE = "signature";
-    const HEADER_TIMESTAMP = "timeStamp";
-    const HEADER_RANDOM = "random";
-    const HEADER_APP_NAME = "app_name";
-    const HEADER_PACKAGENAME = "app_package";
-    const HEADER_APPVERSION = "app_version";
-    const HEADER_MOBILE_APN = "mobile_apn";
-    const HEADER_MOBILE_BRAND = "mobile_brand";
-    const HEADER_NEW_IMEI = "imei";
-    const HEADER_NET = "net";
-    const HEADER_OS = "os";
-    const HEADER_DEVICE_TOKEN = "device_token";
-    const HEADER_TOKEN = "Token";
-    const HEADER_USER_AGENT = "User-Agent";
-    const HEADER_OBAND = "oband";
-    /**
-     * 请求参数名称
-     */
-    const REQUEST_USERID = "userId";//用户ID
-    const REQUEST_QUERYID_USERID = "queryId";//用户ID
-    const REQUEST_OTHER_USERID = "tuserId";//用户ID
-    const REQUEST_CHANNEL = "channel";
-    const REQUEST_MVERSION = "mversion";
-    const REQUEST_PHONE = "phone";//手机号
-    const REQUEST_PWD = "pwd";//密码
-    const REQUEST_NEWPWD = "newPwd";//新密码
-    const REQUEST_MTYPE = "mType";//类型
-    const REQUEST_TOKEN = "token";//用户令牌
-    const REQUEST_BALANCE = "balance";//用户余额
-    const REQUEST_TYPE = "type";//类型
-    const REQUEST_PAGE = "page";//分页
-    const REQUEST_SAERCHID = "searchId";//每页数量
-    const REQUEST_PAGESIZE = "pageSize";//每页数量
-    const REQUEST_FACE = "face";//头像
-    const REQUEST_NICK = "nick";//昵称
-    const REQUEST_SEX = "sex";//昵称
-    const REQUEST_BIRTHDAY = "birthday";//年龄
-    const REQUEST_HEIGHT = "height";//身高
-    const REQUEST_SIGN = "sign";//个性签名
-    const REQUEST_PRICE = "price";//价格
-    const REQUEST_INVITE = "invite";//是否接受视频邀请
-    const REQUEST_INVITECODE = "inviteCode";//邀请码
-    const REQUEST_VIDEO_ID = "videoId";//视频ID
-    const REQUEST_VIDEO_DESCRIP = "description";//视频描述
-    const REQUEST_VIDEO_URL = "videoUrl";//视频url
-    const REQUEST_GZ_TYPE = "cType";//0取消1关注
-    const REQUEST_ACCOUNT_NAME = "account_name";//开户名
-    const REQUEST_BANK_ACCOUNT = "bank_account";//开户账号
-    const REQUEST_BANK_NAME = "bank_name";//开户行
-    const REQUEST_CONTACT_WAY = "contact_way";//联系方式
-    const REQUEST_CASH_MONEY = "cash_money";//提现金额
-    const REQUEST_CONTENT = "content";//意见反馈
-    const REQUEST_VERSION = "version";//版本号 reason
-    const REQUEST_REASON = "reason";//举报原因
-    const REQUEST_REMARKS = "remarks";//举报信息
-    const REQUEST_GIFTID = "giftId";//礼物id
-    const REQUEST_COUNT = "count";//数量
-    const REQUEST_HXUSERID = "imId";//环信用户id
-    const REQUEST_UID = "uid";//唯一标识
-    const REQUEST_CONVER = "cover";//设置封面
-    const REQUEST_COMMENT = "comment";//评论语
-    const REQUEST_STAR = "star";//星级
-    const REQUEST_TAGS = "tags";//用户标签评价
-    const REQUEST_WXID = "wxId";//微信号
-    const REQUEST_TAG = "tag";//用户类型
-    const REQUEST_SEARCH_MSG = "keyword";//搜索的内容
-    const REQUEST_INPUT_CHARSET = "_input_charset";//验证银行卡参数
-    const REQUEST_CARDNO = "cardNo";//验证银行卡参数
-    const REQUEST_CARDBINCHECK = "cardBinCheck";//验证银行卡参数
-    const REQUEST_PHONE_VERSION = "phone_version";//手机版本
-    const REQUEST_PHONE_MODEL = "phone_model";//手机型号
-    const REQUEST_PLATFORM = "platform";//手机平台
-    const REQUEST_WARNINTTIME = "warnintTime";//异常警告时间
-    const USER_SEX_TYPE = "sex_type";  // 用户性别
-
-    //------------第三方登录字段-----------
-    const REQUEST_LOGIN_USERID = "userId";
-    const REQUEST_LOGIN_NICK = "nick";
-    const REQUEST_LOGIN_TYPE = "type";
-    const REQUEST_LOGIN_AGE = "age";
-    //------------第三方登录字段-----------
-
-    const REQUEST_RESOURCE_ID = "id";
-    const REQUEST_RESOURCE_TYPE = "type";
-
-    /**
-     * 解析参数
-     */
-    const PARESE_RESULT = "result";
-    const PARESE_TOPTAG = "topTag";
-    const PARESE_BOTTOMTAG = "bottomTag";
-
-    const PARESE_TYPE = "type";
-    const PARESE_TEXT = "text";
-    const PARESE_ICONURL = "iconUrl";
-    const PARESE_ISVISIBLE = "isVisible";
-
-    const INTENT_ADV_URL = "adv_url";
 
     /**
      * 注册类型

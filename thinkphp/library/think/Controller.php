@@ -35,8 +35,8 @@ class Controller
     // 是否批量验证
     protected $batchValidate = false;
 
-    public $redis_public = 8;
-    public $redis_private = 6;
+    public $redis_public = REDIS_PUBLIC_KEY;
+    public $redis_private = REDIS_PRIVATE_KEY;
 
     /**
      * 前置操作方法列表
@@ -83,10 +83,8 @@ class Controller
     static protected function get_redis()
     {
         self::$redis_cache = new \Redis();
-        //self::$redis_cache->connect('r-wz992b3714571df4.redis.rds.aliyuncs.com',6379,10);
-        //self::$redis_cache->auth('YscRe123');
-        self::$redis_cache->connect('127.0.0.1',6379,10);
-        //$redis->connect('192.168.8.102',6379);
+        self::$redis_cache->connect(REDIS_HOST,REDIS_PORT,REDIS_TIMEOUT);
+        //self::$redis_cache->auth(REDIS_AUTH);
         return self::$redis_cache;
     }
 

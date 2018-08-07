@@ -6,6 +6,7 @@ use think\Input;
 use think\Db;
 use think\Session;
 use think\Validate;
+use think\Redis;
 
 //基类
 class Base extends Controller
@@ -15,6 +16,7 @@ class Base extends Controller
     protected $bk_rediskey = 'black_keyword';
     protected $hb_rediskey = 'heartbeat';
     protected $user = null;//用户session
+    protected $source;//来源 IOS、IOS_WX、ANDROID、ANDROID_WX
     //protected $is_mrl;//是否返回errorMsg，relogin，needRegister
     public function __construct()
     {
@@ -30,6 +32,7 @@ class Base extends Controller
             exit;
         }
 
+
         /* 不需要登陆权限的控制器和方法[小写] */
         $pass = ['user' => ['reg', 'sms', 'regbase', 'login', 'updatepwd']];
 
@@ -43,7 +46,10 @@ class Base extends Controller
             $this->return_json([],false,true,'Token fail!');
         }*/
 
+        //$this->check_sign();/* 签名校验 */
         $this->is_repeat(); /* 重放检测 */
+        $this->source = get_auth_headers('SOURCE');/* 获取请求来源 */
+        empty($this->source)?$this->source='APP':true;
 
         $this_class = strtolower($request->controller());
         $this_method = strtolower($request->action());
@@ -64,39 +70,150 @@ class Base extends Controller
                 ]
             );
             if($result !== true){
-                $this->return_json([],false,true,'参数错误1',true);
+                $this->return_json(E_ARGS,'参数错误1');
             }
             $user = $this->check_user_token($uid);
             if(!$user){
-                $this->return_json([],false,true,'请重新登录1',true);
+                $this->return_json(E_OP_FAIL,'请重新登录1');
             }
             $user['channel'] = $channel;
             $this->user = $user;
         }
 
-        $this->sn = 'jy';
+        $this->sn = 'ty';
     }
 
     /**
+     * 签名验证
+     * @return bool
+     */
+    protected function check_sign()
+    {
+        $param = input('param.');
+        if(empty($param['sign'])){
+            $this->return_json(422,'参数为空：sign');
+        }
+        $sign = $param['sign'];
+        unset($param['sign']);
+        $is = vsign($sign,$param);
+        if(!$is){
+            $this->return_json(E_SIGN,'验签失败');
+        }
+        return true;
+    }
+
+
+
+    /**
      * json格式返回数据
-     * @param array $data    返回的数据
      * @param bool $code     返回数据的状态
-     * @param bool $is_mrl   是否返回后面三个参数
-     * @param string $msg    错误信息
+     * @param array $data    返回的数据
+     * @param bool $is_mrl   是否返回后面2个参数
      * @param bool $relogin  是否需要登录
      * @param bool $needRegister 是否需要注册
      */
-    protected function return_json($data = array(), $code = true, $is_mrl = false, $msg='', $relogin=false, $needRegister=false) /* {{{ */
+    protected function return_json($code = OK, $data = array(), $is_mrl = false, $relogin=false, $needRegister=false)
     {
-        $result[OK] = $code;
+        $result['code'] = $code;
+        //$result['msg'] = $msg;
+        if ($code != OK) {
+            if (!empty($data) && !is_array($data)) {
+                $result['msg'] = $data;
+            } elseif (is_array($data)) {
+                $result['data'] = $data;
+            }
+            echo json_encode($result, JSON_UNESCAPED_UNICODE);exit;
+        }
+        if (!empty($data)) {
+            $result['data'] = $data;
+            $result['sign'] = encode_sign($data);
+        }
         if($is_mrl === true){
-            $result['errorMsg'] = $msg;
             $result['relogin'] = $relogin;
             $result['needRegister'] = $needRegister;
         }
-        $result['result'] = $data;
+        //$result['result'] = $data;
         echo json_encode($result, JSON_UNESCAPED_UNICODE);exit;
-    } /* }}} */
+    }
+
+
+    /**
+     * api return json
+     * @param   mixed $data   要返回的数据/出错消息
+     * @param   int   $code   结果编辑码
+     * @return void
+     */
+    /*protected function return_json($code = OK, $data = array())
+    {
+        $result['code'] = $code;
+        //$result['msg'] = $msg;
+        if ($code != OK) {
+            if (!empty($data) && !is_array($data)) {
+                $result['msg'] = $data;
+            } elseif (is_array($data)) {
+                $result['data'] = $data;
+            }
+            echo json_encode($result, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        if (!empty($data)) {
+            $result['data'] = $data;
+        }
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+        exit;
+    }*/
+
+    /**
+     * Ajax方式返回数据到客户端
+     * @access protected
+     * @param mixed $data 要返回的数据
+     * @param String $type AJAX返回数据格式
+     * @return void
+     */
+    protected function ajaxReturn($data,$type='') {
+        if(empty($type)) $type  =   C('DEFAULT_AJAX_RETURN');
+        switch (strtoupper($type)){
+            case 'JSON' :
+                // 返回JSON数据格式到客户端 包含状态信息
+                header('Content-Type:application/json; charset=utf-8');
+                exit(json_encode($data));
+            case 'XML'  :
+                // 返回xml格式数据
+                header('Content-Type:text/xml; charset=utf-8');
+                exit(xml_encode($data));
+            case 'JSONP':
+                // 返回JSON数据格式到客户端 包含状态信息
+                header('Content-Type:application/json; charset=utf-8');
+                $handler  =   isset($_GET[C('VAR_JSONP_HANDLER')]) ? $_GET[C('VAR_JSONP_HANDLER')] : C('DEFAULT_JSONP_HANDLER');
+                exit($handler.'('.json_encode($data).');');
+            case 'EVAL' :
+                // 返回可执行的js脚本
+                header('Content-Type:text/html; charset=utf-8');
+                exit($data);
+        }
+    }
+
+    /**
+     * 检测词语是否列入黑名单
+     * @param string $key_word
+     * @return bool
+     */
+    protected function check_keyword($key_word = '')
+    {
+        $is = $this->redis->sCard($this->bk_rediskey);//返回集合总数
+        if(empty($is)){
+            $keyword_list = db('key_word')->field('word')->select();
+            foreach($keyword_list as $key => $value){
+                $this->redis->sAdd($this->bk_rediskey,$value['word']);
+            }
+        }
+        $is2 = $this->redis->sIsMember($this->bk_rediskey,$key_word);//检测是否有该成员
+        if($is2){
+            $this->return_json([],'非法字符！');
+        }
+        return false;
+    }
+
 
 
     /**
@@ -104,9 +221,9 @@ class Base extends Controller
      * @param $uid
      * @return array|false|\PDOStatement|string|\think\Model
      */
-    protected function get_user($uid)
+    protected function get_user($memberid)
     {
-        $user = db('hot_account')->where(array('uid'=>$uid))->find();
+        $user = db('member')->where(array('id'=>$memberid))->find();
         return $user;
     }
 
@@ -115,11 +232,11 @@ class Base extends Controller
      * @param $url
      * @return string
      */
-    protected function get_user_token($uid,$refresh = false)
+    protected function get_user_token($memberid,$refresh = false)
     {
-        $idtotoken = $this->usertoken_rediskey.'_id:'.$uid;//用戶token索引
+        $idtotoken = $this->usertoken_rediskey.'_id:'.$memberid;//用戶token索引
         $time = TOKEN_USER_LIVE_TIME * 3600;
-        $user = $this->get_user($uid);
+        $user = $this->get_user($memberid);
         if($refresh){//自动登录后刷新token
             $token_old = $this->redis->get($idtotoken);
             if(empty($token_old)){
@@ -131,10 +248,10 @@ class Base extends Controller
 
             return $token_old;
         }
-        $token = md5($uid.date('Y-m-d H:i:s').TOKEN_KEY);
+        $token = md5($memberid.date('Y-m-d H:i:s').USER_TOKEN_KEY);
         $tokentokey = $this->usertoken_rediskey.':'.$token;//用redis代替session存儲用戶信息
         if(empty($user)){
-            $this->return_json([],false,true,'没有这个用户',true,true);
+            $this->return_json(E_OP_FAIL,'没有这个用户');
         }
         $this->redis->setex($idtotoken,$time,$token);
         $this->redis->setex($tokentokey,$time,json_encode($user));
@@ -191,7 +308,7 @@ class Base extends Controller
      */
     protected function check_token($header_token,$url)
     {
-        $token = md5(strtolower($url).date('Y-m-d').TOKEN_KEY);
+        $token = md5(strtolower($url).date('Y-m-d').USER_TOKEN_KEY);
         //var_dump($token);exit;
         if($header_token == $token){
             return true;
@@ -261,7 +378,7 @@ class Base extends Controller
             }
             //$result = json_decode($result_json,true);
             //$result = str_replace('\\','/',$result);
-            $this->return_json(JSON_SUCESS, $result_json);
+            $this->return_json(OK, $result_json);
         } else {
             $this->return_json(E_OP_FAIL, '操作失败！');
         }
@@ -295,26 +412,6 @@ class Base extends Controller
     }
 
 
-    /**
-     * 检测词语是否列入黑名单
-     * @param string $key_word
-     * @return bool
-     */
-    protected function check_keyword($key_word = '')
-    {
-        $is = $this->redis->sCard($this->bk_rediskey);//返回集合总数
-        if(empty($is)){
-            $keyword_list = db('key_word')->field('word')->select();
-            foreach($keyword_list as $key => $value){
-                $this->redis->sAdd($this->bk_rediskey,$value['word']);
-            }
-        }
-        $is2 = $this->redis->sIsMember($this->bk_rediskey,$key_word);//检测是否有该成员
-        if($is2){
-            $this->return_json([],false,true,'非法字符！');
-        }
-        return false;
-    }
 
 
 }
