@@ -56,12 +56,12 @@ class Base extends Controller
         if (isset($pass[$this_class]) && in_array($this_method, $pass[$this_class])) {
 
         }else{
-            $uid = input('param.userId');
+            $memberid = input('param.memberid');
             $channel = input('param.channel');
             !empty($channel) or $channel = '';
             $result = $this->validate(
                 [
-                    'uid'  => $uid,
+                    'uid'  => $memberid,
                     'channel'  => $channel,
                 ],
                 [
@@ -72,9 +72,9 @@ class Base extends Controller
             if($result !== true){
                 $this->return_json(E_ARGS,'参数错误1');
             }
-            $user = $this->check_user_token($uid);
+            $user = $this->check_user_token($memberid);
             if(!$user){
-                $this->return_json(E_OP_FAIL,'请重新登录1');
+                $this->return_json(E_OP_FAIL,'请重新登录1',true,true);
             }
             $user['channel'] = $channel;
             $this->user = $user;

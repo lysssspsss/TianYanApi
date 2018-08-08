@@ -25,6 +25,7 @@ const ALIYUN_SIGN_TEST = '阿里云短信测试专用';
 const ALIYUN_SIGN = '天雁商学院';
 const ALIYUN_PRODUCT = '456';
 
+
 /**
  * Redis
  */
@@ -34,9 +35,11 @@ const REDIS_TIMEOUT = 20;
 const REDIS_AUTH = '';
 const REDIS_PUBLIC_KEY = 1;//公库
 const REDIS_PRIVATE_KEY = 2;//私库
-const REDIS_EXPIRE_1 = 3600;          // 过期时间 1 小时
-const REDIS_EXPIRE_24 = 86400;        // 过期时间 1 天
-const REDIS_EXPIRE_48 = 172800;       // 过期时间 2 天
+const REDIS_EXPIRE_5M = 300;          // 过期时间 5分钟
+const REDIS_EXPIRE_1H = 3600;          // 过期时间 1 小时
+const REDIS_EXPIRE_1D = 86400;        // 过期时间 1 天
+const REDIS_EXPIRE_2D = 172800;       // 过期时间 2 天
+const REDIS_YZM_KEY = 'verify_code'; //验证码键值
 
 /**
  * 七牛云 相关

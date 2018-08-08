@@ -41,6 +41,7 @@ class User extends Base
             wlog(APP_PATH.'log/Send_Sms_Error.log',$phone.'-'.$code.'-'.json_encode($send,JSON_UNESCAPED_UNICODE));
             $this->return_json(E_OP_FAIL,'短信发送失败，请检查网络2');
         }
+        $this->redis->set(REDIS_YZM_KEY.':'.$phone.'_'.$type,$code,REDIS_EXPIRE_5M);//暂存到redis
         $this->return_json(OK,['code'=>$code]);
     }
 
@@ -53,24 +54,30 @@ class User extends Base
         $tel = input('post.phone');
         $company = input('post.company');
         $name = input('post.name');
-
+        $code = input('post.code');
         //数据验证
         $result = $this->validate(
             [
                 'tel'  => $tel,
                 'company' => $company,
                 'name' => $name,
+                'code' => $code,
             ],
             [
                 'tel'  => 'require|number|max:11|min:11',
                 'company'  => 'chsAlphaNum', //汉字字母数字
                 'name'  => 'require|chsAlpha',//汉字字母
-                //'code'  => 'number|max:5|min:5'
+                'code'  => 'require|number|max:5|min:5',
             ]
         );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
+        $redis_code = $this->redis->hGet(REDIS_YZM_KEY,$tel.'_2');
+        if($code != $redis_code){
+            //$this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
+        }
+        $this->redis->hdel(REDIS_YZM_KEY,$tel.'_2');
         $is_repeat = Db::name('member')->field('id')->where(array('tel'=>$tel))->find();
         if(!empty($is_repeat)){
             $this->return_json(E_OP_FAIL,'注册失败,重复注册');
@@ -131,37 +138,35 @@ class User extends Base
     public function login()
     {
         $phone = input('post.phone');
-        $pwd = input('post.pwd');
-
+        $code = input('post.code');
         //数据验证
         $result = $this->validate(
             [
                 'phone'  => $phone,
-                'pwd' => $pwd,
+                'code' => $code,
             ],
             [
                 'phone'  => 'require|number|max:11|min:11',
-                'pwd'  => 'require|alphaNum|min:6|max:30',
+                'code'  => 'require|number|max:5|min:5',
             ]
         );
         if($result !== true){
-            $this->return_json([],false,true,'参数错误',true);
+            $this->return_json(E_ARGS,'参数错误');
         }
-        $where['mobile'] = $phone;
-        $user = db('hot_account')->field('uid,password,u_state')->where($where)->find();
+        $redis_code = $this->redis->hGet(REDIS_YZM_KEY,$phone.'_4');
+        if($code != $redis_code){
+            //$this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
+        }
+        $this->redis->hdel(REDIS_YZM_KEY,$phone.'_4');
+        $where['tel'] = $phone;
+        $user = db('member')->field('id')->where($where)->find();
         if(empty($user)){
-            $this->return_json([],false,true,'该用户尚未注册',true);
+            $this->return_json(E_OP_FAIL,'该用户尚未注册');
         }
-        if($user['u_state']!=1){
-            $this->return_json([],false,true,'该用户已被禁用',true);
-        }
-        if(strtoupper(md5($pwd)) != $user['password']){
-            $this->return_json([],false,true,'密码错误',true);
-        }
-        $data['token'] = $this->get_user_token($user['uid']);
-        $this->set_login_log($user['uid'],1,1);
-        $data['uid'] = $user['uid'];
-        $this->return_json($data,true);
+        $data['memberid'] = (string)$user['id'];
+        $data['token'] = $this->get_user_token($user['id']);
+        //$this->set_login_log($user['uid'],1,1);
+        $this->return_json(OK,$data);
     }
 
 }
