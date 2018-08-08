@@ -126,7 +126,7 @@ class Base extends Controller
         }
         if (!empty($data)) {
             $result['data'] = $data;
-            $result['sign'] = encode_sign($data);
+            $result['data']['sign'] = encode_sign($data);
         }
         if($is_mrl === true){
             $result['relogin'] = $relogin;

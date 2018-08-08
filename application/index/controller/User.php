@@ -73,6 +73,7 @@ class User extends Base
         $data['tel'] = $tel;
         $data['company'] = $company;
         $data['name'] = $name;
+        $data['nickname'] = $name;
         $data['sex'] = 2;
         $data['headimg'] = DEFAULT_IMG;
         $data['img'] = DEFAULT_IMG;
