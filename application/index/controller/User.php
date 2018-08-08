@@ -20,13 +20,19 @@ class User extends Base
     public function sms()
     {
         $phone = input('post.phone');
-        $result = $this->validate(['phone'  => $phone], ['phone'  => 'require|number|max:11|min:11']);
+        $type = input('post.type');
+        $result = $this->validate(
+            ['phone'  => $phone , 'type'  => $type ],
+            ['phone'  => 'require|number|max:11|min:11', 'type'  => 'require|in:0,1,2,3,4,5']
+        );
         if($result !== true){
-            $this->return_json(E_ARGS,'手机号码格式错误');
+            $this->return_json(E_ARGS,'参数错误');
         }
+
         $code = mt_rand(10000,99999);
         //$date = date('Ymd');
-        $send = Message::sendSms($phone,$code,ALIYUN_TEMP_CODE4,'890',ALIYUN_SIGN_TEST);
+        //var_dump(ALIYUN_TEMP_CODE.$type);exit;
+        $send = Message::sendSms($phone,$code,ALIYUN_TEMP_CODE.$type,'890',ALIYUN_SIGN_TEST);
         if(empty($send)){
             wlog(APP_PATH.'log/Send_Sms_Error.log','发送短信返回内容为空:'.$phone.'-'.$code);
             $this->return_json(E_OP_FAIL,'短信发送失败，请检查网络1');
@@ -116,6 +122,46 @@ class User extends Base
         $token = $this->get_user_token($memberid);
         //$this->set_login_log($data['uid'],1,$data['in_type']);
         $this->return_json(OK,['memberid'=>$memberid,'token'=>$token]);
+    }
+
+
+    /**
+     * 登录接口
+     */
+    public function login()
+    {
+        $phone = input('post.phone');
+        $pwd = input('post.pwd');
+
+        //数据验证
+        $result = $this->validate(
+            [
+                'phone'  => $phone,
+                'pwd' => $pwd,
+            ],
+            [
+                'phone'  => 'require|number|max:11|min:11',
+                'pwd'  => 'require|alphaNum|min:6|max:30',
+            ]
+        );
+        if($result !== true){
+            $this->return_json([],false,true,'参数错误',true);
+        }
+        $where['mobile'] = $phone;
+        $user = db('hot_account')->field('uid,password,u_state')->where($where)->find();
+        if(empty($user)){
+            $this->return_json([],false,true,'该用户尚未注册',true);
+        }
+        if($user['u_state']!=1){
+            $this->return_json([],false,true,'该用户已被禁用',true);
+        }
+        if(strtoupper(md5($pwd)) != $user['password']){
+            $this->return_json([],false,true,'密码错误',true);
+        }
+        $data['token'] = $this->get_user_token($user['uid']);
+        $this->set_login_log($user['uid'],1,1);
+        $data['uid'] = $user['uid'];
+        $this->return_json($data,true);
     }
 
 }
