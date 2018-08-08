@@ -44,7 +44,7 @@ class User extends Base
      */
     public function reg()
     {
-        $tel = input('post.tel');
+        $tel = input('post.phone');
         $company = input('post.company');
         $name = input('post.name');
 
