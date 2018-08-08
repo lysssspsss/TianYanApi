@@ -79,7 +79,7 @@ class User extends Base
         $data['img'] = DEFAULT_IMG;
         $data['openid'] = $unique;
         $data['unionid'] = $unique;
-        //$data['isfocus'] = 'no';
+        $data['isfocus'] = 'other';
         $ip = get_ip();
         if($ip == '127.0.0.1'){
             $ip = '183.238.1.246';
