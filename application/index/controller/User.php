@@ -169,4 +169,134 @@ class User extends Base
         $this->return_json(OK,$data);
     }
 
+    /**
+     * 自动登录接口
+     */
+    public function auto_login()
+    {
+        $memberid = $this->user['id'];
+        $type = input('post.type');
+        if($type != '6666'){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $where['id'] = $memberid;
+        $user = db('member')->field('id')->where($where)->find();
+        if(empty($user)){
+            $this->return_json(E_OP_FAIL,'该用户尚未注册');
+        }
+        $token = $this->get_user_token($memberid,true);
+        if($token===false){
+            $this->return_json(E_OP_FAIL,'请重新登录2');
+        }
+        $data['memberid'] = $memberid;
+        $data['token'] = $token;
+        //自动登录是否需要插入登录日志--待定
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * 微信授权登录接口
+     */
+    public function  wechat_login(){
+        //LogController::W_H_Log("进入callback方法");
+        $appid = WECHAT_APPID;
+        $secret = WECHAT_APPSECRET;
+        $code = input('post.code');
+        $state = base64_decode(input('post.state'));
+        /*$state = "http://tianyan199.com".urldecode($state);*/
+        $get_token_url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // 跳过证书检查
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, true);  // 从证书中检查SSL加密算法是否存在
+        curl_setopt($ch,CURLOPT_URL,$get_token_url);
+        curl_setopt($ch,CURLOPT_HEADER,0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1 );
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        $res = curl_exec($ch);
+        curl_close($ch);
+        $json_obj = json_decode($res,true);
+        //LogController::W_H_Log("get_token_url 为：".$get_token_url);
+        //LogController::W_H_Log("callback 返回原始数据：".$res);
+        curl_close($ch);
+        //根据openid和access_token查询用户信息
+        $access_token = $json_obj['access_token'];
+        $openid = $json_obj['openid'];
+
+        if (!($access_token && $openid)){
+            $this->return_json(E_OP_FAIL,'登录失败，无法获取到access_token或openid');
+        }
+        $user = db("member");
+        $list = $user->where(['openid'=>$openid])->find();
+        //error_log("openid is :".$openid."\n",3,"./logs/info.log");
+        //LogController::W_H_Log("获取用户后的重定向地址为：".$state);
+        if(is_array($list) && $list){
+            $_SESSION['CurrenMember'] = $user->data();
+            //LogController::W_H_Log(date('y-m-d H:i:s',time())."提前返回数据：\n"."\n",3,"./logs/info.log");
+
+            if (empty($SESSION['CurrenMember']['unionid'])){
+                $get_user_info_url = 'https://api.weixin.qq.com/sns/userinfo?access_token=' . $access_token . '&openid=' . $openid . '&lang=zh_CN';
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $get_user_info_url);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+                $res = curl_exec($ch);
+                curl_close($ch);
+                //error_log(date('callback 方法'.'y-m-d H:i:s',time()).$res,3,"./logs/info.log");
+                //解析json
+                error_log("result is :" . $res, 3, "./logs/info.log");
+                $user_obj = json_decode($res, true);
+                $data = array(
+                    'unionid' => $user_obj['unionid'],
+                    'headimg' => $user_obj['headimgurl'],
+                    'lastupdate' => date("Y-m-d H:i:s")
+                );
+                LogController::W_H_Log($data);
+                M("member")->where("openid='".$openid."'")->save($data);
+
+            }
+            header("Location:".$state);
+        }else {
+            $get_user_info_url = 'https://api.weixin.qq.com/sns/userinfo?access_token=' . $access_token . '&openid=' . $openid . '&lang=zh_CN';
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $get_user_info_url);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+            $res = curl_exec($ch);
+            curl_close($ch);
+            //error_log(date('callback 方法'.'y-m-d H:i:s',time()).$res,3,"./logs/info.log");
+            //解析json
+            error_log("result is :" . $res, 3, "./logs/info.log");
+            $user_obj = json_decode($res, true);
+            $data = array(
+                'nickname' => $user_obj['nickname'],
+                'openid' => $user_obj['openid'],
+                'unionid' => $user_obj['unionid'],
+                'img' => $user_obj['headimgurl'],
+                'headimg' => $user_obj['headimgurl'],
+                'sex' => $user_obj['sex'],
+                'country' => $user_obj['country'],
+                'city' => $user_obj['city'],
+                'province' => $user_obj['province'],
+                'addtime' => date("Y-m-d H:i:s"),
+                'isfocus' => "no"
+            );
+            $member = M("member");
+            $result = $member->add($data);
+            if ($result) {
+                LogController::W_H_Log("返回数据为：".$result);
+                $membert = M("member");
+                $membert->where("id=" . $result)->find();
+                dump($membert->data());
+                $_SESSION['CurrenMember'] = $membert->data();
+            } else {
+                LogController::W_H_Log("未执行插入操作：".$data['openid']);
+            }
+            LogController::W_H_Log("获得返回数据：".$res);
+            header("Location:" . $state);
+        }
+    }
+
 }

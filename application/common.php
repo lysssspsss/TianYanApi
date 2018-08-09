@@ -91,7 +91,7 @@ if (!function_exists('vsign')) {
     function vsign($sign, $content)
     {
         $sign = decode_sign($sign);
-        $content_md5 = md5(to_url_params($content));
+        $content_md5 = md5(to_url_params(ksort($content)));
         if ($sign == $content_md5) {
             return true;
         } else {
@@ -392,6 +392,7 @@ if (!function_exists('token_decrypt')) {
 
 if (!function_exists('get_auth_headers')) {
     /**
+     * 获取请求头
      * @fn
      * @brief get http headers
      * @return

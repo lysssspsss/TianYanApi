@@ -34,7 +34,7 @@ class Base extends Controller
 
 
         /* 不需要登陆权限的控制器和方法[小写] */
-        $pass = ['user' => ['reg', 'sms', 'regbase', 'login', 'updatepwd']];
+        $pass = ['user' => ['reg', 'sms', 'regbase', 'login', 'updatepwd'],'index'=>['index']];
 
         $request = Request::instance();
         $url = $request->controller().$request->action();
@@ -48,31 +48,33 @@ class Base extends Controller
 
         $this->check_sign();/* 签名校验 */
         $this->is_repeat(); /* 重放检测 */
-        $this->source = get_auth_headers('SOURCE');/* 获取请求来源 */
-        empty($this->source)?$this->source='APP':true;
-
+        $header = get_auth_headers();
+        $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
         $this_class = strtolower($request->controller());
         $this_method = strtolower($request->action());
         if (isset($pass[$this_class]) && in_array($this_method, $pass[$this_class])) {
 
         }else{
             $memberid = input('param.memberid');
+            $user_token = empty($header['Token'])?'':$header['Token'];
             $channel = input('param.channel');
             !empty($channel) or $channel = '';
             $result = $this->validate(
                 [
+                    'user_token'  => $user_token,
                     'uid'  => $memberid,
                     'channel'  => $channel,
                 ],
                 [
-                    'uid'  => 'require|alphaNum|max:16',
+                    'user_token'  => 'require|alphaNum|max:32',
+                    'uid'  => 'number|max:16',
                     'channel'  => 'alphaNum',
                 ]
             );
             if($result !== true){
                 $this->return_json(E_ARGS,'参数错误1');
             }
-            $user = $this->check_user_token($memberid);
+            $user = $this->check_user_token($user_token);
             if(!$user){
                 $this->return_json(E_OP_FAIL,'请重新登录1',true,true);
             }
@@ -276,13 +278,31 @@ class Base extends Controller
         return true;
     }
 
-
     /**
      * 检查用户token
      * @param $uid
      * @return bool|string
      */
-    protected function check_user_token($uid)
+    protected function check_user_token($token)
+    {
+        //dump($token);exit;
+        if(empty($token)){
+            return false;
+        }
+        $tokentokey = $this->usertoken_rediskey.':'.$token;
+        $user = $this->redis->get($tokentokey);
+        if(empty($user)){
+            return false;
+        }
+        return json_decode($user,true);
+    }
+
+    /**
+     * 检查用户token,需要用户ID
+     * @param $uid
+     * @return bool|string
+     */
+    protected function check_user_token_by_memberid($uid)
     {
         if(empty($uid)){
             return false;

@@ -42,6 +42,14 @@ const REDIS_EXPIRE_2D = 172800;       // 过期时间 2 天
 const REDIS_YZM_KEY = 'verify_code'; //验证码键值
 
 /**
+ * 微信相关
+ */
+const WECHAT_APPID = 'wx8f291dccc9e8f39b';
+const WECHAT_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
+const WECHAT_SOURCECODE = 'gh_2f514810fe61';
+const WECHAT_TOKEN ='tianyanlivehome2017';
+
+/**
  * 七牛云 相关
  */
 const QINIU_ACCESS_KEY = 'WdoTQvcgbolHkm-W_EfXM4I0wTBrHWhbYfuNu3ZLC';
@@ -145,10 +153,10 @@ const EXTENSION = 'intr';               // 代理推广url传递参数keys
 /* token的后台，前台区分 */
 const TOKEN_PRIVATE_KEY_TIME = 3600;    //获取token的键值的生存时间
 const TOKEN_PRIVATE_KEY_CHECK_MIN_TIME = 3;//获取token的键值的生存时间
-const TOKEN_CODE_AUTH = 'AuthGC';       //后台
+//const TOKEN_CODE_AUTH = 'AuthGC';       //后台
 const TOKEN_CODE_ADMIN = 'Admin';       //后台
 const TOKEN_CODE_USER = 'User';         //会员
-const TOKEN_CODE_AGENT = 'Agent';       //代理
+//const TOKEN_CODE_AGENT = 'Agent';       //代理
 const TOKEN_ADMIN_LIVE_TIME = 24;       //管理员超时时间，单位：小时
 const TOKEN_USER_LIVE_TIME  =  1;        //会员toekn超时时间，单位：小时
 const TOKEN_USER_OFF_LINE   = 15;       //会员自动离线时间，单位：分钟

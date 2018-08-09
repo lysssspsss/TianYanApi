@@ -23,6 +23,7 @@ class Index extends Base
     {
         //$data = $this->testRsaEncrypt();
         $a = get_auth_headers();
+        dump($a);exit;
         //wlog(APP_PATH.'log/test.log',json_encode($data));//日志测试
         //$auth = new Auth(QINIU_ACCESS_KEY, QINIU_SECRET_KEY);//七牛云测试
         //$auth2 = Qiniu::getInstance(); var_dump($auth2);exit;//七牛云测试2
