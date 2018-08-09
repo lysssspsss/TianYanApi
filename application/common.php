@@ -91,7 +91,8 @@ if (!function_exists('vsign')) {
     function vsign($sign, $content)
     {
         $sign = decode_sign($sign);
-        $content_md5 = md5(to_url_params(ksort($content)));
+        ksort($content);
+        $content_md5 = md5(to_url_params($content));
         if ($sign == $content_md5) {
             return true;
         } else {
