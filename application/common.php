@@ -83,12 +83,13 @@ if (!function_exists('decode_sign')) {
      */
     function decode_sign($sign)
     {
-        $private_key = RSA_PRIVATE_KEY;
+        //$private_key = RSA_PRIVATE_KEY;
         //解密结果对比
-        $pi_key = openssl_pkey_get_private($private_key);
-        //echo "pikey is:".$pi_key."</br>";
+        $pi_key = openssl_pkey_get_private(RSA_PRIVATE_KEY);
+        var_dump($pi_key);
         $decrypted = '';
         $encryResult2 = base64_decode($sign);
+        //$encryResult2 = ;
         openssl_private_decrypt($encryResult2, $decrypted, $pi_key);
         //var_dump($decrypted);exit;
         return $decrypted;

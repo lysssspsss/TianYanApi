@@ -36,7 +36,9 @@ class Index extends Controller
         $res = $this->send_post('http://111.230.238.183:9527/api.php/index/user/sms',$post);
         dump($res);exit;*/
 
-        $this->return_json(OK,$a);
+        //decode_sign('wSUNdfRrZyxVFC8ii+Bb6bwWU1sv8Rsycva2J4D7hZavQwv2jdYKn7M6SGEZPojWJ8kHgFCyOu5rOXpQsm/oJC9aDBkhk7agB2mtCxU8sDxPDk+q87ZVIGjeYcTBpnIG3WRwZjfoqc4A7RgYjQNpdXEXywZmPmqwVkuE8AB5Lvc=');
+
+        //$this->return_json(OK,$a);
         //exit;
     }
 
