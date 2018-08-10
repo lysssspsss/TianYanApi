@@ -122,7 +122,7 @@ class Base extends Controller
         }
         if (!empty($data)) {
             $result['data'] = $data;
-            $result['sign'] = encode_sign($data);
+            $result['sign'] = encode_private_sign($data);//返回数据用私钥加密
         }
         if($is_mrl === true){
             $result['relogin'] = $relogin;

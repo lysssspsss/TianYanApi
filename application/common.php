@@ -17,7 +17,7 @@ if (!function_exists('encode_sign')) {
      * @param $values
      * @return string
      */
-    function encode_sign($values)
+    function encode_public_sign($values)
     {
         $pub_key = RSA_PUBLIC_KEY;
         //签名步骤一：按字典序排序参数

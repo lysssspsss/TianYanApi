@@ -27,11 +27,11 @@ class Index extends Controller
         //wlog(APP_PATH.'log/test.log',json_encode($data));//日志测试
         //$auth = new Auth(QINIU_ACCESS_KEY, QINIU_SECRET_KEY);//七牛云测试
         //$auth2 = Qiniu::getInstance(); var_dump($auth2);exit;//七牛云测试2
-        //$aa = Message::sendSms('13682694631','12345'); var_dump($aa);exit;//短信测试
+        //$aa = Message::sendSms('13168088229','12345'); var_dump($aa);exit;//短信测试
 
-        /*$post['phone'] = '1368269631';
+        /*$post['phone'] = '13168088229';
         $post['type'] = '2';
-        $sign = encode_sign($post);
+        $sign = encode_public_sign($post);
         $post['sign'] = $sign;
         $res = $this->send_post('http://111.230.238.183:9527/api.php/index/user/sms',$post);
         dump($res);exit;*/
