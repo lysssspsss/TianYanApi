@@ -46,7 +46,7 @@ class Base extends Controller
             $this->return_json([],false,true,'Token fail!');
         }*/
 
-        $this->check_sign();/* 签名校验 */
+        //$this->check_sign();/* 签名校验 */
         $this->is_repeat(); /* 重放检测 */
         $header = get_auth_headers();
         $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
