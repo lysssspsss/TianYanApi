@@ -91,6 +91,7 @@ class Base extends Controller
         }
         $sign = $param['sign'];
         unset($param['sign']);
+        wlog(APP_PATH.'log/sign.log',$sign.'  |  '.json_encode($param));
         $is = vsign($sign,$param);
         if(!$is){
             $this->return_json(E_SIGN,'验签失败');
