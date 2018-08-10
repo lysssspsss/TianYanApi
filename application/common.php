@@ -58,6 +58,7 @@ if (!function_exists('decode_sign')) {
         $decrypted = '';
         $encryResult2 = base64_decode($sign);
         openssl_private_decrypt($encryResult2, $decrypted, $pi_key);
+        //var_dump($decrypted);exit;
         return $decrypted;
     }
 }
@@ -92,7 +93,8 @@ if (!function_exists('vsign')) {
     {
         $sign = decode_sign($sign);
         ksort($content);
-        $content_md5 = md5(to_url_params($content));
+        $content_md5 = strtoupper(md5(to_url_params($content)));
+        //var_dump($sign,$content_md5);exit;
         if ($sign == $content_md5) {
             return true;
         } else {
