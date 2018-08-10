@@ -10,7 +10,8 @@
 // +----------------------------------------------------------------------
 namespace tests;
 
-class TestCase extends \think\testing\TestCase
+class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected $baseUrl = 'http://localhost';
+    //public function
 }

@@ -48,6 +48,8 @@ const WECHAT_APPID = 'wx8f291dccc9e8f39b';
 const WECHAT_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
 const WECHAT_SOURCECODE = 'gh_2f514810fe61';
 const WECHAT_TOKEN ='tianyanlivehome2017';
+const WECHAT_USER_URL = 'https://api.weixin.qq.com/sns/userinfo';
+const WECHAT_OAUTH_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token';
 
 /**
  * 七牛云 相关
@@ -159,6 +161,9 @@ const TOKEN_CODE_USER = 'User';         //会员
 //const TOKEN_CODE_AGENT = 'Agent';       //代理
 const TOKEN_ADMIN_LIVE_TIME = 24;       //管理员超时时间，单位：小时
 const TOKEN_USER_LIVE_TIME  =  1;        //会员toekn超时时间，单位：小时
+const TOKEN_USER_LIVE_15DAY  =  360;        //会员toekn超时时间：半个月
+const TOKEN_USER_LIVE_1MOON  =  720;        //会员toekn超时时间：1个月
+const TOKEN_USER_LIVE_2MOON  =  1440;        //会员toekn超时时间：2个月
 const TOKEN_USER_OFF_LINE   = 15;       //会员自动离线时间，单位：分钟
 const USER_BANK_PWD_ERROR   = 5;        //取款密码错误次数
 /*密钥*/

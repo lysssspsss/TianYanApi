@@ -21,6 +21,7 @@ class Base extends Controller
     public function __construct()
     {
         parent::__construct();
+        //var_dump(md5('phone=13168088229&type=2'));exit;
         if (PHP_SAPI != 'cli') {
             header("Access-Control-Allow-Origin: *");//跨域
             // header('Content-Type:text/html; charset=utf-8');
@@ -39,14 +40,7 @@ class Base extends Controller
         $request = Request::instance();
         $url = $request->controller().$request->action();
 
-        /*请求token检测，测试环境可以注释，正式环境需开启
-         * $header_token = get_auth_headers(HEADER_TOKEN);
-        $result = $this->check_token($header_token,$url); // 请求token检测
-        if(!$result){
-            $this->return_json([],false,true,'Token fail!');
-        }*/
-
-        //$this->check_sign();/* 签名校验 */
+        $this->check_sign();/* 签名校验 */
         $this->is_repeat(); /* 重放检测 */
         $header = get_auth_headers();
         $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
@@ -128,7 +122,7 @@ class Base extends Controller
         }
         if (!empty($data)) {
             $result['data'] = $data;
-            $result['data']['sign'] = encode_sign($data);
+            $result['sign'] = encode_sign($data);
         }
         if($is_mrl === true){
             $result['relogin'] = $relogin;
@@ -237,7 +231,7 @@ class Base extends Controller
     protected function get_user_token($memberid,$refresh = false)
     {
         $idtotoken = $this->usertoken_rediskey.'_id:'.$memberid;//用戶token索引
-        $time = TOKEN_USER_LIVE_TIME * 3600;
+        $time = TOKEN_USER_LIVE_15DAY * 3600;
         $user = $this->get_user($memberid);
         if($refresh){//自动登录后刷新token
             $token_old = $this->redis->get($idtotoken);
@@ -247,7 +241,7 @@ class Base extends Controller
             $tokentokey = $this->usertoken_rediskey.':'.$token_old;
             $this->redis->expire($idtotoken,$time);
             $this->redis->expire($tokentokey,$time);
-
+            $this->user = $user;
             return $token_old;
         }
         $token = md5($memberid.date('Y-m-d H:i:s').USER_TOKEN_KEY);
@@ -255,6 +249,7 @@ class Base extends Controller
         if(empty($user)){
             $this->return_json(E_OP_FAIL,'没有这个用户');
         }
+        $this->user = $user;
         $this->redis->setex($idtotoken,$time,$token);
         $this->redis->setex($tokentokey,$time,json_encode($user));
         return $token;

@@ -9,7 +9,7 @@ use think\Validate;
 use Qiniu\Auth;
 
 
-class Index extends Base
+class Index extends Controller
 {
     //public $values;
 
@@ -23,13 +23,37 @@ class Index extends Base
     {
         //$data = $this->testRsaEncrypt();
         $a = get_auth_headers();
-        dump($a);exit;
+        //dump($a);exit;
         //wlog(APP_PATH.'log/test.log',json_encode($data));//日志测试
         //$auth = new Auth(QINIU_ACCESS_KEY, QINIU_SECRET_KEY);//七牛云测试
         //$auth2 = Qiniu::getInstance(); var_dump($auth2);exit;//七牛云测试2
         //$aa = Message::sendSms('13682694631','12345'); var_dump($aa);exit;//短信测试
+
+        /*$post['phone'] = '1368269631';
+        $post['type'] = '2';
+        $sign = encode_sign($post);
+        $post['sign'] = $sign;
+        $res = $this->send_post('http://111.230.238.183:9527/api.php/index/user/sms',$post);
+        dump($res);exit;*/
+
         $this->return_json(OK,$a);
         //exit;
+    }
+
+    //post推送
+    public function send_post($url,$post_data)
+    {
+        $ch = curl_init();
+        //curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // https跳过证书检查
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);// 10s to timeout.
+        $output = curl_exec($ch);
+        curl_close($ch);
+        return $output;
     }
 
 

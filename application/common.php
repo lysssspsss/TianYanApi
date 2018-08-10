@@ -13,7 +13,7 @@
 
 if (!function_exists('encode_sign')) {
     /**
-     * 加密
+     * 公钥加密
      * @param $values
      * @return string
      */
@@ -43,9 +43,41 @@ if (!function_exists('encode_sign')) {
 
 }
 
+if (!function_exists('encode_private_sign')) {
+    /**
+     * 私钥加密
+     * @param $values
+     * @return string
+     */
+    function encode_private_sign($values)
+    {
+        $pub_key = RSA_PRIVATE_KEY;
+        //签名步骤一：按字典序排序参数
+        if(is_array($values)){
+            ksort($values);
+            $string = to_url_params($values);
+        }else{
+            $string = (string)$values;
+        }
+        //签名步骤二：MD5加密
+        $string = md5($string);
+        //签名步骤三：所有字符转为大写
+        $result = strtoupper($string);
+        //签名步骤四：用公钥对result签名
+        //echo "The result after MD5 is:".$result."</br>";
+        $pubkey = openssl_pkey_get_private($pub_key);
+        //echo "pubkey is:".$pubkey."</br>";
+        $encrypted = ''; //用来存放加密后的内容
+        openssl_private_encrypt($result, $encrypted, $pubkey);
+        $encrypted = base64_encode($encrypted);
+        return $encrypted;
+    }
+
+}
+
 if (!function_exists('decode_sign')) {
     /**
-     * 解密
+     * 私钥解密
      * @param $sign
      * @return string
      */
@@ -102,7 +134,22 @@ if (!function_exists('vsign')) {
         }
     }
 }
-
+if (!function_exists('esay_curl')) {
+    function esay_curl($url,$jump_ssl = false)
+    {
+        $ch = curl_init();
+        if($jump_ssl){
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // 跳过证书检查
+        }
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        $res = curl_exec($ch);
+        curl_close($ch);
+        return $res;
+    }
+}
 
 if (!function_exists('dump')) {
     /**
