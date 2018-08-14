@@ -119,7 +119,10 @@ class Base extends Controller
             } elseif (is_array($data)) {
                 $result['data'] = $data;
             }
-            exit(json_encode((object)$result, JSON_UNESCAPED_UNICODE));
+            if($this->source == 'IOS'){
+                exit(json_encode($result, JSON_FORCE_OBJECT));
+            }
+            exit(json_encode($result, JSON_UNESCAPED_UNICODE));
         }
         if (!empty($data)) {
             $result['data'] = $data;
@@ -130,7 +133,10 @@ class Base extends Controller
             $result['needRegister'] = $needRegister;
         }
         //$result['result'] = $data;
-        exit(json_encode((object)$result, JSON_UNESCAPED_UNICODE));
+        if($this->source == 'IOS'){
+            exit(json_encode($result, JSON_FORCE_OBJECT));
+        }
+        exit(json_encode($result, JSON_UNESCAPED_UNICODE));
     }
 
 
