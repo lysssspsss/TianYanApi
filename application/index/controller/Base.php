@@ -35,7 +35,7 @@ class Base extends Controller
 
 
         /* 不需要登陆权限的控制器和方法[小写] */
-        $pass = ['user' => ['reg', 'sms', 'regbase', 'login', 'updatepwd'],'index'=>['index']];
+        $pass = ['user' => ['reg', 'sms', 'login','wechat_login'],'index'=>['index']];
 
         $request = Request::instance();
         $url = $request->controller().$request->action();
@@ -49,18 +49,18 @@ class Base extends Controller
         if (isset($pass[$this_class]) && in_array($this_method, $pass[$this_class])) {
 
         }else{
-            $memberid = input('param.memberid');
-            $user_token = empty($header['Token'])?'':$header['Token'];
+            //$memberid = input('param.memberid');
+            $memberid = empty($header['Memberid'])?'':$header['Memberid'];
             $channel = input('param.channel');
             !empty($channel) or $channel = '';
             $result = $this->validate(
                 [
-                    'user_token'  => $user_token,
+                   // 'user_token'  => $user_token,
                     'uid'  => $memberid,
                     'channel'  => $channel,
                 ],
                 [
-                    'user_token'  => 'require|alphaNum|max:32',
+                   // 'user_token'  => 'require|alphaNum|max:32',
                     'uid'  => 'number|max:16',
                     'channel'  => 'alphaNum',
                 ]
@@ -68,7 +68,7 @@ class Base extends Controller
             if($result !== true){
                 $this->return_json(E_ARGS,'参数错误1');
             }
-            $user = $this->check_user_token($user_token);
+            $user = $this->check_user_token($memberid);
             if(!$user){
                 $this->return_json(E_OP_FAIL,'请重新登录1',true,true);
             }
@@ -119,7 +119,8 @@ class Base extends Controller
             } elseif (is_array($data)) {
                 $result['data'] = $data;
             }
-            echo json_encode($result, JSON_UNESCAPED_UNICODE);exit;
+            header('Content-Type:application/json; charset=utf-8');
+            exit(json_encode($result, JSON_UNESCAPED_UNICODE));
         }
         if (!empty($data)) {
             $result['data'] = $data;
@@ -130,7 +131,8 @@ class Base extends Controller
             $result['needRegister'] = $needRegister;
         }
         //$result['result'] = $data;
-        echo json_encode($result, JSON_UNESCAPED_UNICODE);exit;
+        header('Content-Type:application/json; charset=utf-8');
+        exit(json_encode($result, JSON_UNESCAPED_UNICODE));
     }
 
 
@@ -225,6 +227,53 @@ class Base extends Controller
     }
 
     /**
+     * 生成用户redis
+     * @param $url
+     * @return string
+     */
+    protected function get_user_redis($memberid,$refresh = false)
+    {
+        $idtotoken = $this->usertoken_rediskey.'_id:'.$memberid;//用戶token索引
+        $time = TOKEN_USER_LIVE_15DAY * 3600;
+        $user = $this->get_user($memberid);
+        if(empty($user)){
+            $this->return_json(E_OP_FAIL,'没有这个用户');
+        }
+        if($refresh){//自动登录后刷新token
+            $token_old = $this->redis->get($idtotoken);
+            if(empty($token_old)){
+                $this->return_json(E_OP_FAIL,'自动登录有效期已过，请重新登录');
+            }
+        }
+        $is = $this->redis->setex($idtotoken,$time,json_encode($user));
+        if($is){
+            $this->user = $user;
+            return true;
+        }
+        $this->return_json(E_OP_FAIL,'获取用户信息失败，请重新登录');
+    }
+
+    /**
+     * 检查用户redis
+     * @param $uid
+     * @return bool|string
+     */
+    protected function check_user_redis($memberid = '')
+    {
+        //dump($token);exit;
+        if(empty($memberid)){
+            return false;
+        }
+        $tokentokey = $this->usertoken_rediskey.'_id:'.$memberid;
+        $user = $this->redis->get($tokentokey);
+        if(empty($user)){
+            return false;
+        }
+        return json_decode($user,true);
+    }
+
+
+    /**
      * 生成用户token
      * @param $url
      * @return string
@@ -273,6 +322,7 @@ class Base extends Controller
         $this->redis->del($tokentokey);
         return true;
     }
+
 
     /**
      * 检查用户token

@@ -1,5 +1,6 @@
 <?php
-namespace app\index\controller;
+namespace app\tools\controller;
+use think\Controller;
 use think\Input;
 use Qiniu\Auth;
 
@@ -9,7 +10,7 @@ use Qiniu\Auth;
  * Class Qiniu
  * @package app\index\controller
  */
-class Qiniu extends Base
+class Qiniu extends Controller
 {
     protected $Access_Key;
     protected $Secret_Key;

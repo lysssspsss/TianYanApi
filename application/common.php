@@ -75,6 +75,16 @@ if (!function_exists('encode_private_sign')) {
 
 }
 
+/**
+ * 重建被废弃的eregi函数
+ */
+if(!function_exists('eregi_new')) {
+    function eregi_new($pattern, $subject, &$matches = [])
+    {
+        return preg_match('/'.$pattern.'/i', $subject, $matches);
+    }
+}
+
 if (!function_exists('decode_sign')) {
     /**
      * 私钥解密
