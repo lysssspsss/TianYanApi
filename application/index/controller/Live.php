@@ -41,7 +41,7 @@ class Live extends Base
             $result['lecture'] = $lecture;
 
             $member = db('member')->find($lecture['memberid']);
-            //    $liveroom = M("home")->where("memberid=".$member['id'])->find();
+            //    $liveroom = db("home")->where("memberid=".$member['id'])->find();
             $liveroom = db("home")->find($lecture['live_homeid']);
             //$this->assign("livehome", $liveroom);
             $result['livehome'] = $liveroom;
@@ -99,7 +99,7 @@ class Live extends Base
         }
         if (isset($lecture['live_homeid'])&&(!empty($lecture['live_homeid'])) && $lecture['live_homeid']!=0){
             $manager = db('home_manager')->where('(homeid='.$lecture['live_homeid'].' or homeid='.$lecture['channel_id'].') AND beinviteid='.$currentMember['id'])->find();
-            // $manager = M('home_manager')->where('beinviteid='.$currentMember['id'])->find();
+            // $manager = db('home_manager')->where('beinviteid='.$currentMember['id'])->find();
         }
         if (($currentMember['id'] == $lecture['memberid']) || $manager) {
             $result['isOwner'] = 1;
@@ -128,7 +128,7 @@ class Live extends Base
 
         //是否禁言
         //"courseid=" . $lecture['id'] . " and memberid=" . $currentMember['id']
-        $dissenmsg = M('dissenmsg')->where(['courseid'=>$lecture['id'],'memberid'=>$currentMember['id']])->find();
+        $dissenmsg = db('dissenmsg')->where(['courseid'=>$lecture['id'],'memberid'=>$currentMember['id']])->find();
         if ($dissenmsg) {
             //$this->assign("blocked", 1);
             $result['blocked'] = 1;
@@ -138,11 +138,11 @@ class Live extends Base
         }
         //评论数
         //"lecture_id=" . $lecture['id']
-        $dis_count = M('discuss')->where(['lecture_id'=>$lecture['id']])->count();
+        $dis_count = db('discuss')->where(['lecture_id'=>$lecture['id']])->count();
         $result['dis_count'] = $dis_count;
         //$this->assign("dis_count", $dis_count);
         //预约人数
-        $sub_count = M('subscribe')->where(["cid"=>$lecture['id']])->count();
+        $sub_count = db('subscribe')->where(["cid"=>$lecture['id']])->count();
         if (isset($lecture['basescrib'])){
             $sub_count += $lecture['basescrib'];
         }
@@ -172,7 +172,7 @@ class Live extends Base
         }
 
         //JSSDK 签名
-        $this->assign("appid", WECHAT_APPID);
+        /*$this->assign("appid", WECHAT_APPID);
         $jssdk = new JsApiController(C("wechat.APPID"), C("wechat.APPSECRET"));
         $signPackage = $jssdk->GetSignPackage();
         $this->assign("signpack", $signPackage);
@@ -180,7 +180,9 @@ class Live extends Base
             $this->display('classroom_new');
         }else{
             $this->display();
-        }
+        }*/
+        $result = arr_val_tran_str($result);
+        $this->return_json(OK,$result);
     }
 
 }

@@ -68,7 +68,7 @@ class Base extends Controller
             if($result !== true){
                 $this->return_json(E_ARGS,'参数错误1');
             }
-            $user = $this->check_user_token($memberid);
+            $user = $this->check_user_redis($memberid);
             if(!$user){
                 $this->return_json(E_OP_FAIL,'请重新登录1',true,true);
             }
@@ -126,8 +126,8 @@ class Base extends Controller
             exit(json_encode($result, JSON_UNESCAPED_UNICODE));
         }
         if (!empty($data)) {
-            $result['data'] = $data;
-            $result['sign'] = encode_private_sign($data);//返回数据用私钥加密
+            $result['data'] = arr_val_tran_str($data);
+            $result['sign'] = encode_private_sign($result['data']);//返回数据用私钥加密
         }
         if($is_mrl === true){
             $result['relogin'] = $relogin;
