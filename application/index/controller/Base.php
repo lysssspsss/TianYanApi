@@ -40,7 +40,7 @@ class Base extends Controller
         $request = Request::instance();
         $url = $request->controller().$request->action();
 
-        //$this->check_sign();/* 签名校验 */
+        $this->check_sign();/* 签名校验 */
         $this->is_repeat(); /* 重放检测 */
         $header = get_auth_headers();
         $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
@@ -85,7 +85,7 @@ class Base extends Controller
      */
     protected function check_sign()
     {
-        $param = input('param.');
+        $param = $_POST;
         if(empty($param['sign'])){
             $this->return_json(422,'参数为空：sign');
         }
