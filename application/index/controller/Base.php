@@ -120,7 +120,9 @@ class Base extends Controller
                 $result['data'] = $data;
             }
             header('Content-Type:application/json; charset=utf-8');
-            exit(json_encode($result, JSON_UNESCAPED_UNICODE));
+            $handler  =   isset($_GET[C('VAR_JSONP_HANDLER')]) ? $_GET[C('VAR_JSONP_HANDLER')] : C('DEFAULT_JSONP_HANDLER');
+            exit($handler.'('.json_encode($data,JSON_UNESCAPED_UNICODE).');');
+            //exit(json_encode($result, JSON_UNESCAPED_UNICODE));
         }
         if (!empty($data)) {
             $result['data'] = $data;
@@ -131,8 +133,11 @@ class Base extends Controller
             $result['needRegister'] = $needRegister;
         }
         //$result['result'] = $data;
+        //header('Content-Type:application/json; charset=utf-8');
         header('Content-Type:application/json; charset=utf-8');
-        exit(json_encode($result, JSON_UNESCAPED_UNICODE));
+        $handler  =   isset($_GET[C('VAR_JSONP_HANDLER')]) ? $_GET[C('VAR_JSONP_HANDLER')] : C('DEFAULT_JSONP_HANDLER');
+        exit($handler.'('.json_encode($data,JSON_UNESCAPED_UNICODE).');');
+        //exit(json_encode($result, JSON_UNESCAPED_UNICODE));
     }
 
 
