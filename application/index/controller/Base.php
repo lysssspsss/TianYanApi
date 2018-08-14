@@ -93,6 +93,7 @@ class Base extends Controller
         unset($param['sign']);
         wlog(APP_PATH.'log/sign.log',$sign.'  |  '.json_encode($param));
         $is = vsign($sign,$param);
+        ob_clean();
         if(!$is){
             $this->return_json(E_SIGN,'验签失败');
         }
@@ -119,9 +120,9 @@ class Base extends Controller
             } elseif (is_array($data)) {
                 $result['data'] = $data;
             }
-            if($this->source == 'IOS'){
+            /*if($this->source == 'IOS'){
                 exit(json_encode($result, JSON_FORCE_OBJECT));
-            }
+            }*/
             exit(json_encode($result, JSON_UNESCAPED_UNICODE));
         }
         if (!empty($data)) {
@@ -133,9 +134,9 @@ class Base extends Controller
             $result['needRegister'] = $needRegister;
         }
         //$result['result'] = $data;
-        if($this->source == 'IOS'){
+        /*if($this->source == 'IOS'){
             exit(json_encode($result, JSON_FORCE_OBJECT));
-        }
+        }*/
         exit(json_encode($result, JSON_UNESCAPED_UNICODE));
     }
 
