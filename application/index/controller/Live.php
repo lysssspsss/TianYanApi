@@ -30,9 +30,9 @@ class Live extends Base
                 $lecture['current_status'] = 'started';
             }
             if ($lecture['current_status'] == 'closed') {
-                $lecture['lecture_status'] = 'closed';
+                $lecture['lectureStatus'] = 'closed';
             } else {
-                $lecture['lecture_status'] = 'approved';
+                $lecture['lectureStatus'] = 'approved';
             }
             //LogController::W_H_Log("status 为：".$status."current_status 为：". $lecture['current_status']);
             $lecture['intro'] = str_replace(PHP_EOL, '', $lecture['intro']);
@@ -188,6 +188,5 @@ class Live extends Base
     {
 
     }
-
 
 }
