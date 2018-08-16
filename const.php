@@ -9,6 +9,8 @@ const FING_TAG = 0;//发现fragment控制标示
 const SERVER_URL = "";
 const SERVER_URL_BACK = "";// 备用
 
+const WORKERMAN_PUBLISH_URL = 'http://127.0.0.1:2121/';
+
 /**
  * 阿里云短信 相关
  */

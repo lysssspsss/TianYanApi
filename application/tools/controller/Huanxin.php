@@ -1,10 +1,11 @@
 <?php
-namespace app\index\controller;
+namespace app\tools\controller;
+use think\Controller;
 use think\Input;
 
 
 
-class Huanxin extends Base
+class Huanxin extends Controller
 {
     public function __construct()
     {

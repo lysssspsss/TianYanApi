@@ -75,6 +75,16 @@ if (!function_exists('encode_private_sign')) {
 
 }
 
+/**
+ * 重建被废弃的eregi函数
+ */
+if(!function_exists('eregi_new')) {
+    function eregi_new($pattern, $subject, &$matches = [])
+    {
+        return preg_match('/'.$pattern.'/i', $subject, $matches);
+    }
+}
+
 if (!function_exists('decode_sign')) {
     /**
      * 私钥解密
@@ -144,7 +154,33 @@ if (!function_exists('vsign')) {
         }
     }
 }
+
+
+if (!function_exists('arr_val_tran_str')) {
+    /**
+     * 将多维数组中所有的数值转换成字符串
+     */
+    function arr_val_tran_str($result = array())
+    {
+        foreach($result as $key => $value)
+        {
+            if(is_array($value)){
+                $result[$key] = arr_val_tran_str($value);
+            }else{
+                $result[$key] = (string)$value;
+            }
+        }
+        return $result;
+    }
+}
+
 if (!function_exists('esay_curl')) {
+    /**
+     * 简易curl请求
+     * @param $url
+     * @param bool $jump_ssl
+     * @return mixed
+     */
     function esay_curl($url,$jump_ssl = false)
     {
         $ch = curl_init();

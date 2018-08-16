@@ -6,6 +6,7 @@ use think\Input;
 use think\Db;
 use think\Session;
 use think\Validate;
+use app\tools\controller\Message;
 
 class User extends Base
 {
@@ -42,7 +43,7 @@ class User extends Base
             $this->return_json(E_OP_FAIL,'短信发送失败，请检查网络2');
         }
         $this->redis->set(REDIS_YZM_KEY.':'.$phone.'_'.$type,$code,REDIS_EXPIRE_5M);//暂存到redis
-        $this->return_json(OK,['code'=>$code]);
+        $this->return_json(OK,['code'=>(string)$code]);
     }
 
 
@@ -126,7 +127,7 @@ class User extends Base
             $this->return_json(E_OP_FAIL,'注册失败');
         }
         //生成用户token，记录登录状态与日志
-        $token = $this->get_user_token($memberid);
+        $token = $this->get_user_redis($memberid);
         //$this->set_login_log($data['uid'],1,$data['in_type']);
         $this->return_json(OK,['memberid'=>$memberid,'token'=>$token]);
     }
@@ -164,7 +165,7 @@ class User extends Base
             $this->return_json(E_OP_FAIL,'该用户尚未注册');
         }
         $data['memberid'] = (string)$user['id'];
-        $data['token'] = $this->get_user_token($user['id']);
+        $this->get_user_redis($user['id']);
         //$this->set_login_log($user['uid'],1,1);
         $this->return_json(OK,$data);
     }
@@ -184,12 +185,9 @@ class User extends Base
         if(empty($user)){
             $this->return_json(E_OP_FAIL,'该用户尚未注册');
         }
-        $token = $this->get_user_token($memberid,true);
-        if($token===false){
-            $this->return_json(E_OP_FAIL,'请重新登录2');
-        }
+        $this->get_user_redis($memberid,true);
         $data['memberid'] = $memberid;
-        $data['token'] = $token;
+        //$data['token'] = $token;
         //自动登录是否需要插入登录日志--待定
         $this->return_json(OK,$data);
     }
@@ -224,7 +222,7 @@ class User extends Base
         //LogController::W_H_Log("获取用户后的重定向地址为：".$state);
         //wlog($log_name,"获取用户后的重定向地址为：".$state);
         if(is_array($list) && $list){
-            $token = $this->get_user_token($list['id']);
+            $this->get_user_redis($list['id']);
             //$this->user = $list;
             //LogController::W_H_Log(date('y-m-d H:i:s',time())."提前返回数据：\n"."\n",3,"./logs/info.log");
             //wlog($log_name,"获取用户后的重定向地址为：".$state);
@@ -244,7 +242,7 @@ class User extends Base
                 wlog($log_name,json_encode($data,JSON_UNESCAPED_UNICODE));
                 M("member")->where(['openid'=>$openid])->save($data);
             }
-            $this->user['token'] = $token;
+            //$this->user['token'] = $token;
             $this->return_json(OK,$this->user);
             //header("Location:".$state);
         }else {
@@ -277,12 +275,14 @@ class User extends Base
                 //$user = db("member")->where(['id'=>$result])->find();
                 //dump($user);
                 //$this->user = $user;
-                $this->get_user_token($result);
+                $this->get_user_redis($result);
+                //$this->user['token'] = $token;
             } else {
                 //LogController::W_H_Log("未执行插入操作：".$data['openid']);
                 wlog($log_name,"未执行插入操作：".$data['openid']);
             }
             wlog($log_name,"获得返回数据：".$res);
+            $this->return_json(OK,$this->user);
             //LogController::W_H_Log("获得返回数据：".$res);
             //header("Location:" . $state);
 

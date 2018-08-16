@@ -1,5 +1,5 @@
 <?php
-namespace app\index\controller;
+namespace app\tools\controller;
 //ini_set("display_errors", "on");
 
 require EXTEND_PATH . 'sms/vendor/autoload.php';
@@ -10,6 +10,9 @@ use Aliyun\Core\DefaultAcsClient;
 use Aliyun\Api\Sms\Request\V20170525\SendSmsRequest;
 use Aliyun\Api\Sms\Request\V20170525\SendBatchSmsRequest;
 use Aliyun\Api\Sms\Request\V20170525\QuerySendDetailsRequest;
+use think\Controller;
+
+//use Think\Controller;
 
 // 加载区域结点配置
 Config::load();
@@ -21,7 +24,7 @@ Config::load();
  * (只需要将AK替换成开通了云通信-短信服务产品功能的AK即可)
  * 备注:Demo工程编码采用UTF-8
  */
-class Message extends Base
+class Message extends Controller
 {
     static $acsClient = null;
 
