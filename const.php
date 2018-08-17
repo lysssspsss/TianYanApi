@@ -9,6 +9,9 @@ const FING_TAG = 0;//发现fragment控制标示
 const SERVER_URL = "";
 const SERVER_URL_BACK = "";// 备用
 
+/**
+ * workerman
+ */
 const WORKERMAN_PUBLISH_URL = 'http://127.0.0.1:2121/';
 
 /**
@@ -26,7 +29,14 @@ const ALIYUN_TEMP_CODE6 = 'SMS_141115010';//信息变更验证码
 const ALIYUN_SIGN_TEST = '阿里云短信测试专用';
 const ALIYUN_SIGN = '天雁商学院';
 const ALIYUN_PRODUCT = '456';
-
+/**
+ * 阿里云OSS 相关
+ */
+const OSS_ACCESS_KEY_ID = 'UCguBiEKTCTelyZp';
+const OSS_ACCESS_KEY_SECRET = 'TbNwocSPammIWDfTzV0Pd61xtHu3t5';
+const OSS_END_POINT = 'http://oss-cn-shenzhen.aliyuncs.com';
+const OSS_BUCKET = 'livehomefile';
+const OSS_REMOTE_PATH = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com';
 
 /**
  * Redis

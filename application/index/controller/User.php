@@ -127,9 +127,9 @@ class User extends Base
             $this->return_json(E_OP_FAIL,'注册失败');
         }
         //生成用户token，记录登录状态与日志
-        $token = $this->get_user_redis($memberid);
+        $this->get_user_redis($memberid);
         //$this->set_login_log($data['uid'],1,$data['in_type']);
-        $this->return_json(OK,['memberid'=>$memberid,'token'=>$token]);
+        $this->return_json(OK,['memberid'=>$memberid]);
     }
 
 

@@ -7,6 +7,7 @@ use think\Db;
 use think\Session;
 use think\Validate;
 use app\tools\controller\Time;
+use app\tools\controller\Tools;
 
 
 class Live extends Base
@@ -21,7 +22,7 @@ class Live extends Base
         $lectureid = \input('post.lecture_id');
         if ($lectureid) {
             $lecture = db("course")->find($lectureid);
-            $status = Time::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
+            $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
             $lecture['starttimes'] = strtotime($lecture['starttime']);
 
             if ($status != '进行中') {
@@ -165,10 +166,10 @@ class Live extends Base
 
             //推送给用户
             //推送消息给用户
-           /* $publish_url=C('workerman_publish_url');
+            //$publish_url=C('workerman_publish_url');
             $data['popular'] = $lecdata['clicknum'];
             $data['lecture_id'] = $lecture['id'];
-            ToolsController::publish_msg(0,$lecture['id'],$publish_url,json_encode($data));*/
+            Tools::publish_msg(0,$lecture['id'],WORKERMAN_PUBLISH_URL,json_encode($data));
         }
 
         //JSSDK 签名
@@ -188,5 +189,4 @@ class Live extends Base
     {
 
     }
-
 }

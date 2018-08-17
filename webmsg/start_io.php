@@ -21,7 +21,7 @@ $context = array(
         'verify_peer' => false,
     )
 );
-// PHPSocketIO服务
+// PHPSocketIO服务 服务端方法
 $sender_io = new SocketIO(2120,$context);
 // 客户端发起连接事件时，设置连接socket的各种事件回调
 $sender_io->on('connection', function($socket){
@@ -108,7 +108,10 @@ $sender_io->on('connection', function($socket){
     });
 
 });
-// 当$sender_io启动后监听一个http端口，通过这个端口可以给任意uid或者所有uid推送数据
+
+
+
+// 当$sender_io启动后监听一个http端口，通过这个端口可以给任意uid或者所有uid推送数据 客户端方法
 $sender_io->on('workerStart', function(){
 
     $context = array(
