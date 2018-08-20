@@ -239,7 +239,7 @@ class User extends Base
                 );
                 //LogController::W_H_Log($data);
                 wlog($log_name,json_encode($data,JSON_UNESCAPED_UNICODE));
-                M("member")->where(['openid'=>$openid])->save($data);
+                db("member")->where(['openid'=>$openid])->insert($data);
             }
             //$this->user['token'] = $token;
             $this->return_json(OK,$this->user);
