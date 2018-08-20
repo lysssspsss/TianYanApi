@@ -12,7 +12,7 @@ const SERVER_URL_BACK = "";// 备用
 /**
  * workerman
  */
-const WORKERMAN_PUBLISH_URL = 'http://127.0.0.1:2121/';
+const WORKERMAN_PUBLISH_URL = 'https://tianyan199.com:2120/';
 
 /**
  * 阿里云短信 相关

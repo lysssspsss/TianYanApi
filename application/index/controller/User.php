@@ -219,12 +219,10 @@ class User extends Base
 
         $log_name = APP_PATH.'log/wechat_login.log';
         $error_log_name = APP_PATH.'log/wechat_login_error.log';
-        //LogController::W_H_Log("进入callback方法");
         wlog($log_name,'进入微信登录方法'."\n");
         $appid = WECHAT_APPID;
         $secret = WECHAT_APPSECRET;
         $code = input('post.code');
-        /*$state = "http://tianyan199.com".urldecode($state);*/
         $get_token_url = WECHAT_OAUTH_URL.'?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
         $res = esay_curl($get_token_url);
         wlog($log_name,"get_token_url 为：".$get_token_url."\n");
@@ -235,24 +233,15 @@ class User extends Base
             $this->return_json(E_OP_FAIL,'登录失败，无法获取到access_token或openid');
         }
         $access_token = $json_obj['access_token'];
-        //$openid = $json_obj['openid'];
         $unionid = $json_obj['unionid'];
         $user = db("member");
         $list = $user->where(['unionid'=>$unionid])->find();
-        //error_log("openid is :".$openid."\n",3,"./logs/info.log");
-        //LogController::W_H_Log("获取用户后的重定向地址为：".$state);
-        //wlog($log_name,"获取用户后的重定向地址为：".$state);
         if(is_array($list) && !empty($list)){
             $this->get_user_redis($list['id']);
-            //$this->user = $list;
-            //LogController::W_H_Log(date('y-m-d H:i:s',time())."提前返回数据：\n"."\n",3,"./logs/info.log");
-            //wlog($log_name,"获取用户后的重定向地址为：".$state);
-            //var_dump($this->user);exit;
             if (empty($this->user['unionid'])){
                 $get_user_info_url = WECHAT_USER_URL.'?access_token=' . $access_token . '&openid=' . $openid . '&lang=zh_CN';
                 $res = esay_curl($get_user_info_url);
                 //解析json
-                //error_log("result is :" . $res, 3, "./logs/info.log");
                 wlog($log_name,"result 1 is :" . $res."\n");
                 $user_obj = json_decode($res, true);
                 $data = array(
@@ -260,19 +249,13 @@ class User extends Base
                     'headimg' => $user_obj['headimgurl'],
                     'lastupdate' => date("Y-m-d H:i:s")
                 );
-                //LogController::W_H_Log($data);
                 wlog($log_name,json_encode($data,JSON_UNESCAPED_UNICODE)."\n");
                 db("member")->where(['openid'=>$openid])->update($data);
             }
-            //$this->user['token'] = $token;
             $this->return_json(OK,$this->user);
-            //header("Location:".$state);
         }else {
             $get_user_info_url = WECHAT_USER_URL.'?access_token=' . $access_token . '&openid=' . $openid . '&lang=zh_CN';
             $res = esay_curl($get_user_info_url);
-            //error_log(date('callback 方法'.'y-m-d H:i:s',time()).$res,3,"./logs/info.log");
-            //解析json
-            //error_log("result is :" . $res, 3, "./logs/info.log");
             wlog($log_name,"result 2 is :" . $res."\n");
             $user_obj = json_decode($res, true);
             $data = array(
@@ -282,7 +265,6 @@ class User extends Base
                 'img' => $user_obj['headimgurl'],
                 'headimg' => $user_obj['headimgurl'],
                 'sex' => $user_obj['sex'],
-                //'country' => $user_obj['country'],
                 'city' => $user_obj['city'],
                 'province' => $user_obj['province'],
                 'addtime' => date("Y-m-d H:i:s"),
@@ -290,27 +272,15 @@ class User extends Base
             );
             $data['issubmit'] = 1;
             $data['source'] = $this->source;
-            //$member = db('member');
             $result = Db::name('member')->insertGetId($data);
             wlog($log_name,"返回数据为：".$result."\n");
             if ($result) {
-               // wlog($log_name,"返回数据为：".$result);
-                //LogController::W_H_Log("返回数据为：".$result);
-                //$membert = db("member");
-                //$user = db("member")->where(['id'=>$result])->find();
-                //dump($user);
-                //$this->user = $user;
                 $this->get_user_redis($result);
-                //$this->user['token'] = $token;
             } else {
-                //LogController::W_H_Log("未执行插入操作：".$data['openid']);
                 wlog($log_name,"未执行插入操作：".$data['openid']."\n");
             }
             wlog($log_name,"获得返回数据：".$res."\n");
             $this->return_json(OK,$this->user);
-            //LogController::W_H_Log("获得返回数据：".$res);
-            //header("Location:" . $state);
-
         }
     }
 

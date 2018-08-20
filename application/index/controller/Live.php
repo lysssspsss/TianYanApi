@@ -1,5 +1,6 @@
 <?php
 namespace app\index\controller;
+use app\tools\controller\Tools;
 use think\Controller;
 use think\Request;
 use think\Input;
@@ -7,8 +8,6 @@ use think\Db;
 use think\Session;
 use think\Validate;
 use app\tools\controller\Time;
-use app\tools\controller\Tools;
-
 
 class Live extends Base
 {
@@ -37,14 +36,10 @@ class Live extends Base
             }
             //LogController::W_H_Log("status 为：".$status."current_status 为：". $lecture['current_status']);
             $lecture['intro'] = str_replace(PHP_EOL, '', $lecture['intro']);
-            //dump($lecture);exit;
-            //$this->assign("lecture", $lecture);
             $result['lecture'] = $lecture;
 
             $member = db('member')->find($lecture['memberid']);
-            //    $liveroom = db("home")->where("memberid=".$member['id'])->find();
             $liveroom = db("home")->find($lecture['live_homeid']);
-            //$this->assign("livehome", $liveroom);
             $result['livehome'] = $liveroom;
             if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
                 $vedio = db('video')->where(['lecture_id'=>$lectureid,'isshow'=>'show'])->select();
@@ -60,60 +55,41 @@ class Live extends Base
                     $d_video['img'] = $lecture['coverimg'];
                 }
                 $result['dvideo'] = $d_video;
-                //$this->assign('dvideo',$d_video);
             }
         }
         $result['member'] = $member;
-        //$this->assign("member", $member);
-
         $currentMember = $this->user;
         $currentMember = db('member')->find($currentMember['id']);
         $result['cmember'] = $currentMember;
-        //$this->assign("cmember", $currentMember);
-
         if ($lecture['channel_id']==217 && $currentMember['remarks']=='武汉峰会签到'){ //武汉峰会 会员进入
             $shareTitle = $currentMember['name']."花980元邀请您1元钱收听".$lecture['name'];
         }else{
             $shareTitle = $lecture['name'];
         }
         $result['shareTitle'] = $shareTitle;
-        //$this->assign("shareTitle",$shareTitle);
-
         //判断是否已关注直播间
-        //"memberid=" . $currentMember['id'] . " and roomid=" . $liveroom['id']
         $atten = db('attention')->where(['memberid'=>$currentMember['id'],'roomid'=>$liveroom['id']])->find();
         if ($atten) {
-            //$this->assign("isattention", 1);
             $result['isattention'] = 1;
         } else {
-            //$this->assign("isattention", 0);
             $result['isattention'] = 0;
         }
-        //"cid=" . $lectureid . " and mid=" . $currentMember['id']
         $subscrib = db('subscribe')->where(['cid'=>$lectureid,'mid'=>$currentMember['id']])->find();
         if ($subscrib) {
-            //$this->assign("issubscrib", 1);
             $result['issubscrib'] = 1;
         } else {
-            //$this->assign("issubscrib", 0);
             $result['issubscrib'] = 0;
         }
         if (isset($lecture['live_homeid'])&&(!empty($lecture['live_homeid'])) && $lecture['live_homeid']!=0){
             $manager = db('home_manager')->where('(homeid='.$lecture['live_homeid'].' or homeid='.$lecture['channel_id'].') AND beinviteid='.$currentMember['id'])->find();
-            // $manager = db('home_manager')->where('beinviteid='.$currentMember['id'])->find();
         }
         if (($currentMember['id'] == $lecture['memberid']) || $manager) {
             $result['isOwner'] = 1;
             $result['isSpeaker'] = 1;
             $result['canSpeak'] = 1;
-            /*$this->assign("isOwner", 1);
-            $this->assign("isSpeaker", 1);
-            $this->assign("canSpeak", 1);*/
         } else {
             $result['isOwner'] = 0;
-            //$this->assign("isOwner", 0);
         }
-        //"courseid=" . $lectureid . " and beinviteid=" . $currentMember['id']
         $invete = db('invete')->where(['courseid'=>$lectureid,'beinviteid'=>$currentMember['id']])->find();
         if ($invete || $manager) {
            /* $this->assign("isSpeaker", 1);
@@ -186,9 +162,122 @@ class Live extends Base
     }
 
 
+    /*
+     * 获取初始聊天信息
+     */
+    public function get_messages()
+    {
+        //$cmember = $this->user;
+        $lecture_id = input('post.lecture_id'); //课程id
+        $start_date = input('post.start_date'); //开始日期 ，格式2018-08-06 20:00（没有秒），如果不传，则返回全部
+        $desired_count = input('post.desired_count');//返回聊天信息条数
+        $reverse = input('post.reverse');//为1则返回显示开始日期以前的数据
+        //数据验证
+        $result = $this->validate(
+            [
+                'lecture_id'  => $lecture_id,
+                'start_date' => $start_date,
+                'desired_count' => $desired_count,
+                'reverse' => $reverse,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+                'start_date'  => 'date',
+                'desired_count'  => 'require|number',
+                'reverse'  => 'require|in:0,1',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $where['id'] = $lecture_id;
+        $where['isshow'] = 'show';
+
+        $sql = "lecture_id=" . $lecture_id . " and isshow='show'";
+        if (!empty($start_date) && $reverse==0) {
+            //$where['addtime'] = $start_date;
+            $sql .= " and add_time>='$start_date'";
+        }elseif (!empty($start_date) && $reverse==1){
+            $sql .= " and add_time<='$start_date'";
+            //$where['addtime'] = $start_date;
+        }
+
+        //$lsql = "select * from live_course where id=".$lecture_id;
+        //$lecture = MemcacheToolController::Mem_Data_process($lsql,'get',null)[0];
+        $lecture = db('course')->find($lecture_id);
+
+
+
+        //$mtsql = "select * from live_member where id=".$lecture['memberid'];
+        //$member =  MemcacheToolController::Mem_Data_process($mtsql,'get',null)[0];
+        $member = db('member')->field('id,name,headimg,img')->find($lecture['memberid']);
+
+        if ($reverse == 0){
+            if (!empty($start_date)){
+                //$tmsql = "select * from live_msg where ".$sql." limit ".$desired_count;
+                //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
+                $listmsg = db("msg")->where($sql)->limit($desired_count)->select();
+            }else{
+                $listmsg = array();
+            }
+        }elseif ($reverse==1){
+            //$tmsql = "select * from live_msg where ".$sql." order by add_time desc  limit ".$desired_count;
+            //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
+            $listmsg = db("msg")->where($sql)->limit($desired_count)->order("add_time desc")->select();
+        }
+        //dump($listmsg);exit;
+        /*LogController::W_H_Log("msg 长度：".sizeof($listmsg,0));
+        LogController::W_H_Log("sql is:".$sql);*/
+        if (sizeof($listmsg, 0) == 0) {//没有消息时
+            if ($lecture['isonline']=='no'){
+                $one_content = '大家可以点击左下角的“关注直播间”，后续有新的课堂会收到通知。也可以在课堂的主页点击右上角，分享到朋友圈或者微信群让更多的人听到老师的分享。';
+            }else{
+                $one_content = '欢迎大家来到《'.$lecture['name'].'》的讨论室，大家可以在这讨论课程相关的内容，老师会为大家一一解答！';
+            }
+
+            //$tcsql = "select * from live_msg where content='".$one_content."' and lecture_id=".$lecture_id;
+            //$t = MemcacheToolController::Mem_Data_process($tcsql,'get',null);
+
+            $t = db("msg")->where(['content'=>$one_content,'lecture_id'=>$lecture_id])->find();
+            if (!$t) {
+                $data = array(
+                    'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+                    'content' => $one_content,
+                    'length' => 0,
+                    'message_type' => "text",
+                    'lecture_id' => $lecture_id,
+                    'ppt_id' => null,
+                    'ppt_url' => null,
+                    'reply' => null,
+                    'sender_headimg' => ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
+                    'sender_id' => $member['id'],
+                    'sender_nickname' => $member['name'],
+                    'sender_title' => "讲师",
+                    'server_id' => null,
+                );
+                $count = db('msg')->insertGetId($data);
+                //操作msg表后，失效缓存
+                /*MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+                MemcacheToolController::Mem_Data_process(md5($tcsql),'put',null);*/
+                $data['message_id'] = $count;
+                $listmsg[0] = $data;
+            }
+        }
+       /* $res['code'] = 0;
+        $res['data'] = $listmsg;
+        if ($start_date) {
+            $res['mark'] = $start_date;
+        } else {
+            $res['mark'] = '';
+        }*/
+        $res['data'] = $listmsg;
+        $res['mark'] = $start_date;
+        $this->return_json(OK,$res);
+    }
+
 
     //发送文本消息
-    function send_text_message()
+    public function send_text_message()
     {
         $member = $this->user;
         $liveroommemberid = $_REQUEST['aid'];
@@ -197,28 +286,20 @@ class Live extends Base
         $reply_message_id = $_POST['reply_message_id'];
 
         $liveroom = db('home')->where(['memberid' => $liveroommemberid])->find();
-        $lecture = db('course')->find($lecture_id);
-
-        //"courseid=$lecture_id and beinviteid=" . $member['id']
-        $invete = M('invete')->where(['courseid'=>$lecture_id,'beinviteid'=>$member['id']])->find();
+        //$lecture = db('course')->find($lecture_id);
+        $invete = db('invete')->where(['courseid'=>$lecture_id,'beinviteid'=>$member['id']])->find();
         if ($invete) {
             $title = $invete['invitetype'];
         } else {
             $title = "听众";
         }
-        /*if($lecture['memberid'] == $member['id']){
-            $title = '讲师';
-        }else{
-            $invete = M('invete')->where("beinviteid=".$member['id']." and courseid=".$lecture_id)->find();
-            $title = $invete['invitetype'];
-        }*/
+
         $message_type = "text";
         if ($reply_message_id) {
             $reply_msg = db('msg')->find($reply_message_id);
             $reply = $reply_msg['sender_nickname'] . ":" . $reply_msg['content'];
             $message_type = "reply_text";
         }
-        //LogController::W_A_Log("message is:" . $message);
         wlog(APP_PATH.'log/text_message.log','message is:'.$message);
         $data = array(
             'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
@@ -226,7 +307,7 @@ class Live extends Base
             'length' => 0,
             'message_type' => $message_type,
             'lecture_id' => $lecture_id,
-            'ppt_id' => null,
+            //'ppt_id' => null,
             'ppt_url' => null,
             'reply' => $reply,
             'homeid' => $liveroom['id'],
@@ -239,17 +320,21 @@ class Live extends Base
         $count = db('msg')->insertGetId($data);
         //失效缓存
         //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
-        if ($count) {
+        /*if ($count) {
             $data['message_id'] = $count;
-
             $qestionC = new QuestionController();
             // 问题回复--写入问题表里面
             $qestionC->reply_content($reply_msg['message_id'],1,$message);
+        }*/
+        if ($count) {
+            Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,json_encode($data));
+            $this->return_json(OK,$data);
+        }else{
+            $this->return_json(E_OP_FAIL,'发送失败');
         }
-        $res['code'] = 0;
-        $res['data'] = $data;
-        $this->ajaxReturn($res, 'JSON');
     }
+
+
 
     //发送语音消息
     function send_voice_message()
