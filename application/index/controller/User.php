@@ -225,12 +225,13 @@ class User extends Base
             //$this->user = $list;
             //LogController::W_H_Log(date('y-m-d H:i:s',time())."提前返回数据：\n"."\n",3,"./logs/info.log");
             //wlog($log_name,"获取用户后的重定向地址为：".$state);
+            //var_dump($this->user);exit;
             if (empty($this->user['unionid'])){
                 $get_user_info_url = WECHAT_USER_URL.'?access_token=' . $access_token . '&openid=' . $openid . '&lang=zh_CN';
                 $res = esay_curl($get_user_info_url);
                 //解析json
                 //error_log("result is :" . $res, 3, "./logs/info.log");
-                wlog($error_log_name,"result is :" . $res);
+                wlog($log_name,"result 1 is :" . $res);
                 $user_obj = json_decode($res, true);
                 $data = array(
                     'unionid' => $user_obj['unionid'],
@@ -239,7 +240,7 @@ class User extends Base
                 );
                 //LogController::W_H_Log($data);
                 wlog($log_name,json_encode($data,JSON_UNESCAPED_UNICODE));
-                db("member")->where(['openid'=>$openid])->insert($data);
+                db("member")->where(['openid'=>$openid])->update($data);
             }
             //$this->user['token'] = $token;
             $this->return_json(OK,$this->user);
@@ -250,7 +251,7 @@ class User extends Base
             //error_log(date('callback 方法'.'y-m-d H:i:s',time()).$res,3,"./logs/info.log");
             //解析json
             //error_log("result is :" . $res, 3, "./logs/info.log");
-            wlog($error_log_name,"result is :" . $res);
+            wlog($log_name,"result 2 is :" . $res);
             $user_obj = json_decode($res, true);
             $data = array(
                 'nickname' => $user_obj['nickname'],
@@ -267,8 +268,9 @@ class User extends Base
             );
             $member = db("member");
             $result = $member->insertGetId($data);
+            wlog($log_name,"返回数据为：".$result);
             if ($result) {
-                wlog($log_name,"返回数据为：".$result);
+               // wlog($log_name,"返回数据为：".$result);
                 //LogController::W_H_Log("返回数据为：".$result);
                 //$membert = db("member");
                 //$user = db("member")->where(['id'=>$result])->find();
