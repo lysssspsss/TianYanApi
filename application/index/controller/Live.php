@@ -185,8 +185,333 @@ class Live extends Base
         $this->return_json(OK,$result);
     }
 
-    public function send_message()
+
+
+    //发送文本消息
+    function send_text_message()
     {
+        $member = $this->user;
+        $liveroommemberid = $_REQUEST['aid'];
+        $lecture_id = $_POST['lecture_id'];
+        $message = $_POST['message'];
+        $reply_message_id = $_POST['reply_message_id'];
+
+        $liveroom = db('home')->where(['memberid' => $liveroommemberid])->find();
+        $lecture = db('course')->find($lecture_id);
+
+        //"courseid=$lecture_id and beinviteid=" . $member['id']
+        $invete = M('invete')->where(['courseid'=>$lecture_id,'beinviteid'=>$member['id']])->find();
+        if ($invete) {
+            $title = $invete['invitetype'];
+        } else {
+            $title = "听众";
+        }
+        /*if($lecture['memberid'] == $member['id']){
+            $title = '讲师';
+        }else{
+            $invete = M('invete')->where("beinviteid=".$member['id']." and courseid=".$lecture_id)->find();
+            $title = $invete['invitetype'];
+        }*/
+        $message_type = "text";
+        if ($reply_message_id) {
+            $reply_msg = db('msg')->find($reply_message_id);
+            $reply = $reply_msg['sender_nickname'] . ":" . $reply_msg['content'];
+            $message_type = "reply_text";
+        }
+        //LogController::W_A_Log("message is:" . $message);
+        wlog(APP_PATH.'log/text_message.log','message is:'.$message);
+        $data = array(
+            'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+            'content' => $message,
+            'length' => 0,
+            'message_type' => $message_type,
+            'lecture_id' => $lecture_id,
+            'ppt_id' => null,
+            'ppt_url' => null,
+            'reply' => $reply,
+            'homeid' => $liveroom['id'],
+            'sender_headimg' => ($member['headimg'] == $member['headimg']) ? $member['headimg'] : $member['img'],
+            'sender_id' => $member['id'],
+            'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
+            'sender_title' => $title,
+            'server_id' => null,
+        );
+        $count = db('msg')->insertGetId($data);
+        //失效缓存
+        //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+        if ($count) {
+            $data['message_id'] = $count;
+
+            $qestionC = new QuestionController();
+            // 问题回复--写入问题表里面
+            $qestionC->reply_content($reply_msg['message_id'],1,$message);
+        }
+        $res['code'] = 0;
+        $res['data'] = $data;
+        $this->ajaxReturn($res, 'JSON');
+    }
+
+    //发送语音消息
+    function send_voice_message()
+    {
+        $member = $_SESSION['CurrenMember'];
+        //$liveroomid = $_REQUEST['aid'];
+        $liveroommemberid = $_REQUEST['aid'];
+        $lecture_id = $_REQUEST['lecture_id'];
+        $length = $_REQUEST['audio_length'];
+        $server_id = $_REQUEST['media_id'];
+        $reply_message_id = $_POST['reply_message_id'];
+        $liveroom = M('home')->where("memberid=" . $liveroommemberid)->find();
+        $lecture = M('course')->find($lecture_id);
+
+        $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+        if ($invete) {
+            $title = $invete['invitetype'];
+        } else {
+            $title = "听众";
+        }
+
+        /* if($lecture['memberid'] == $member['id']){
+             $title = '讲师';
+         }else{
+             $invete = M('invete')->where("beinviteid=".$member['id']." and courseid=".$lecture_id)->find();
+             $title = $invete['invitetype'];
+         }*/
+
+        $message_type = "audio";
+        if ($reply_message_id) {
+            $reply_msg = M('msg')->find($reply_message_id);
+            $reply = $reply_msg['sender_nickname'] . ":" . $reply_msg['content'];
+            $message_type = "reply_audi";
+        }
+
+        $WeChat = new WeChatController();
+        try {
+            $content = $WeChat->getMedia($server_id);
+            $size = filesize(".".$content);
+            if (!$size || $size<1000){
+                $WeChat->clear_token();
+                $content = $WeChat->getMedia($server_id);
+            }
+        } catch (Exception $e) {
+            LogController::W_A_Log("下载音频失败！mediaid is :" . $server_id);
+            LogController::W_A_Log("$e->getTraceAsString()");
+        }
+        try {
+            $update_res = UploadRemoteController::uploadFile(substr($content, 1), "." . $content);
+            if ($update_res == 1){ //上传未成功
+                $mcontent = C('media_domain') . $content;
+            }else{
+                $mcontent = C('OSS.remotepath') . $content;
+
+            }
+        } catch (Exception $e) {
+            LogController::W_A_Log("音频文件上传OSS失败！" . $content);
+            $mcontent = C('media_domain') . $content;
+            LogController::W_A_Log("$e->getMessage()");
+        }
+        //$mcontent = C('media_domain') . $content;
+        if ($length == 0){
+            $length = 45;
+        }
+        $data = array(
+            'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+            //'content' => C('OSS.remotepath').$content,
+            'content' => $mcontent,
+            //'content'=>"http://tianyan199.com".$content,
+            'length' => $length,
+            'message_type' => $message_type,
+            'lecture_id' => $lecture_id,
+            'ppt_id' => null,
+            'meta'=>'{"wave_points": [179, 1066, 1121, 870, 1451, 1130, 1232, 1537, 1218, 1319, 1254, 1313, 1027, 1127, 1246, 1426, 1736, 1529, 1507, 1069, 925, 1198, 1033, 980, 1297, 1434, 978, 1367, 1037, 988, 1223, 1262, 904, 1267, 981, 975, 1418, 1556, 1112, 1185, 1426, 1301, 1255, 1376, 1297]}',
+            'ppt_url' => null,
+            'reply' => $reply,
+            'homeid' => $liveroom['id'],
+            'sender_headimg' => ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
+            'sender_id' => $member['id'],
+            'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
+            'sender_title' => $title,
+            'server_id' => $server_id,
+        );
+        try {
+            $count = M('msg')->add($data);
+            //失效缓存
+            MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+        } catch (Exception $e) {
+            LogController::W_A_Log("插入音频MSG失败！");
+            LogController::W_A_Log($e->getMessage());
+            LogController::W_A_Log($e->getTraceAsString());
+        }
+        if ($count) {
+            $data['message_id'] = $count;
+            $qestionC = new QuestionController();
+            // 问题回复--写入问题表里面
+            $qestionC->reply_content($reply_msg['message_id'],2,$mcontent,$length);
+        }
+        $res['code'] = 0;
+        $res['data'] = $data;
+        $this->ajaxReturn($res, 'JSON');
+    }
+
+    //发送图片
+    function send_picture_message()
+    {
+        $media_id = $_POST['media_id'];
+        $lecture_id = $_POST['lecture_id'];
+        $member = $_SESSION['CurrenMember'];
+        $liveroom = M('home')->where("memberid=" . $member['id'])->find();
+        $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+        if ($invete) {
+            $title = $invete['invitetype'];
+        } else {
+            $title = "听众";
+        }
+
+        if ($media_id) { //获取图片
+            $wechat = new WeChatController();
+            $content = $wechat->downlodimg($media_id);
+            $size = filesize("." . $content);
+            LogController::W_A_Log("图片大小为$size");
+            UploadRemoteController::uploadFile(substr($content, 1), "." . $content);
+            $data = array(
+                'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+                'content' => C('OSS.remotepath') . $content,
+                'length' => 0,
+                'message_type' => "picture",
+                'lecture_id' => $lecture_id,
+                'ppt_id' => null,
+                'ppt_url' => null,
+                'reply' => null,
+                'homeid' => $liveroom['id'],
+                'sender_headimg' => ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
+                'sender_id' => $member['id'],
+                'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
+                'sender_title' => $title,
+                'server_id' => $media_id,
+            );
+            $count = M('msg')->add($data);
+            //失效缓存
+            MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+            if ($count) {
+                $data['message_id'] = $count;
+            }
+            if ($size < 1000) { //当图片不足1K时说明图片未下载成功，重新下载
+                LogController::W_A_Log("图片大小为$size,重新下载！");
+                $content = $wechat->downlodimg($media_id);
+                UploadRemoteController::uploadFile(substr($content, 1), "." . $content);
+                M('msg')->where("server_id='" . $media_id . "'")->setField("content", C('OSS.remotepath') . $content);
+                LogController::W_A_Log("重新下载图片大小为！" . filesize("." . $content));
+                $data['content'] = C('OSS.remotepath') . $content;
+            }
+
+            $res['code'] = 0;
+            $res['data'] = $data;
+            $this->ajaxReturn($res, 'JSON');
+
+        }
+    }
+
+    public function send_video_message(){
+        $lecture_id = $_POST['lecture_id'];
+        $video_id = $_POST['video_id'];
+        if ($video_id) {
+            $member = $_SESSION['CurrenMember'];
+            $m = M('material')->find($video_id);
+            if ($m['type']=='video'){
+                $c['thumb_url'] = $m['cover'];
+                $c['video_id'] = $m['id'];
+                $c['video_url'] = $m["oss_path"];
+            }else if($m['type']=='audio'){
+                $c['audio_url'] = $m['path'];
+                $c['thumb_url'] = $m['main'];
+                $c['songname'] = $m['songname'];
+                $c['audio_id'] = $m['id'];
+                $c['singername'] = $m['singer'];
+            }
+            LogController::W_A_Log("video_url:".$m['oss_path']);
+            $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+            if ($invete) {
+                $title = $invete['invitetype'];
+            } else {
+                $title = "听众";
+            }
+            $message_type = ($m['type']=='audio')?'music':'video';
+            $data = array(
+                'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+                'content' => json_encode($c),
+                'length' => 0,
+                'message_type' => $message_type,
+                'lecture_id' => $lecture_id,
+                'ppt_id' => null,
+                'ppt_url' => null,
+                'reply' => null,
+                'homeid' => null,
+                'sender_headimg' => ($member['headimg'] == $member['headimg']) ? $member['headimg'] : $member['img'],
+                'sender_id' => $member['id'],
+                'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
+                'sender_title' => $title,
+                'server_id' => null,
+            );
+            $count = M('msg')->add($data);
+            //失效缓存
+            MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+            if ($count) {
+                $data['message_id'] = $count;
+            }
+            $res['code'] = 0;
+            $res['data'] = $data;
+        }else{
+            $res['code'] = 1;
+            $res['msg'] = "缺少参数";
+
+        }
+        $this->ajaxReturn($res, 'JSON');
+    }
+
+    function send_iframe_message(){
+        $lecture_id = $_POST['lecture_id'];
+        $iframe = $_POST['iframe'];
+
+        $member = $_SESSION['CurrenMember'];
+        $lecture = M('course')->find($lecture_id);
+
+        $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+        if ($invete) {
+            $title = $invete['invitetype'];
+        } else {
+            $title = "听众";
+        }
+        $message_type = "iframe";
+
+        $arr = explode('/',$iframe);
+        $vid = $arr[count($arr)-1];
+        $vid = str_replace(".html","",$vid);
+        $content = '<iframe frameborder="0" width="640" height="498" src="http://v.qq.com/iframe/player.html?vid='.$vid.'&tiny=0&auto=0" allowfullscreen></iframe>';
+        $data = array(
+            'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+            'content' => $content,
+            'length' => 0,
+            'message_type' => $message_type,
+            'lecture_id' => $lecture_id,
+            'ppt_id' => null,
+            'ppt_url' => null,
+            'reply' => null,
+            'homeid' => null,
+            'sender_headimg' => ($member['headimg'] == $member['headimg']) ? $member['headimg'] : $member['img'],
+            'sender_id' => $member['id'],
+            'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
+            'sender_title' => $title,
+            'server_id' => null,
+        );
+        $count = M('msg')->add($data);
+        //失效缓存
+        MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+        if ($count) {
+            $data['message_id'] = $count;
+        }
+        $res['code'] = 0;
+        $res['data'] = $data;
+        $this->ajaxReturn($res, 'JSON');
 
     }
 }

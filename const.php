@@ -56,8 +56,10 @@ const REDIS_YZM_KEY = 'verify_code'; //验证码键值
 /**
  * 微信相关
  */
-const WECHAT_APPID = 'wx8f291dccc9e8f39b';
-const WECHAT_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
+//const WECHAT_APPID = 'wx8f291dccc9e8f39b';
+const WECHAT_APPID = 'wx7b4b44dce0248205';
+//const WECHAT_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
+const WECHAT_APPSECRET = '4508898569cdc065b6c102bc9f6d697a';
 const WECHAT_SOURCECODE = 'gh_2f514810fe61';
 const WECHAT_TOKEN ='tianyanlivehome2017';
 const WECHAT_USER_URL = 'https://api.weixin.qq.com/sns/userinfo';

@@ -16,7 +16,9 @@ $last_online_page_count = 0;
 // 传入ssl选项，包含证书的路径
 $context = array(
     'ssl' => array(
+        //'local_cert'  => __DIR__.'/tianyankey/1_tianyan199.com_bundle.crt', // pem 文件一样的
         'local_cert'  => '/usr/local/nginx/conf/1_tianyan199.com_bundle.crt', // pem 文件一样的
+        //'local_pk'    => __DIR__.'/tianyankey/2_tianyan199.com.key',
         'local_pk'    => '/usr/local/nginx/conf/2_tianyan199.com.key',
         'verify_peer' => false,
     )
@@ -111,7 +113,7 @@ $sender_io->on('connection', function($socket){
 
 
 
-// 当$sender_io启动后监听一个http端口，通过这个端口可以给任意uid或者所有uid推送数据 客户端方法
+// 当$sender_io启动后监听一个http端口，通过这个端口可以给任意uid或者所有uid推送数据 //客户端方法
 $sender_io->on('workerStart', function(){
 
     $context = array(
