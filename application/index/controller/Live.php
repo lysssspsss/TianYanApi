@@ -339,33 +339,26 @@ class Live extends Base
     //发送语音消息
     function send_voice_message()
     {
-        $member = $_SESSION['CurrenMember'];
+        $member = $this->user;
         //$liveroomid = $_REQUEST['aid'];
         $liveroommemberid = $_REQUEST['aid'];
         $lecture_id = $_REQUEST['lecture_id'];
         $length = $_REQUEST['audio_length'];
         $server_id = $_REQUEST['media_id'];
         $reply_message_id = $_POST['reply_message_id'];
-        $liveroom = M('home')->where("memberid=" . $liveroommemberid)->find();
-        $lecture = M('course')->find($lecture_id);
+        $liveroom = db('home')->where("memberid=" . $liveroommemberid)->find();
+        //$lecture = M('course')->find($lecture_id);
 
-        $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+        $invete = db('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
         if ($invete) {
             $title = $invete['invitetype'];
         } else {
             $title = "听众";
         }
 
-        /* if($lecture['memberid'] == $member['id']){
-             $title = '讲师';
-         }else{
-             $invete = M('invete')->where("beinviteid=".$member['id']." and courseid=".$lecture_id)->find();
-             $title = $invete['invitetype'];
-         }*/
-
         $message_type = "audio";
         if ($reply_message_id) {
-            $reply_msg = M('msg')->find($reply_message_id);
+            $reply_msg = db('msg')->find($reply_message_id);
             $reply = $reply_msg['sender_nickname'] . ":" . $reply_msg['content'];
             $message_type = "reply_audi";
         }
