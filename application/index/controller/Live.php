@@ -283,8 +283,8 @@ class Live extends Base
         $liveroommemberid = $_REQUEST['aid'];
         $lecture_id = $_POST['lecture_id'];
         $message = $_POST['message'];
-        $reply_message_id = $_POST['reply_message_id'];
-
+        $reply_message_id = input('post.reply_message_id');
+        $reply = "";
         $liveroom = db('home')->where(['memberid' => $liveroommemberid])->find();
         //$lecture = db('course')->find($lecture_id);
         $invete = db('invete')->where(['courseid'=>$lecture_id,'beinviteid'=>$member['id']])->find();
@@ -295,7 +295,7 @@ class Live extends Base
         }
 
         $message_type = "text";
-        if ($reply_message_id) {
+        if (!empty($reply_message_id)) {
             $reply_msg = db('msg')->find($reply_message_id);
             $reply = $reply_msg['sender_nickname'] . ":" . $reply_msg['content'];
             $message_type = "reply_text";
