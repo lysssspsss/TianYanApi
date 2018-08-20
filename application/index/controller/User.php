@@ -210,12 +210,11 @@ class User extends Base
         wlog($log_name,"callback 返回原始数据：".$res);
         $json_obj = json_decode($res,true);
         //根据openid和access_token查询用户信息
-        $access_token = $json_obj['access_token'];
-        $openid = $json_obj['openid'];
-
-        if (!($access_token && $openid)){
+        if (empty($json_obj['access_token']) || empty($json_obj['openid'])){
             $this->return_json(E_OP_FAIL,'登录失败，无法获取到access_token或openid');
         }
+        $access_token = $json_obj['access_token'];
+        $openid = $json_obj['openid'];
         $user = db("member");
         $list = $user->where(['openid'=>$openid])->find();
         //error_log("openid is :".$openid."\n",3,"./logs/info.log");

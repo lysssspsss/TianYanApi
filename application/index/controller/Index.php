@@ -21,6 +21,8 @@ class Index extends Controller
 
     public function index()
     {
+        $a = 'http://111.230.238.183:9527/api.php/index/user/wechat_login';
+        var_dump(urlencode($a));exit;
         //$data = $this->testRsaEncrypt();
         $a = get_auth_headers();
         //dump($a);exit;
