@@ -196,6 +196,27 @@ class User extends Base
      * 微信授权登录接口
      */
     public function  wechat_login(){
+        /*$res = '{"openid":"omv3N0U0eAAwahpj7-W0Wg5SoQdo","nickname":"陈小明","sex":1,"language":"zh_CN","city":"深圳","province":"广东","country":"中国","headimgurl":"http:\/\/thirdwx.qlogo.cn\/mmopen\/vi_32\/44RVoc0jZ7Skbkrj7icmmYia88gZCBalezsticSXEhtoshkGjLBAbp9q3mXHNbzy8Vu2bnksib8asIp2iagjA3GXtVg\/132","privilege":[],"unionid":"ofeYCxKZ1As51SVIpYtKl__aazqQ"}';
+        $user_obj = json_decode($res, true);
+        $data = array(
+            'nickname' => $user_obj['nickname'],
+            'openid' => $user_obj['openid'],
+            'unionid' => $user_obj['unionid'],
+            'img' => $user_obj['headimgurl'],
+            'headimg' => $user_obj['headimgurl'],
+            'sex' => $user_obj['sex'],
+            //'country' => $user_obj['country'],
+            'city' => $user_obj['city'],
+            'province' => $user_obj['province'],
+            'addtime' => date("Y-m-d H:i:s"),
+            'isfocus' => "no"
+        );
+        $data['issubmit'] = 1;
+        $data['source'] = $this->source;
+        //$member = db('member');
+        $result = Db::name('member')->insertGetId($data);
+        var_dump($result);exit;*/
+
         $log_name = APP_PATH.'log/wechat_login.log';
         $error_log_name = APP_PATH.'log/wechat_login_error.log';
         //LogController::W_H_Log("进入callback方法");
@@ -214,13 +235,14 @@ class User extends Base
             $this->return_json(E_OP_FAIL,'登录失败，无法获取到access_token或openid');
         }
         $access_token = $json_obj['access_token'];
-        $openid = $json_obj['openid'];
+        //$openid = $json_obj['openid'];
+        $unionid = $json_obj['unionid'];
         $user = db("member");
-        $list = $user->where(['openid'=>$openid])->find();
+        $list = $user->where(['unionid'=>$unionid])->find();
         //error_log("openid is :".$openid."\n",3,"./logs/info.log");
         //LogController::W_H_Log("获取用户后的重定向地址为：".$state);
         //wlog($log_name,"获取用户后的重定向地址为：".$state);
-        if(is_array($list) && $list){
+        if(is_array($list) && !empty($list)){
             $this->get_user_redis($list['id']);
             //$this->user = $list;
             //LogController::W_H_Log(date('y-m-d H:i:s',time())."提前返回数据：\n"."\n",3,"./logs/info.log");
@@ -260,7 +282,7 @@ class User extends Base
                 'img' => $user_obj['headimgurl'],
                 'headimg' => $user_obj['headimgurl'],
                 'sex' => $user_obj['sex'],
-                'country' => $user_obj['country'],
+                //'country' => $user_obj['country'],
                 'city' => $user_obj['city'],
                 'province' => $user_obj['province'],
                 'addtime' => date("Y-m-d H:i:s"),
@@ -269,7 +291,7 @@ class User extends Base
             $data['issubmit'] = 1;
             $data['source'] = $this->source;
             //$member = db('member');
-            $result = db('member')->insertGetId($data);
+            $result = Db::name('member')->insertGetId($data);
             wlog($log_name,"返回数据为：".$result."\n");
             if ($result) {
                // wlog($log_name,"返回数据为：".$result);
