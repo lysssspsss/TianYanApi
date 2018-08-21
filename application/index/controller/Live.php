@@ -785,12 +785,13 @@ class Live extends Base
      */
     public function upload_binary()
     {
-        $PSize = filesize(FILE_PATH.'1.mp3');
+        /*$PSize = filesize(FILE_PATH.'1.mp3');
         $picturedata = fread(fopen(FILE_PATH.'1.mp3', "r"), $PSize);
-        $content = $picturedata;
+        $content = $picturedata;*/
 
+
+        $content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
         wlog(APP_PATH.'log/upload_binary.log',$content);
-        //$content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
         $name = time().mt_rand(1000,9999);
         $path = FILE_PATH.'temp/'.$name;
         $is = file_put_contents($path, $content, true);
@@ -807,11 +808,11 @@ class Live extends Base
         $name = $_POST['fid'];
         $houzui = $_POST['houzui'];
         if(empty($name)){
-            $this->return_json(E_ARGS, '参数错误！');
+            $this->return_json(E_ARGS, '参数错误f1');
         }
         $path = $this->redis->hget('file',$name);
         if(empty($path)){
-            $this->return_json(E_ARGS, '参数错误！');
+            $this->return_json(E_ARGS, '参数错误f2');
         }
         $oss_path = 'Public/Uploads/Chat/app/'.$name.$houzui;
         $is = Tools::UploadFile_OSS($oss_path,$path);
