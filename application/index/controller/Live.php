@@ -790,7 +790,7 @@ class Live extends Base
         $content = $picturedata;*/
         //$content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
         $content = $_POST;
-        wlog(APP_PATH.'log/upload_binary.log',$content);
+        wlog(APP_PATH.'log/upload_binary.log',json_encode($content,JSON_UNESCAPED_UNICODE));
         $name = time().mt_rand(1000,9999);
         $path = FILE_PATH.'temp/'.$name;
         $is = file_put_contents($path, $content, true);
