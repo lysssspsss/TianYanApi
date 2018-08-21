@@ -1,5 +1,6 @@
 <?php
 namespace app\index\controller;
+use app\tools\controller\Tools;
 use think\Controller;
 use think\Request;
 use think\Input;
@@ -218,6 +219,51 @@ class Base extends Controller
         return false;
     }
 
+    /**
+     * 上传文件
+     * @param bool $bool
+     * @return mixed
+     */
+    public function upload_file($is_local = false)
+    {
+        if(empty($_FILES)){
+            $this->return_json(E_OP_FAIL, '文件为空！');
+        }
+        if ($_FILES["file"]["error"] > 0)
+        {
+            $this->return_json(E_OP_FAIL, 'Return Code: '. $_FILES['file']['error']);
+        }
+        $config['max_size'] = '5368709120';
+        if ($_FILES['file']['size']>=$config['max_size']) {
+            $msg = '您上传的文件有'.$_FILES['logo']['size']/1048576 .'MB，不要大于'.$config['max_size']/1048576 . 'MB!';
+            $this->return_json(E_OP_FAIL, $msg);
+        }
+        $is = false;
+        $path = '';
+        /*switch ($source){
+            case 'sucai': $path = 'Public/Uploads/Chat/video/'.$_FILES["file"]["name"];break;
+            case 'audio': $path = 'Public/Uploads/Chat/video/'.$_FILES["file"]["name"];break;
+            case 'sucai': $path = 'Public/Uploads/Chat/video/'.$_FILES["file"]["name"];break;
+        }*/
+        /*if (file_exists($path . $_FILES["file"]["name"])) {
+            $this->return_json(E_OP_FAIL, $_FILES['file']['name'] . 'already exists.');
+        } else {*/
+        if($is_local){//上传到本地
+            $path = FILE_PATH."local/";
+            $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path . $_FILES["file"]["name"]);
+        }else{
+            //var_dump($_FILES["file"]["name"],$_FILES["file"]["tmp_name"]);exit;
+            $path = 'Public/Uploads/Chat/app/'.time().mt_rand(100,999).strrchr($_FILES["file"]["name"], '.');
+            $is = Tools::UploadFile_OSS($path,$_FILES["file"]["tmp_name"]);
+        }
+            //echo "Stored in: " . "upload/" . $_FILES["file"]["name"];
+        //}
+        if ($is) {
+            $this->return_json(OK, ['path'=>OSS_REMOTE_PATH.'/'.$path]);
+        } else {
+            $this->return_json(E_OP_FAIL, '操作失败！');
+        }
+    }
 
 
     /**

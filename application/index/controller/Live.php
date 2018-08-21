@@ -199,7 +199,7 @@ class Live extends Base
         }elseif (!empty($start_date) && $reverse==1){
             $sql .= " and add_time<='$start_date'";
         }
-        $lecture = db('course')->find($lecture_id);
+        $lecture = db('course')->field('memberid,isonline,name')->find($lecture_id);
         $member = db('member')->field('id,name,headimg,img')->find($lecture['memberid']);
 
         if ($reverse == 0){
@@ -258,14 +258,38 @@ class Live extends Base
     public function send_text_message()
     {
         $member = $this->user;
-        $liveroommemberid = $_REQUEST['aid'];
-        $lecture_id = $_POST['lecture_id'];
-        $message = $_POST['message'];
+
+        $liveroommemberid = input('post.aid');
+        $lecture_id = input('post.lecture_id');
+        $message = input('post.message');
         $reply_message_id = input('post.reply_message_id');
-        $reply = "";
-        $liveroom = db('home')->where(['memberid' => $liveroommemberid])->find();
+
+        //数据验证
+        $result = $this->validate(
+            [
+                'liveroommemberid'  => $liveroommemberid,
+                'lecture_id' => $lecture_id,
+                'message' => $message,
+                'reply_message_id' => $reply_message_id,
+            ],
+            [
+                'liveroommemberid'  => 'require|number',
+                'lecture_id'  => 'require|number',
+                'message'  => 'require',
+                'reply_message_id'  => 'number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+        $reply = '';
+        $liveroom = db('home')->field('id')->where(['memberid' => $liveroommemberid])->find();
+        if(empty($liveroom)){
+            $this->return_json(E_OP_FAIL,'消息发送失败');
+        }
         //$lecture = db('course')->find($lecture_id);
-        //$invete = db('invete')->where(['courseid'=>$lecture_id,'beinviteid'=>$member['id']])->find();//测试时注释
+        $invete = db('invete')->field('invitetype')->where(['courseid'=>$lecture_id,'beinviteid'=>$member['id']])->find();//测试时注释
         if (!empty($invete)) {
             $title = $invete['invitetype'];
         } else {
@@ -285,7 +309,6 @@ class Live extends Base
             'length' => 0,
             'message_type' => $message_type,
             'lecture_id' => $lecture_id,
-            //'ppt_id' => null,
             'ppt_url' => null,
             'reply' => $reply,
             'homeid' => $liveroom['id'],
@@ -295,8 +318,8 @@ class Live extends Base
             'sender_title' => $title,
             'server_id' => null,
         );
-        //$count = db('msg')->insertGetId($data);//测试时注释
-        $count = 1;
+        $count = db('msg')->insertGetId($data);//测试时注释
+        //$count = 1;
         //失效缓存
         //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
         /*if ($count) {
@@ -306,11 +329,25 @@ class Live extends Base
             $qestionC->reply_content($reply_msg['message_id'],1,$message);
         }*/
         if ($count) {
-            Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,json_encode($data));
+            Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
             $this->return_json(OK,$data);
         }else{
-            $this->return_json(E_OP_FAIL,'发送失败');
+            wlog(APP_PATH.'log/text_message.log','插入消息数据失败');
+            $this->return_json(E_OP_FAIL,'消息发送失败');
         }
+    }
+
+
+    /**
+     * 数据类型转换
+     * @param $data
+     * @return array|string
+     */
+    public function tranfer($data)
+    {
+        $data = arr_val_tran_str($data);
+        $data = json_encode($data,JSON_UNESCAPED_UNICODE);
+        return $data;
     }
 
 
@@ -319,16 +356,38 @@ class Live extends Base
     function send_voice_message()
     {
         $member = $this->user;
-        //$liveroomid = $_REQUEST['aid'];
-        $liveroommemberid = $_REQUEST['aid'];
-        $lecture_id = $_REQUEST['lecture_id'];
-        $length = $_REQUEST['audio_length'];
-        $server_id = $_REQUEST['media_id'];
-        $reply_message_id = $_POST['reply_message_id'];
-        $liveroom = db('home')->where("memberid=" . $liveroommemberid)->find();
+        $liveroommemberid = input('post.aid');
+        $lecture_id = input('post.lecture_id');
+        $length = input('post.audio_length');
+        $server_id = input('post.media_id');
+        $reply_message_id = input('post.reply_message_id');
+
+        //数据验证
+        $result = $this->validate(
+            [
+                'liveroommemberid'  => $liveroommemberid,
+                'lecture_id' => $lecture_id,
+                'length' => $length,
+                'server_id' => $server_id,
+                'reply_message_id' => $reply_message_id,
+            ],
+            [
+                'liveroommemberid'  => 'require|number',
+                'lecture_id'  => 'require|number',
+                'length' =>  'require|number',
+                'server_id' =>  'require|number',
+                'reply_message_id'  => 'number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+
+        $liveroom = db('home')->field('id')->where("memberid=" . $liveroommemberid)->find();
         //$lecture = M('course')->find($lecture_id);
 
-        $invete = db('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+        $invete = db('invete')->field('invitetype')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
         if ($invete) {
             $title = $invete['invitetype'];
         } else {
@@ -342,8 +401,8 @@ class Live extends Base
             $message_type = "reply_audi";
         }
 
-        $WeChat = new WeChatController();
-        try {
+        //$WeChat = new WeChatController();
+        /*try {
             $content = $WeChat->getMedia($server_id);
             $size = filesize(".".$content);
             if (!$size || $size<1000){
@@ -353,9 +412,9 @@ class Live extends Base
         } catch (Exception $e) {
             LogController::W_A_Log("下载音频失败！mediaid is :" . $server_id);
             LogController::W_A_Log("$e->getTraceAsString()");
-        }
+        }*/
         try {
-            $update_res = UploadRemoteController::uploadFile(substr($content, 1), "." . $content);
+            $update_res = Tools::UploadFile_OSS(substr($content, 1), "." . $content);
             if ($update_res == 1){ //上传未成功
                 $mcontent = C('media_domain') . $content;
             }else{
@@ -468,6 +527,7 @@ class Live extends Base
         }
     }
 
+
     public function send_video_message(){
         $lecture_id = $_POST['lecture_id'];
         $video_id = $_POST['video_id'];
@@ -570,5 +630,15 @@ class Live extends Base
         $res['data'] = $data;
         $this->ajaxReturn($res, 'JSON');
 
+    }
+
+
+    /**
+     * 上传文件
+     * @return mixed
+     */
+    public function uploadfile()
+    {
+        return parent::upload_file();
     }
 }

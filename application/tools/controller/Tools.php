@@ -31,7 +31,7 @@ class Tools extends Controller
         wlog($log_path,"推送数据给前台用户res：".json_encode($return));
         wlog($log_path,"推送数据给前台用户push_api_url：".$push_api_url);
         wlog($log_path,"推送数据给前台用户to_uid：".$to_uid);
-        wlog($log_path,"推送数据给前台用户content：".$content);
+        wlog($log_path,"推送数据给前台用户content：".$content."\n");
         //return $return;
         //var_export($return);
     }
@@ -73,20 +73,6 @@ class Tools extends Controller
         }
     }
 
-    public function send_post($url,$post_data)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // https跳过证书检查
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);// 10s to timeout.
-        $output = curl_exec($ch);
-        curl_close($ch);
-        return $output;
-    }
 
     public static  function timediff( $begin_time, $end_time ,$lecmins)
     {
@@ -144,7 +130,7 @@ class Tools extends Controller
      * @return int
      * @throws \OSS\Core\OssException
      */
-    public static function uploadFile($object,$content){
+    public static function UploadFile_OSS($object,$content){
         $accessKeyId = OSS_ACCESS_KEY_ID;
         $accessKeySecret = OSS_ACCESS_KEY_SECRET;
         $endpoint = OSS_END_POINT;
@@ -152,26 +138,28 @@ class Tools extends Controller
         $log_path = APP_PATH.'log/uploadFile.log';
         if (!isset($object)){
             wlog($log_path,"上传OSS,缺少参数Object!");
-            return 1;
+            return false;
         }
         if (!isset($content)){
             wlog($log_path,"上传OSS,缺少参数content!");
-            return 1;
+            return false;
         }
         try {
             $ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint);
             $ossClient->uploadFile($bucket, $object, $content);
             wlog($log_path,"上传成功OSS,$object->$content");
-            return 0;
+            return true;
         } catch (OssException $e) {
             wlog($log_path,"上传失败OSS:$object->$content");
             wlog($log_path,"uploadfile exception:".$e->getTraceAsString());
-            return 1;
+            return false;
         }catch (Exception $e){
             wlog($log_path,"上传失败OSS:".$e->getTraceAsString());
-            return 1;
+            return false;
         }
     }
+
+
 }
 
 

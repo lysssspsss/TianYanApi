@@ -16,6 +16,8 @@
 define('APP_PATH', __DIR__ . '/application/');
 //第三方sdk目录
 define('EXTEND_PATH', __DIR__ . '/extend/');
+//公共文件上传目录
+define('FILE_PATH', __DIR__ . '/public/');
 // 开启调试模式
 define('APP_DEBUG', true);
 //加载常量
