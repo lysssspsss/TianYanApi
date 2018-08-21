@@ -789,7 +789,7 @@ class Live extends Base
         $picturedata = fread(fopen(FILE_PATH.'1.mp3', "r"), $PSize);
         $content = $picturedata;*/
         //$content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
-        $content = $_POST;
+        $content = \input('request.');
         wlog(APP_PATH.'log/upload_binary.log',json_encode($content,JSON_UNESCAPED_UNICODE));
         $name = time().mt_rand(1000,9999);
         $path = FILE_PATH.'temp/'.$name;
