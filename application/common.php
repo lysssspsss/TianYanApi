@@ -563,8 +563,19 @@ if(!function_exists('upload_file')){
         return $return_data;
     }
 }
-
-
+if(!function_exists('binary_to_file')) {
+    /**
+     * 二进制流转文件
+     * @param $file 文件保存路径
+     * @return bool|int
+     */
+    function binary_to_file($file)
+    {
+        $content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
+        $ret = file_put_contents($file, $content, true);
+        return $ret;
+    }
+}
 
 if (!function_exists('sortArrByField')) {
     /**

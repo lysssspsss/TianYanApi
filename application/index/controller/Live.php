@@ -351,16 +351,18 @@ class Live extends Base
     }
 
 
-
-    //发送语音消息
-    function send_voice_message()
+    //发送文件相关的消息：包括语音，图片，视频
+    function send_file_message()
     {
         $member = $this->user;
         $liveroommemberid = input('post.aid');
         $lecture_id = input('post.lecture_id');
+        $reply_message_id = input('post.reply_message_id');
+        $path = input('post.path');
+        $type = input('post.type');
         $length = input('post.audio_length');
         $server_id = input('post.media_id');
-        $reply_message_id = input('post.reply_message_id');
+
 
         //数据验证
         $result = $this->validate(
@@ -370,13 +372,103 @@ class Live extends Base
                 'length' => $length,
                 'server_id' => $server_id,
                 'reply_message_id' => $reply_message_id,
+                'path' => $path,
+                'type' => $type,
             ],
             [
                 'liveroommemberid'  => 'require|number',
                 'lecture_id'  => 'require|number',
-                'length' =>  'require|number',
-                'server_id' =>  'require|number',
+                'length' =>  'number',
+                'server_id' =>  'number',
                 'reply_message_id'  => 'number',
+                'path' => 'require',
+                'type' => 'require|in:audio,video,picture,music,iframe',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+
+        $liveroom = db('home')->field('id')->where("memberid=" . $liveroommemberid)->find();
+        //$lecture = M('course')->find($lecture_id);
+
+        $invete = db('invete')->field('invitetype')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+        if ($invete) {
+            $title = $invete['invitetype'];
+        } else {
+            $title = "听众";
+        }
+        $message_type = $type;
+        $reply = '';
+        if (!empty($reply_message_id)) {
+            $reply_msg = db('msg')->find($reply_message_id);
+            $reply = $reply_msg['sender_nickname'] . ":" . $reply_msg['content'];
+            $message_type = "reply_audi";
+        }
+        if (empty($length)){
+            $length = 45;
+        }
+        $data = array(
+            'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+            //'content' => C('OSS.remotepath').$content,
+            'content' => $path,
+            //'content'=>"http://tianyan199.com".$content,
+            'length' => $length,
+            'message_type' => $message_type,
+            'lecture_id' => $lecture_id,
+            //'ppt_id' => null,
+            'meta'=>'{"wave_points": [179, 1066, 1121, 870, 1451, 1130, 1232, 1537, 1218, 1319, 1254, 1313, 1027, 1127, 1246, 1426, 1736, 1529, 1507, 1069, 925, 1198, 1033, 980, 1297, 1434, 978, 1367, 1037, 988, 1223, 1262, 904, 1267, 981, 975, 1418, 1556, 1112, 1185, 1426, 1301, 1255, 1376, 1297]}',
+            'ppt_url' => null,
+            'reply' => $reply,
+            'homeid' => $liveroom['id'],
+            'sender_headimg' => ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
+            'sender_id' => $member['id'],
+            'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
+            'sender_title' => $title,
+            'server_id' => $server_id,
+        );
+        $count = db('msg')->insertGetId($data);
+        if ($count) {
+            Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
+            $this->return_json(OK,$data);
+        }else{
+            wlog(APP_PATH.'log/text_message.log','插入消息数据失败');
+            $this->return_json(E_OP_FAIL,'消息发送失败');
+        }
+    }
+
+
+
+    //发送语音消息
+    function send_voice_message()
+    {
+        $member = $this->user;
+        $liveroommemberid = input('post.aid');
+        $lecture_id = input('post.lecture_id');
+        $reply_message_id = input('post.reply_message_id');
+        $path = input('post.path');
+        $length = input('post.audio_length');
+        $server_id = input('post.media_id');
+
+
+        //数据验证
+        $result = $this->validate(
+            [
+                'liveroommemberid'  => $liveroommemberid,
+                'lecture_id' => $lecture_id,
+                'length' => $length,
+                'server_id' => $server_id,
+                'reply_message_id' => $reply_message_id,
+                'path' => $path,
+            ],
+            [
+                'liveroommemberid'  => 'require|number',
+                'lecture_id'  => 'require|number',
+                'length' =>  'number',
+                'server_id' =>  'number',
+                'reply_message_id'  => 'number',
+                'path' => 'require',
             ]
         );
         if($result !== true){
@@ -395,7 +487,8 @@ class Live extends Base
         }
 
         $message_type = "audio";
-        if ($reply_message_id) {
+        $reply = '';
+        if (!empty($reply_message_id)) {
             $reply_msg = db('msg')->find($reply_message_id);
             $reply = $reply_msg['sender_nickname'] . ":" . $reply_msg['content'];
             $message_type = "reply_audi";
@@ -413,7 +506,7 @@ class Live extends Base
             LogController::W_A_Log("下载音频失败！mediaid is :" . $server_id);
             LogController::W_A_Log("$e->getTraceAsString()");
         }*/
-        try {
+       /* try {
             $update_res = Tools::UploadFile_OSS(substr($content, 1), "." . $content);
             if ($update_res == 1){ //上传未成功
                 $mcontent = C('media_domain') . $content;
@@ -425,20 +518,20 @@ class Live extends Base
             LogController::W_A_Log("音频文件上传OSS失败！" . $content);
             $mcontent = C('media_domain') . $content;
             LogController::W_A_Log("$e->getMessage()");
-        }
+        }*/
         //$mcontent = C('media_domain') . $content;
-        if ($length == 0){
+        if (empty($length)){
             $length = 45;
         }
         $data = array(
             'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
             //'content' => C('OSS.remotepath').$content,
-            'content' => $mcontent,
+            'content' => $path,
             //'content'=>"http://tianyan199.com".$content,
             'length' => $length,
             'message_type' => $message_type,
             'lecture_id' => $lecture_id,
-            'ppt_id' => null,
+            //'ppt_id' => null,
             'meta'=>'{"wave_points": [179, 1066, 1121, 870, 1451, 1130, 1232, 1537, 1218, 1319, 1254, 1313, 1027, 1127, 1246, 1426, 1736, 1529, 1507, 1069, 925, 1198, 1033, 980, 1297, 1434, 978, 1367, 1037, 988, 1223, 1262, 904, 1267, 981, 975, 1418, 1556, 1112, 1185, 1426, 1301, 1255, 1376, 1297]}',
             'ppt_url' => null,
             'reply' => $reply,
@@ -449,16 +542,22 @@ class Live extends Base
             'sender_title' => $title,
             'server_id' => $server_id,
         );
-        try {
-            $count = M('msg')->add($data);
+        $count = db('msg')->insertGetId($data);
             //失效缓存
-            MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
-        } catch (Exception $e) {
-            LogController::W_A_Log("插入音频MSG失败！");
+            //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+
+           /* LogController::W_A_Log("插入音频MSG失败！");
             LogController::W_A_Log($e->getMessage());
-            LogController::W_A_Log($e->getTraceAsString());
-        }
+            LogController::W_A_Log($e->getTraceAsString());*/
         if ($count) {
+            Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
+            $this->return_json(OK,$data);
+        }else{
+            wlog(APP_PATH.'log/text_message.log','插入消息数据失败');
+            $this->return_json(E_OP_FAIL,'消息发送失败');
+        }
+
+       /* if ($count) {
             $data['message_id'] = $count;
             $qestionC = new QuestionController();
             // 问题回复--写入问题表里面
@@ -466,36 +565,58 @@ class Live extends Base
         }
         $res['code'] = 0;
         $res['data'] = $data;
-        $this->ajaxReturn($res, 'JSON');
+        $this->ajaxReturn($res, 'JSON');*/
     }
 
     //发送图片
     function send_picture_message()
     {
-        $media_id = $_POST['media_id'];
-        $lecture_id = $_POST['lecture_id'];
-        $member = $_SESSION['CurrenMember'];
-        $liveroom = M('home')->where("memberid=" . $member['id'])->find();
-        $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+        $lecture_id = input('post.lecture_id');
+        $path = input('post.path');
+        //$reply_message_id = input('post.reply_message_id');
+        //$length = input('post.audio_length');
+        //$server_id = input('post.media_id');
+        //$media_id = $_POST['media_id'];
+        //$lecture_id = $_POST['lecture_id'];
+        $member = $this->user;
+
+        //数据验证
+        $result = $this->validate(
+            [
+                'lecture_id' => $lecture_id,
+                'path' => $path,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+                'path' => 'require',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+
+        $liveroom = db('home')->where("memberid=" . $member['id'])->find();
+        $invete = db('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
         if ($invete) {
             $title = $invete['invitetype'];
         } else {
             $title = "听众";
         }
 
-        if ($media_id) { //获取图片
-            $wechat = new WeChatController();
+        if (!empty($path)) { //获取图片
+          /*  $wechat = new WeChatController();
             $content = $wechat->downlodimg($media_id);
             $size = filesize("." . $content);
             LogController::W_A_Log("图片大小为$size");
-            UploadRemoteController::uploadFile(substr($content, 1), "." . $content);
+            UploadRemoteController::uploadFile(substr($content, 1), "." . $content);*/
             $data = array(
                 'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
-                'content' => C('OSS.remotepath') . $content,
+                'content' => $path,
                 'length' => 0,
                 'message_type' => "picture",
                 'lecture_id' => $lecture_id,
-                'ppt_id' => null,
+                //'ppt_id' => null,
                 'ppt_url' => null,
                 'reply' => null,
                 'homeid' => $liveroom['id'],
@@ -503,12 +624,20 @@ class Live extends Base
                 'sender_id' => $member['id'],
                 'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
                 'sender_title' => $title,
-                'server_id' => $media_id,
+                //'server_id' => $media_id,
             );
-            $count = M('msg')->add($data);
-            //失效缓存
-            MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+            $count = db('msg')->insertGetId($data);
+
             if ($count) {
+                Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
+                $this->return_json(OK,$data);
+            }else{
+                wlog(APP_PATH.'log/text_message.log','插入消息数据失败');
+                $this->return_json(E_OP_FAIL,'消息发送失败');
+            }
+            //失效缓存
+            //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+           /* if ($count) {
                 $data['message_id'] = $count;
             }
             if ($size < 1000) { //当图片不足1K时说明图片未下载成功，重新下载
@@ -522,7 +651,7 @@ class Live extends Base
 
             $res['code'] = 0;
             $res['data'] = $data;
-            $this->ajaxReturn($res, 'JSON');
+            $this->ajaxReturn($res, 'JSON');*/
 
         }
     }
@@ -640,5 +769,131 @@ class Live extends Base
     public function uploadfile()
     {
         return parent::upload_file();
+    }
+
+
+    public function www()
+    {
+        //header( "Content-type: image/jpeg");
+        $PSize = filesize(FILE_PATH.'1.png');
+        $picturedata = fread(fopen(FILE_PATH.'1.png', "r"), $PSize);
+        echo $picturedata;
+    }
+
+    /**
+     * 获取二进制文件流并上传到OSS
+     */
+    public function upload_binary()
+    {
+        $PSize = filesize(FILE_PATH.'1.mp3');
+        $picturedata = fread(fopen(FILE_PATH.'1.mp3', "r"), $PSize);
+        $content = $picturedata;
+
+        wlog(APP_PATH.'log/upload_binary.log',$content);
+        //$content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
+        $name = time().mt_rand(1000,9999);
+        $path = FILE_PATH.'temp/'.$name;
+        $is = file_put_contents($path, $content, true);
+        if ($is) {
+            $this->redis->hset('file',$name,$path);
+            $this->return_json(OK, ['fid'=>$name]);
+        } else {
+            $this->return_json(E_OP_FAIL, '操作失败！');
+        }
+    }
+
+    public function upload_oss()
+    {
+        $name = $_POST['fid'];
+        $houzui = $_POST['houzui'];
+        if(empty($name)){
+            $this->return_json(E_ARGS, '参数错误！');
+        }
+        $path = $this->redis->hget('file',$name);
+        if(empty($path)){
+            $this->return_json(E_ARGS, '参数错误！');
+        }
+        $oss_path = 'Public/Uploads/Chat/app/'.$name.$houzui;
+        $is = Tools::UploadFile_OSS($oss_path,$path);
+        if ($is) {
+            $apath = OSS_REMOTE_PATH.'/'.$oss_path;
+            //$this->redis->hset('file',$name,$apath);
+            $this->return_json(OK, ['path'=>$apath]);
+        } else {
+            $this->return_json(E_OP_FAIL, '操作失败！');
+        }
+    }
+
+
+    /**
+     * 获取二进制文件流并上传到OSS-图片
+     */
+    public function upload_binary_photo()
+    {
+        $content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
+        //header( "Content-type: image/jpeg");
+        /*$PSize = filesize(FILE_PATH.'2.png');
+        $picturedata = fread(fopen(FILE_PATH.'2.png', "r"), $PSize);
+        $content = $picturedata;*/
+        $name = time().mt_rand(1000,9999);
+        $path = FILE_PATH.'temp/'.$name;
+        $handle=finfo_open(FILEINFO_MIME_TYPE);//This function opens a magic database and returns its resource.
+        file_put_contents($path, $content, true);
+        $fileInfo=finfo_file($handle,$path);// Return information about a file
+        finfo_close($handle);
+        switch ($fileInfo){
+            case 'image/jpeg':$houzui = '.jpg';break;
+            case 'image/png':$houzui = '.png';break;
+            case 'image/bmp':$houzui = '.bmp';break;
+            default:$houzui = '.jpg';
+        }
+        $oss_path = 'Public/Uploads/Chat/app/'.$name.$houzui;
+        $is = Tools::UploadFile_OSS($oss_path,$path);
+        if ($is) {
+            $this->return_json(OK, ['path'=>OSS_REMOTE_PATH.'/'.$oss_path]);
+        } else {
+            $this->return_json(E_OP_FAIL, '操作失败！');
+        }
+    }
+
+
+    /**
+     * 获取二进制文件流并上传到OSS-视频
+     */
+    public function upload_binary_video()
+    {
+        $content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
+        $name = time().mt_rand(1000,9999).'.mp4';
+        $path = FILE_PATH.'temp/'.$name;
+        file_put_contents($path, $content, true);
+        $oss_path = 'Public/Uploads/Chat/app/'.$name;
+        $is = Tools::UploadFile_OSS($oss_path,$path);
+        if ($is) {
+            $this->return_json(OK, ['path'=>OSS_REMOTE_PATH.'/'.$oss_path]);
+        } else {
+            $this->return_json(E_OP_FAIL, '操作失败！');
+        }
+    }
+
+    /**
+     * 获取二进制文件流并上传到OSS-语音
+     */
+    public function upload_binary_voice()
+    {
+        $PSize = filesize(FILE_PATH.'1.mp3');
+        $picturedata = fread(fopen(FILE_PATH.'1.mp3', "r"), $PSize);
+        $content = $picturedata;
+
+        //$content = file_get_contents('php://input');    // 不需要php.ini设置，内存压力小
+        $name = time().mt_rand(1000,9999).'.mp3';
+        $path = FILE_PATH.'temp/'.$name;
+        file_put_contents($path, $content, true);
+        $oss_path = 'Public/Uploads/Chat/app/'.$name;
+        $is = Tools::UploadFile_OSS($oss_path,$path);
+        if ($is) {
+            $this->return_json(OK, ['path'=>OSS_REMOTE_PATH.'/'.$oss_path]);
+        } else {
+            $this->return_json(E_OP_FAIL, '操作失败！');
+        }
     }
 }
