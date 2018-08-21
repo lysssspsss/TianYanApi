@@ -17,31 +17,75 @@ class Tools extends Controller
         // $push_api_url 推送的url地址，上线时改成自己的服务器地址
         $log_path = APP_PATH.'log/publish_msg.log';
         if (!($to_uid&&$push_api_url&&$content)){
-            //LogController::W_A_Log("推送数据给前台用户参数不完整！");
             wlog($log_path,"推送数据给前台用户参数不完整！");
             return;
         }
         $post_data = array(
+            //'type' => 'publish', //本地测试
             'type' => 'ty_publish',
             'content' => $content,
             'to' => $to_uid,
-            'fromUserId'=>$publisher_id
+            'fromUserId'=>$publisher_id //本地测试时注释
         );
-        $ch = curl_init ();
-        curl_setopt ( $ch, CURLOPT_URL, $push_api_url );
-        curl_setopt ( $ch, CURLOPT_POST, 1 );
-        curl_setopt ( $ch, CURLOPT_HEADER, 0 );
-        curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
-        //curl_setopt ( $ch, CURLOPT_TIMEOUT, 10 );
-        curl_setopt ( $ch, CURLOPT_POSTFIELDS, $post_data );
-        $return = curl_exec ( $ch );
-        curl_close ( $ch );
-        wlog($log_path,"推送数据给前台用户res：".$return);
+        $return = self::curlPost($push_api_url,[],$post_data);
+        wlog($log_path,"推送数据给前台用户res：".json_encode($return));
         wlog($log_path,"推送数据给前台用户push_api_url：".$push_api_url);
         wlog($log_path,"推送数据给前台用户to_uid：".$to_uid);
         wlog($log_path,"推送数据给前台用户content：".$content);
         //return $return;
         //var_export($return);
+    }
+
+
+    public static function curlPost($url,$header,$data){
+        try{
+            $ch = curl_init();
+            if (substr($url, 0, 5) == 'https') {
+                // 跳过证书检查
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                // 从证书中检查SSL加密算法是否存在
+                // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, true);
+            }
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_URL, $url);// 设置请求的url
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);// 设置请求的HTTP Header
+            // 设置允许查看请求头信息
+            // curl_setopt($ch,CURLINFO_HEADER_OUT,true);
+            curl_setopt($ch, CURLOPT_POST, true);// 请求方式是POST
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));// 设置发送的data
+            $response = curl_exec($ch);
+            // 查看请求头信息
+            // dump(curl_getinfo($ch,CURLINFO_HEADER_OUT));
+            if ($error = curl_error($ch)) {
+                // 如果发生错误返回错误信息
+                curl_close($ch);
+                $ret=['status'=>false,'msg'=>$error];
+                return $ret;
+            } else {
+                // 如果发生正确则返回response
+                curl_close($ch);
+                $ret=['status'=>true,'msg'=>$response];
+                return $ret;
+            }
+        }catch (\Exception $exception){
+            $ret=['status'=>false,'msg'=>$exception->getMessage()];
+            return $ret;
+        }
+    }
+
+    public function send_post($url,$post_data)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // https跳过证书检查
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);// 10s to timeout.
+        $output = curl_exec($ch);
+        curl_close($ch);
+        return $output;
     }
 
     public static  function timediff( $begin_time, $end_time ,$lecmins)

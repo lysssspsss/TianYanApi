@@ -195,37 +195,24 @@ class Live extends Base
 
         $sql = "lecture_id=" . $lecture_id . " and isshow='show'";
         if (!empty($start_date) && $reverse==0) {
-            //$where['addtime'] = $start_date;
             $sql .= " and add_time>='$start_date'";
         }elseif (!empty($start_date) && $reverse==1){
             $sql .= " and add_time<='$start_date'";
-            //$where['addtime'] = $start_date;
         }
-
-        //$lsql = "select * from live_course where id=".$lecture_id;
-        //$lecture = MemcacheToolController::Mem_Data_process($lsql,'get',null)[0];
         $lecture = db('course')->find($lecture_id);
-
-
-
-        //$mtsql = "select * from live_member where id=".$lecture['memberid'];
-        //$member =  MemcacheToolController::Mem_Data_process($mtsql,'get',null)[0];
         $member = db('member')->field('id,name,headimg,img')->find($lecture['memberid']);
 
         if ($reverse == 0){
             if (!empty($start_date)){
-                //$tmsql = "select * from live_msg where ".$sql." limit ".$desired_count;
                 //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
                 $listmsg = db("msg")->where($sql)->limit($desired_count)->select();
             }else{
                 $listmsg = array();
             }
         }elseif ($reverse==1){
-            //$tmsql = "select * from live_msg where ".$sql." order by add_time desc  limit ".$desired_count;
             //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
             $listmsg = db("msg")->where($sql)->limit($desired_count)->order("add_time desc")->select();
         }
-        //dump($listmsg);exit;
         /*LogController::W_H_Log("msg 长度：".sizeof($listmsg,0));
         LogController::W_H_Log("sql is:".$sql);*/
         if (sizeof($listmsg, 0) == 0) {//没有消息时
@@ -235,9 +222,7 @@ class Live extends Base
                 $one_content = '欢迎大家来到《'.$lecture['name'].'》的讨论室，大家可以在这讨论课程相关的内容，老师会为大家一一解答！';
             }
 
-            //$tcsql = "select * from live_msg where content='".$one_content."' and lecture_id=".$lecture_id;
             //$t = MemcacheToolController::Mem_Data_process($tcsql,'get',null);
-
             $t = db("msg")->where(['content'=>$one_content,'lecture_id'=>$lecture_id])->find();
             if (!$t) {
                 $data = array(
@@ -263,13 +248,6 @@ class Live extends Base
                 $listmsg[0] = $data;
             }
         }
-       /* $res['code'] = 0;
-        $res['data'] = $listmsg;
-        if ($start_date) {
-            $res['mark'] = $start_date;
-        } else {
-            $res['mark'] = '';
-        }*/
         $res['data'] = $listmsg;
         $res['mark'] = $start_date;
         $this->return_json(OK,$res);
@@ -287,8 +265,8 @@ class Live extends Base
         $reply = "";
         $liveroom = db('home')->where(['memberid' => $liveroommemberid])->find();
         //$lecture = db('course')->find($lecture_id);
-        $invete = db('invete')->where(['courseid'=>$lecture_id,'beinviteid'=>$member['id']])->find();
-        if ($invete) {
+        //$invete = db('invete')->where(['courseid'=>$lecture_id,'beinviteid'=>$member['id']])->find();//测试时注释
+        if (!empty($invete)) {
             $title = $invete['invitetype'];
         } else {
             $title = "听众";
@@ -317,7 +295,8 @@ class Live extends Base
             'sender_title' => $title,
             'server_id' => null,
         );
-        $count = db('msg')->insertGetId($data);
+        //$count = db('msg')->insertGetId($data);//测试时注释
+        $count = 1;
         //失效缓存
         //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
         /*if ($count) {

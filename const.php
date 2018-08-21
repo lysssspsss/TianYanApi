@@ -12,7 +12,9 @@ const SERVER_URL_BACK = "";// 备用
 /**
  * workerman
  */
-const WORKERMAN_PUBLISH_URL = 'https://tianyan199.com:2120/';
+const WORKERMAN_PUBLISH_URL = 'http://tianyan199.com:2121/';
+//const WORKERMAN_PUBLISH_URL = 'http://119.29.136.97:2121/';
+//const WORKERMAN_PUBLISH_URL = 'http://www.webmsg.com:2121/';//本地测试
 
 /**
  * 阿里云短信 相关
