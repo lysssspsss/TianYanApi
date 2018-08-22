@@ -577,6 +577,25 @@ if(!function_exists('binary_to_file')) {
     }
 }
 
+if(!function_exists('get_file_error_info')) {
+    /**
+     * 获取文件上传错误信息
+     * @return array
+     */
+    function get_file_error_info()
+    {
+        $error = [
+            1 => '上传的文件超过了 php.ini 中 upload_max_filesize选项限制的值',
+            2 => '上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值',
+            3 => '文件只有部分被上传',
+            4 => '没有文件被上传',
+            6 > '找不到临时文件夹',
+            7 => '文件写入失败',
+        ];
+        return $error;
+    }
+}
+
 if (!function_exists('sortArrByField')) {
     /**
      * 根据某字段对二维数组进行排序

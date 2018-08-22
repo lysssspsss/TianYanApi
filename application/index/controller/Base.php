@@ -228,7 +228,7 @@ class Base extends Controller
     {
         //header("Content-type:application/octet-stream");        //这句告诉以流的形式来接收数据；
         header('Content-type: text/json; charset=UTF-8' );
-        $houzui_array = ['.jpg','.bmp','.png','.mp4','.mp3','.amr'];
+        $houzui_array = ['.jpg','.bmp','.png','.mp4','.mp3','.amr','ppt'];
         $log_path = APP_PATH.'log/uploadFile.log';
         wlog($log_path,'接收参数file：'.json_encode($_FILES,JSON_UNESCAPED_UNICODE));
         /*wlog($log_path,'接收参数post：'.json_encode($_POST,JSON_UNESCAPED_UNICODE));
@@ -237,19 +237,10 @@ class Base extends Controller
             $this->return_json(E_OP_FAIL, '文件为空！');
         }
         if ($_FILES["file"]["error"] > 0) {
-            $error = [
-                1=>'上传的文件超过了 php.ini 中 upload_max_filesize选项限制的值',
-                2=>'上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值',
-                3=>'文件只有部分被上传',
-                4=>'没有文件被上传',
-                6>'找不到临时文件夹',
-                7=>'文件写入失败',
-            ];
+            $error = get_file_error_info();
             $this->return_json(E_OP_FAIL, '操作失败:'. $error[$_FILES['file']['error']]);
         }
-        $houzui = strrchr($_FILES["file"]["name"], '.');
-        //$houzui = end($houzui);
-        //var_dump($houzui,$houzui_array);exit;
+        $houzui = strrchr($_FILES["file"]["name"], '.');//后缀名
         if(!in_array($houzui,$houzui_array)){
             $this->return_json(E_OP_FAIL, '该文件类型不支持');
         }
@@ -260,53 +251,52 @@ class Base extends Controller
         }
         $is = false;
         $path = '';
-        /*switch ($source){
-            case 'sucai': $path = 'Public/Uploads/Chat/video/'.$_FILES["file"]["name"];break;
-            case 'audio': $path = 'Public/Uploads/Chat/video/'.$_FILES["file"]["name"];break;
-            case 'sucai': $path = 'Public/Uploads/Chat/video/'.$_FILES["file"]["name"];break;
-        }*/
-        /*if (file_exists($path . $_FILES["file"]["name"])) {
-            $this->return_json(E_OP_FAIL, $_FILES['file']['name'] . 'already exists.');
-        } else {*/
-        $name = time().mt_rand(100,999);
-        $filename = $name.$houzui;
-        $path = 'Public/Uploads/Chat/app/'.$filename;
+        $name = time().mt_rand(100,999);//文件名
+        $filename = $name.$houzui;//带后缀的文件名
+        $path = 'Public/Uploads/Chat/app/'.$filename; //上传到oss的路径
         if($houzui == '.mp4'){//视频先上传到本地
-            $path_local = FILE_PATH."video/";
-            $path_local_file = $path_local .$filename;
-            $cover = str_replace("mp4","jpg",$path_local_file);
-            $cover_path = 'Public/Uploads/Chat/app/'.$name.'.jpg';
-            $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path_local_file);
+            $path_local = FILE_PATH."video/";//本地保存路径
+            $path_local_file = $path_local .$filename;//包含文件名的本地保存路径
+            $cover = str_replace("mp4","jpg",$path_local_file);//本地视频截图保存路径
+            $cover_path = 'Public/Uploads/Chat/app/'.$name.'.jpg';//oss视频截图保存路径
+            $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path_local_file);//视频保存到本地
+            if(empty($is)){
+                wlog($log_path,'文件保存本地失败');
+                $this->return_json(E_OP_FAIL, '操作失败0');
+            }
             Tools::getVideoCover($path_local_file,3,$cover);//获取截图
-            $is1 = Tools::UploadFile_OSS($cover_path,$cover);
-            $is2 = Tools::UploadFile_OSS($path,$path_local_file);
+            $is1 = Tools::UploadFile_OSS($cover_path,$cover);//上传截图到oss
+            $is2 = Tools::UploadFile_OSS($path,$path_local_file);//上传视频到oss
             if ($is1 && $is2) {
                 $data = array(
                     'addtime' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
                     'memberid' => $this->user['id'],
                     'mediaid' => '',
-                    'path' => $path_local_file,
+                    'path' => SERVER_URL.'/public/video/'.$filename,
                     'OSS_path' => OSS_REMOTE_PATH.'/'.$path,
                     'type' => "video",
                     'cover' => OSS_REMOTE_PATH.'/'.$cover_path,
                     'main' => null,
                 );
-                $count = db('material')->insertGetId($data);
+                $count = db('material')->insertGetId($data);//数据库插入一条信息
                 if(empty($count)){
+                    wlog($log_path,'文件信息插入material表失败1');
                     $this->return_json(E_OP_FAIL, '操作失败1');
                 }
+                $data['video_id'] = $count;
             } else {
+                wlog($log_path,'文件上传到oss失败1');
                 $this->return_json(E_OP_FAIL, '操作失败2');
             }
         }else{
             $path = 'Public/Uploads/Chat/app/'.$filename;
             $is = Tools::UploadFile_OSS($path,$_FILES["file"]["tmp_name"]);
         }
-            //echo "Stored in: " . "upload/" . $_FILES["file"]["name"];
-        //}
         if ($is) {
-            $this->return_json(OK, ['path'=>OSS_REMOTE_PATH.'/'.$path]);
+            $data['path'] = OSS_REMOTE_PATH.'/'.$path;
+            $this->return_json(OK, $data);
         } else {
+            wlog($log_path,'文件上传到oss失败2');
             $this->return_json(E_OP_FAIL, '操作失败3');
         }
     }
