@@ -659,58 +659,59 @@ class Live extends Base
 
     public function send_video_message(){
         $lecture_id = $_POST['lecture_id'];
-        $video_id = $_POST['video_id'];
-        if ($video_id) {
-            $member = $_SESSION['CurrenMember'];
-            $m = M('material')->find($video_id);
-            if ($m['type']=='video'){
-                $c['thumb_url'] = $m['cover'];
-                $c['video_id'] = $m['id'];
-                $c['video_url'] = $m["oss_path"];
-            }else if($m['type']=='audio'){
-                $c['audio_url'] = $m['path'];
-                $c['thumb_url'] = $m['main'];
-                $c['songname'] = $m['songname'];
-                $c['audio_id'] = $m['id'];
-                $c['singername'] = $m['singer'];
-            }
-            LogController::W_A_Log("video_url:".$m['oss_path']);
-            $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
-            if ($invete) {
-                $title = $invete['invitetype'];
-            } else {
-                $title = "听众";
-            }
-            $message_type = ($m['type']=='audio')?'music':'video';
-            $data = array(
-                'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
-                'content' => json_encode($c),
-                'length' => 0,
-                'message_type' => $message_type,
-                'lecture_id' => $lecture_id,
-                'ppt_id' => null,
-                'ppt_url' => null,
-                'reply' => null,
-                'homeid' => null,
-                'sender_headimg' => ($member['headimg'] == $member['headimg']) ? $member['headimg'] : $member['img'],
-                'sender_id' => $member['id'],
-                'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
-                'sender_title' => $title,
-                'server_id' => null,
-            );
-            $count = M('msg')->add($data);
-            //失效缓存
-            MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
-            if ($count) {
-                $data['message_id'] = $count;
-            }
-            $res['code'] = 0;
-            $res['data'] = $data;
-        }else{
+        $path = $_POST['path'];
+        //if ($video_id) {
+        $member = $this->user;
+        $video_id= '';
+        $m = M('material')->find($video_id);
+        if ($m['type']=='video'){
+            $c['thumb_url'] = $m['cover'];
+            $c['video_id'] = $m['id'];
+            $c['video_url'] = $m["oss_path"];
+        }else if($m['type']=='audio'){
+            $c['audio_url'] = $m['path'];
+            $c['thumb_url'] = $m['main'];
+            $c['songname'] = $m['songname'];
+            $c['audio_id'] = $m['id'];
+            $c['singername'] = $m['singer'];
+        }
+        LogController::W_A_Log("video_url:".$m['oss_path']);
+        $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
+        if ($invete) {
+            $title = $invete['invitetype'];
+        } else {
+            $title = "听众";
+        }
+        $message_type = ($m['type']=='audio')?'music':'video';
+        $data = array(
+            'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+            'content' => json_encode($c),
+            'length' => 0,
+            'message_type' => $message_type,
+            'lecture_id' => $lecture_id,
+            'ppt_id' => null,
+            'ppt_url' => null,
+            'reply' => null,
+            'homeid' => null,
+            'sender_headimg' => ($member['headimg'] == $member['headimg']) ? $member['headimg'] : $member['img'],
+            'sender_id' => $member['id'],
+            'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
+            'sender_title' => $title,
+            'server_id' => null,
+        );
+        $count = M('msg')->add($data);
+        //失效缓存
+        MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
+        if ($count) {
+            $data['message_id'] = $count;
+        }
+        $res['code'] = 0;
+        $res['data'] = $data;
+        /*}else{
             $res['code'] = 1;
             $res['msg'] = "缺少参数";
 
-        }
+        }*/
         $this->ajaxReturn($res, 'JSON');
     }
 
@@ -720,7 +721,6 @@ class Live extends Base
 
         $member = $_SESSION['CurrenMember'];
         $lecture = M('course')->find($lecture_id);
-
         $invete = M('invete')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
         if ($invete) {
             $title = $invete['invitetype'];

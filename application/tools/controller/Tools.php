@@ -159,6 +159,11 @@ class Tools extends Controller
         }
     }
 
+    public static function  getVideoCover($file,$time,$name) {
+        if(empty($time))$time = '1';//默认截取第一秒第一帧
+        $str = "ffmpeg -i ".$file." -y -f mjpeg -ss 3 -t ".$time." -s 320x240 ".$name;
+        $result = system($str);
+    }
 
 }
 
