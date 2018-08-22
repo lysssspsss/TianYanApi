@@ -283,7 +283,7 @@ class Base extends Controller
                     wlog($log_path,'文件信息插入material表失败1');
                     $this->return_json(E_OP_FAIL, '操作失败1');
                 }
-                $data['video_id'] = $count;
+                $result['video_id'] = $count;
             } else {
                 wlog($log_path,'文件上传到oss失败1');
                 $this->return_json(E_OP_FAIL, '操作失败2');
@@ -293,8 +293,8 @@ class Base extends Controller
             $is = Tools::UploadFile_OSS($path,$_FILES["file"]["tmp_name"]);
         }
         if ($is) {
-            $data['path'] = OSS_REMOTE_PATH.'/'.$path;
-            $this->return_json(OK, $data);
+            $result['path'] = OSS_REMOTE_PATH.'/'.$path;
+            $this->return_json(OK, $result);
         } else {
             wlog($log_path,'文件上传到oss失败2');
             $this->return_json(E_OP_FAIL, '操作失败3');

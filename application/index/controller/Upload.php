@@ -1,13 +1,8 @@
 <?php
 namespace app\index\controller;
 use app\tools\controller\Tools;
-use think\Controller;
-use think\Request;
 use think\Input;
-use think\Db;
-use think\Session;
-use think\Validate;
-use app\tools\controller\Time;
+
 
 class Upload extends Base
 {
