@@ -227,12 +227,14 @@ class Base extends Controller
     public function upload_file($is_local = false)
     {
         //header("Content-type:application/octet-stream");        //这句告诉以流的形式来接收数据；
-        header('Content-type: text/json; charset=UTF-8' );
+        //if($this->source == 'IOS'){
+            header('Content-type: text/json; charset=UTF-8' );
+        //}
         $log_path = APP_PATH.'log/uploadFile.log';
         wlog($log_path,'接收参数file：'.json_encode($_FILES,JSON_UNESCAPED_UNICODE));
+        wlog($log_path,'接收参数post：'.json_encode($_POST,JSON_UNESCAPED_UNICODE));
+        wlog($log_path,'接收参数input：'.json_encode(file_get_contents('php://input')));
         if(empty($_FILES)){
-            wlog($log_path,'接收参数post：'.json_encode($_POST,JSON_UNESCAPED_UNICODE));
-            wlog($log_path,'接收参数input：'.json_encode(file_get_contents('php://input')));
             $this->return_json(E_OP_FAIL, '文件为空！');
         }
         if ($_FILES["file"]["error"] > 0)
