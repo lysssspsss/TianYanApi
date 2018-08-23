@@ -16,6 +16,9 @@ class Live extends Base
         parent::__construct();
     }
 
+    /**
+     * 直播间接口
+     */
     public function classroom()
     {
         $lectureid = \input('post.lecture_id');
@@ -162,7 +165,7 @@ class Live extends Base
     }
 
 
-    /*
+    /**
      * 获取初始聊天信息
      */
     public function get_messages()
@@ -254,7 +257,9 @@ class Live extends Base
     }
 
 
-    //发送文本消息
+    /**
+     * 发送文本消息
+     */
     public function send_text_message()
     {
         $member = $this->user;
@@ -338,17 +343,6 @@ class Live extends Base
     }
 
 
-    /**
-     * 数据类型转换
-     * @param $data
-     * @return array|string
-     */
-    public function tranfer($data)
-    {
-        $data = arr_val_tran_str($data);
-        $data = json_encode($data,JSON_UNESCAPED_UNICODE);
-        return $data;
-    }
 
 
     //发送文件相关的消息：包括语音，图片，视频
@@ -439,8 +433,9 @@ class Live extends Base
     }
 
 
-
-    //发送语音消息
+    /**
+     * 发送语音消息
+     */
     function send_voice_message()
     {
         $member = $this->user;
@@ -568,7 +563,9 @@ class Live extends Base
         $this->ajaxReturn($res, 'JSON');*/
     }
 
-    //发送图片
+    /**
+     * 发送图片
+     */
     function send_picture_message()
     {
         $lecture_id = input('post.lecture_id');
@@ -687,7 +684,7 @@ class Live extends Base
         if ($m['type']=='video'){
             $c['thumb_url'] = $m['cover'];
             $c['video_id'] = $m['id'];
-            $c['video_url'] = $m["oss_path"];
+            $c['video_url'] = $m["OSS_path"];
         }else if($m['type']=='audio'){
             $c['audio_url'] = $m['path'];
             $c['thumb_url'] = $m['main'];
@@ -696,7 +693,7 @@ class Live extends Base
             $c['singername'] = $m['singer'];
         }
         //LogController::W_A_Log("video_url:".$m['oss_path']);
-        wlog($log_path,"video_url:".$m['oss_path']);
+        wlog($log_path,"video_url:".$m['OSS_path']);
         $invete = db('invete')->field('invitetype')->where("courseid=$lecture_id and beinviteid=" . $member['id'])->find();
         if ($invete) {
             $title = $invete['invitetype'];
@@ -710,7 +707,7 @@ class Live extends Base
             'length' => 0,
             'message_type' => $message_type,
             'lecture_id' => $lecture_id,
-            'ppt_id' => null,
+            //'ppt_id' => null,
             'ppt_url' => null,
             'reply' => null,
             'homeid' => null,
@@ -733,6 +730,8 @@ class Live extends Base
     }
 
 
+
+
     /**
      * 上传文件
      * @return mixed
@@ -740,5 +739,18 @@ class Live extends Base
     public function uploadfile()
     {
         return parent::upload_file();
+    }
+
+
+    /**
+     * 数据类型转换
+     * @param $data
+     * @return array|string
+     */
+    public function tranfer($data)
+    {
+        $data = arr_val_tran_str($data);
+        $data = json_encode($data,JSON_UNESCAPED_UNICODE);
+        return $data;
     }
 }

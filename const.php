@@ -8,6 +8,18 @@ const FING_TAG = 0;//发现fragment控制标示
  */
 const SERVER_URL = "http://111.230.238.183:9527";
 const SERVER_URL_BACK = "";// 备用
+const SERVER_PATH = '/data/wwwroot/TianYanApi';
+
+/**
+ * 阿里云直播相关
+ */
+const LIVE_URL = 'rtmp://video-center-sg.alivecdn.com';
+const LIVE_APPNAME = 'tianyanssy';
+const LIVE_STREAMNAME_LEFT = 'ty_stream_';
+const LIVE_VHOST = 'live.tianyan199.com';
+const LIVE_AUTH = 'live.tianyan199.com';
+
+
 /**
  * workerman
  */

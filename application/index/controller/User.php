@@ -15,6 +15,8 @@ class User extends Base
         parent::__construct();
     }
 
+    private $log_path = APP_PATH.'log/User.log';
+
     /**
      * 注册发送短信接口
      */
@@ -35,11 +37,11 @@ class User extends Base
         //var_dump(ALIYUN_TEMP_CODE.$type);exit;
         $send = Message::sendSms($phone,$code,ALIYUN_TEMP_CODE.$type,'890',ALIYUN_SIGN_TEST);
         if(empty($send)){
-            wlog(APP_PATH.'log/Send_Sms_Error.log','发送短信返回内容为空:'.$phone.'-'.$code);
+            wlog($this->log_path,'send_sms:发送短信返回内容为空:'.$phone.'-'.$code);
             $this->return_json(E_OP_FAIL,'短信发送失败，请检查网络1');
         }
         if($send->Message != 'OK'){
-            wlog(APP_PATH.'log/Send_Sms_Error.log',$phone.'-'.$code.'-'.json_encode($send,JSON_UNESCAPED_UNICODE));
+            wlog($this->log_path,'send_sms:'.$phone.'-'.$code.'-'.json_encode($send,JSON_UNESCAPED_UNICODE));
             $this->return_json(E_OP_FAIL,'短信发送失败，请检查网络2');
         }
         $this->redis->set(REDIS_YZM_KEY.':'.$phone.'_'.$type,$code,REDIS_EXPIRE_5M);//暂存到redis
@@ -123,7 +125,7 @@ class User extends Base
         $memberid = Db::name('member')->insertGetId($data);
         //var_dump($memberid);exit();
         if(empty($memberid)){
-            wlog(APP_PATH.'log/Reg_Success.log','注册失败:插入数据错误'.$tel.'-'.$return_data_json);
+            wlog($this->log_path,'reg:注册失败:插入数据错误'.$tel.'-'.$return_data_json);
             $this->return_json(E_OP_FAIL,'注册失败');
         }
         //生成用户token，记录登录状态与日志
@@ -283,5 +285,4 @@ class User extends Base
             $this->return_json(OK,$this->user);
         }
     }
-
 }
