@@ -76,6 +76,7 @@ class Controller
         }else{
             $this->redis = self::$redis_cache;
         }
+        $this->redis = self::get_redis();
         $this->redis->select($this->redis_private);
     }
 
@@ -84,7 +85,7 @@ class Controller
     {
         self::$redis_cache = new \Redis();
         self::$redis_cache->connect(REDIS_HOST,REDIS_PORT,REDIS_TIMEOUT);
-        //self::$redis_cache->auth(REDIS_AUTH);
+        self::$redis_cache->auth(REDIS_AUTH);
         return self::$redis_cache;
     }
 

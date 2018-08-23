@@ -77,85 +77,9 @@ class Lecture extends Base
     /**
      * 添加课程
      */
-    public function add_lecture_jiu()
-    {
-        $name = input('post.name');//课程标题
-        $starttime = input('post.starttime');//开始时间
-        $type = input('post.type');//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
-        $pass = input('post.pass');//课程密码
-        $cost = input('post.cost');//课程费用
-        $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
-        $channel_id = input('post.channel_id');
-        //数据验证
-        $result = $this->validate(
-            [
-                'name' => $name,
-                'starttime' => $starttime,
-                'type' => $type,
-                'pass' => $pass,
-                'cost' => $cost,
-                'mode' => $mode,
-                'channel_id' => $channel_id,
-            ],
-            [
-                'name'  => 'require',
-                'starttime' =>  'require|date',
-                'type' =>  'require|in:open_lecture,password_lecture,pay_lecture',
-                'pass' =>  'alphaNum',
-                'cost' =>  'number',
-                'mode' =>  'require|in:picture,video,ppt',
-                'channel_id' =>  'require|number',
-            ]
-        );
-        if($result !== true){
-            $this->return_json(E_ARGS,'参数错误');
-        }
-        if($type == 'password_lecture'){
-            if(empty($pass)){
-                $this->return_json(E_ARGS,'密码为空');
-            }
-        }elseif ($type == 'pay_lecture'){
-            if(empty($cost)){
-                $this->return_json(E_ARGS,'费用为空');
-            }
-            $cost = round($cost,1);
-        }
-        $roomid = db('home')->field('id')->where(['memberid'=>$this->user['id']])->find();
-        if(empty($roomid)){
-            $this->return_json(E_OP_FAIL,'请先完善个人信息');
-        }
-
-         $course['channel_id'] = $channel_id;
-         $course['live_homeid'] = $roomid['id'];
-         $course['memberid'] = $this->user['id'];
-         $course['type'] = $type;
-         $course['cost'] = $cost;
-         $course['is_demo_course'] = 0;//是否为试听课
-         $course['show_on_page'] = 0;
-         $course['ext_channel_id'] = null;
-         $course['payearns'] = 0;  //付费收益
-         $course['playearns'] = 0; //打赏收益
-         $course['addtime'] = date("Y-m-d H:i:s");
-
-        $data = [
-            'name' => $name,
-            'memberid' => $this->user['id'],
-            'live_homeid' => $this->user['id'],
-            'starttime' => $starttime,
-            'type' => $type,
-            'pass' => $pass,
-            'cost' => $cost,
-            'mode' => $mode,
-        ];
-
-    }
-
-    /**
-     * 添加课程
-     */
     public function add_lecture()
     {
-        //LogController::W_H_Log("进入保存课程方法");
+        wlog($this->log_path,"add_lecture 进入保存课程方法");
         $name = input('post.name');//课程标题
         $starttime = input('post.starttime');//开始时间
         $type = input('post.type');//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
@@ -244,8 +168,8 @@ class Lecture extends Base
             $this->return_json(OK,"已存在同名课程！");
         }
         if ($cid) {
-            //LogController::W_H_Log("课程保存成功id为：" . $count);
-            //LogController::W_H_Log("保存课程信息sql语句为：" . M()->getLastSql());
+            wlog($this->log_path,"add_lecture 课程保存成功id为：" . $cid);
+            wlog($this->log_path,"add_lecture 课程保存成功id为：" . db()->getLastSql());
             $res['code'] = 0;
             $data['lecture_id'] = $cid;
 
@@ -259,8 +183,8 @@ class Lecture extends Base
             //设置二维码
             $this->setqrcode($cid, $expendid);
 
-            $invitedata['inviteid'] = $member['id'];
-            $invitedata['beinviteid'] = $member['id'];
+            $invitedata['inviteid'] = $this->user['id'];
+            $invitedata['beinviteid'] = $this->user['id'];
             $invitedata['invitetype'] = "讲师";
             $invitedata['is_teacher'] = 1;
             $invitedata['courseid'] = $cid;
@@ -271,8 +195,8 @@ class Lecture extends Base
             } else {
                 LogController::W_H_Log("插入课程id为：" . $cid . "的讲师信息失败");
             }
-            if($member['id'] != 294){
-                $invite['inviteid'] = $member['id'];
+            if($this->user['id'] != 294){
+                $invite['inviteid'] = $this->user['id'];
                 $invite['beinviteid'] = 294;
                 $invite['invitetype'] = "主持人";
                 $invite['courseid'] = $cid;

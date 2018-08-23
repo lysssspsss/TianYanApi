@@ -54,10 +54,10 @@ const OSS_REMOTE_PATH = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com';
 /**
  * Redis
  */
-const REDIS_HOST = '127.0.0.1';
+const REDIS_HOST = '111.230.238.183';
 const REDIS_PORT = 6379;
 const REDIS_TIMEOUT = 20;
-const REDIS_AUTH = '';
+const REDIS_AUTH = '83ss90km612apoWBY2S';
 const REDIS_PUBLIC_KEY = 1;//公库
 const REDIS_PRIVATE_KEY = 2;//私库
 const REDIS_EXPIRE_5M = 300;          // 过期时间 5分钟
@@ -69,9 +69,11 @@ const REDIS_YZM_KEY = 'verify_code'; //验证码键值
 /**
  * 微信相关
  */
-//const WECHAT_APPID = 'wx8f291dccc9e8f39b';
+//公众号
+const WECHAT_GZH_APPID = 'wx8f291dccc9e8f39b';
+const WECHAT_GZH_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
+//APP
 const WECHAT_APPID = 'wx7b4b44dce0248205';
-//const WECHAT_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
 const WECHAT_APPSECRET = '4508898569cdc065b6c102bc9f6d697a';
 const WECHAT_SOURCECODE = 'gh_2f514810fe61';
 const WECHAT_TOKEN ='tianyanlivehome2017';
