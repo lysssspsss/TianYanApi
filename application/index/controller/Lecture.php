@@ -232,7 +232,7 @@ class Lecture extends Base
                 $expendid = Db::name("expend")->insertGetId($expend);
 
                 //设置二维码
-                //$this->setqrcode($cid, $expendid);
+                $this->setqrcode($cid, $expendid);
 
                 $invitedata['inviteid'] = $this->user['id'];
                 $invitedata['beinviteid'] = $this->user['id'];
