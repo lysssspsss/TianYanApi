@@ -41,7 +41,7 @@ class WeChat extends  Controller{
 
         //	$result = $this->_requestGet($url);//此时result就是图像内容
         if ($file) {
-            $command = 'curl -G  "'.$url.'"  >  '.SERVER_PATH.substr($file,1);
+            $command = 'curl -G  "'.$url.'"  >  '.$file;
             try{
                 wlog($this->log_path,"getQRCode command is:$command");
                 $res = system($command,$error);
