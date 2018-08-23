@@ -24,19 +24,6 @@ class Lecture extends Base
      */
     public function add_channel(){
         $member = $this->user;
-        //$price_list = input('post.price_list');
-        /*if($price_list){
-            $price_list = ltrim($price_list,"{");
-            $price_list = rtrim($price_list,"}");
-            $arr = explode(",",$price_list);
-            $tmp = array();
-            foreach ($arr as $k=>$v){
-                $arrt = explode(":",$v);
-                $tmp[$k]['expire'] = trim($arrt[0],'"');
-                $tmp[$k]['money'] = $arrt[1];
-            }
-            $price_list = json_encode($tmp);
-        }*/
         $expire = input('post.expire');
         $year_money = input('post.year_money');
         $roomid = input('post.liveroom_id');
@@ -211,7 +198,7 @@ class Lecture extends Base
         //判断该课程是否已建，已建的不再新建
 
         //开启事务
-        //Db::startTrans();
+        Db::startTrans();
         //try {
             if (!$exist_courses) {
                 $cid = Db::name('course')->insertGetId($data);
@@ -230,10 +217,15 @@ class Lecture extends Base
                     'eventid' => $cid
                 );
                 $expendid = Db::name("expend")->insertGetId($expend);
-
+                if(!$expendid){
+                    Db::rollback();
+                }
                 //设置二维码
-                $this->setqrcode($cid, $expendid);
-
+                $a = $this->setqrcode($cid, $expendid);
+                if(empty($a[0]) || empty($a[1])){
+                    wlog($this->log_path, "add_lecture 设置二维码失败");
+                    Db::rollback();
+                }
                 $invitedata['inviteid'] = $this->user['id'];
                 $invitedata['beinviteid'] = $this->user['id'];
                 $invitedata['invitetype'] = "讲师";
@@ -244,6 +236,7 @@ class Lecture extends Base
                 if ($icount) {
                     wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的讲师信息ID为：" . $icount);
                 } else {
+                    Db::rollback();
                     wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的讲师信息失败");
                 }
                 if ($this->user['id'] != 294) {
@@ -256,17 +249,19 @@ class Lecture extends Base
                     if ($h_count) {
                         wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的主持人信息ID为：" . $h_count);
                     } else {
+                        Db::rollback();
                         wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的主持人信息失败");
                     }
                 }
             } else {
+                Db::rollback();
                 wlog($this->log_path, "add_lecture 课程保存失败！");
                 //$res['code'] = 1;
                 $this->return_json(E_OP_FAIL,'创建新课程失败');
             }
-            //Db::commit(); // 提交事务
-            wlog($this->log_path, "add_lecture 创建新课程ID为" . $cid . "开始推送消息提醒！");
-            $this->push_lecture_notify("lectureadd", $cid); //添加新课程后推送给已经购买专栏的学员
+        Db::commit(); // 提交事务
+        wlog($this->log_path, "add_lecture 创建新课程ID为" . $cid . "开始推送消息提醒！");
+        $this->push_lecture_notify("lectureadd", $cid); //添加新课程后推送给已经购买专栏的学员
         /*}catch (\Exception $e) {
             wlog($this->log_path, "add_lecture 创建新课程失败 已回滚");
             Db::rollback();
@@ -300,8 +295,9 @@ class Lecture extends Base
                     "qrcode" => OSS_REMOTE_PATH . "/Public/qrcode/" . $filename . ".jpg",
                     //"qrcode_addtime" => date("Y-m-d H:i")
                 );
-                Db::name("course")->where("id=" . $id)->update($update_data);
-                Db::name("expend")->where("id=" . $expendid)->update($update_data);
+                $a[0] = Db::name("course")->where("id=" . $id)->update($update_data);
+                $a[1] = Db::name("expend")->where("id=" . $expendid)->update($update_data);
+                return $a;
             } else {
                 $res = $wechatfun->getQRCode($q_content, $qrpath, 1, 2592000);
                 if ($res = 0) {
