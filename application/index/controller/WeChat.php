@@ -1,5 +1,5 @@
 <?php
-namespace Home\Controller;
+namespace app\index\controller;
 use think\Exception;
 use think\Controller;
 use think\Input;
@@ -152,11 +152,16 @@ class WeChat extends  Controller{
         $json_template = json_encode($template);
         $url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" . $this->_getAccessToken();
         $dataRes = $this->_requestPost($url, urldecode($json_template));
+        if(empty($dataRes)){
+            wlog($this->log_path, "doSendTempleteMsg 推送模板消息失败1");
+            return false;
+        }
+        $dataRes = json_decode($dataRes,true);
         if ($dataRes['errcode'] == 0) {
             wlog($this->log_path, "doSendTempleteMsg 推送模板消息成功！");
             return true;
         } else {
-            wlog($this->log_path, "doSendTempleteMsg 推送模板消息失败！");
+            wlog($this->log_path, "doSendTempleteMsg 推送模板消息失败2");
             return false;
         }
     }

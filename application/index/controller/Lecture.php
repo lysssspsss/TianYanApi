@@ -1,7 +1,6 @@
 <?php
 namespace app\index\controller;
 use app\tools\controller\Tools;
-use Home\Controller\WeChat;
 use think\Controller;
 use think\Request;
 use think\Input;
@@ -188,6 +187,13 @@ class Lecture extends Base
             'live_homeid' => $livehome['id'],
             'addtime' => date("Y-m-d H:i:s"),
             'name' => $name,
+            'sub_title'=>'',
+            'startdate'=>'',
+            'intro'=>'',
+            'text_content'=>'',
+            'audio_content'=>'',
+            'qrcode'=>'',
+            'attachid'=>'',
             'starttime' => date('Y-m-d H:i', strtotime($starttime)),
             'type' =>$type,
             'mode' => $mode,
@@ -205,16 +211,15 @@ class Lecture extends Base
         //判断该课程是否已建，已建的不再新建
 
         //开启事务
-        Db::startTrans();
-        try {
+        //Db::startTrans();
+        //try {
             if (!$exist_courses) {
                 $cid = Db::name('course')->insertGetId($data);
             } else {
-                $this->return_json(OK, "已存在同名课程！");
+                $this->return_json(E_OP_FAIL, '已存在同名课程！');
             }
             if ($cid) {
                 wlog($this->log_path, "add_lecture 课程保存成功id为：" . $cid);
-                wlog($this->log_path, "add_lecture 课程保存成功id为：" . db()->getLastSql());
                 $res['code'] = 0;
                 $data['lecture_id'] = $cid;
 
@@ -225,8 +230,9 @@ class Lecture extends Base
                     'eventid' => $cid
                 );
                 $expendid = Db::name("expend")->insertGetId($expend);
+
                 //设置二维码
-                $this->setqrcode($cid, $expendid);
+                //$this->setqrcode($cid, $expendid);
 
                 $invitedata['inviteid'] = $this->user['id'];
                 $invitedata['beinviteid'] = $this->user['id'];
@@ -248,23 +254,24 @@ class Lecture extends Base
                     $invite['addtime'] = date("Y-m-d H:i:s");
                     $h_count = Db::name('invete')->insertGetId($invite);
                     if ($h_count) {
-                        wlog($this->log_path, "插入课程id为：" . $cid . "的主持人信息ID为：" . $h_count);
+                        wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的主持人信息ID为：" . $h_count);
                     } else {
-                        wlog($this->log_path, "插入课程id为：" . $cid . "的主持人信息失败");
+                        wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的主持人信息失败");
                     }
                 }
             } else {
-                wlog($this->log_path, "课程保存失败！");
+                wlog($this->log_path, "add_lecture 课程保存失败！");
                 //$res['code'] = 1;
+                $this->return_json(E_OP_FAIL,'创建新课程失败');
             }
-            Db::commit(); // 提交事务
-            wlog($this->log_path, "创建新课程ID为" . $cid . "开始推送消息提醒！");
+            //Db::commit(); // 提交事务
+            wlog($this->log_path, "add_lecture 创建新课程ID为" . $cid . "开始推送消息提醒！");
             $this->push_lecture_notify("lectureadd", $cid); //添加新课程后推送给已经购买专栏的学员
-        }catch (\Exception $e) {
-            wlog($this->log_path, "创建新课程失败 已回滚");
+        /*}catch (\Exception $e) {
+            wlog($this->log_path, "add_lecture 创建新课程失败 已回滚");
             Db::rollback();
             $this->return_json(E_OP_FAIL,'创建新课程失败 已回滚');
-        }
+        }*/
         $this->return_json(OK,$data);
     }
 
