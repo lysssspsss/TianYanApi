@@ -21,12 +21,12 @@ class Lecture extends Base
     private $log_path = APP_PATH.'log/Lecture.log';
 
     /**
-     * 添加专栏
+     * 添加专栏/频道
      */
     public function add_channel(){
         $member = $this->user;
-        $price_list = $_POST['price_list'];
-        if($price_list){
+        //$price_list = input('post.price_list');
+        /*if($price_list){
             $price_list = ltrim($price_list,"{");
             $price_list = rtrim($price_list,"}");
             $arr = explode(",",$price_list);
@@ -37,41 +37,80 @@ class Lecture extends Base
                 $tmp[$k]['money'] = $arrt[1];
             }
             $price_list = json_encode($tmp);
+        }*/
+        $expire = input('post.expire');
+        $year_money = input('post.year_money');
+        $roomid = input('post.liveroom_id');
+        $name = input('post.name');
+        $channel_type = input('post.channel_type');
+        $description = input('post.description');
+        $cover_url = input('post.cover_url');
+        $permanent = input('post.permanent');
+        $money = input('post.money');
+        $priority = input('post.priority');
+        $price_list = '';
+        //数据验证
+        $result = $this->validate(
+            [
+                'name' => $name,
+                'expire' => $expire,
+                'year_money' => $year_money,
+                'roomid' => $roomid,
+                'channel_type' => $channel_type,
+                'cover_url' => $cover_url,
+                'permanent' => $permanent,
+                'money' => $money,
+                'priority' => $priority,
+            ],
+            [
+                'name'  => 'require',
+                'expire' =>  'number',
+                'year_money' =>  'number',
+                'roomid' =>  'require|number',
+                'channel_type' =>  'require|in:open_channel,pay_channel',
+                'cover_url' =>  'require',
+                'permanent' =>  'require|number',
+                'money' =>  'number',
+                'priority' =>  'number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
         }
+
+        if(!empty($expire) && !empty($year_money)){
+            $tmp[0]['expire'] = (int)$expire;
+            $tmp[0]['money'] = (int)$year_money;
+            $price_list = json_encode($tmp);
+        }elseif ((empty($expire) xor empty($year_money))){//要么2个都有，要么2个都没有
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $reseller_enabled = $resell_percent = 0;
         $data = array(
             'memberid' => $member['id'],
-            'roomid' => $_POST['liveroom_id'],
+            'roomid' => $roomid,//房间ID
             'create_time' => date("Y-m-d H:i:s"),
-            'name' => $_POST['name'],
-            'type' => $_POST['channel_type'],
-            'description' => $_POST['description'],
-            'cover_url' => SERVER_URL . "/public/images/cover/cover" . rand(1, 20) . ".jpg",
-            'permanent' => $_POST['permanent'],
-            'money' => $_POST['money'],
-            'price_list' => $price_list,
-            'reseller_enabled' => $_POST['reseller_enabled'],
-            'resell_percent' => $_POST['resell_percent'],
+            'name' => $name,//专栏名称
+            'type' => $channel_type,//pay_channel 或 open_channel
+            'description' => $description,//专栏介绍
+            'cover_url' => SERVER_URL . "/public/images/cover/cover" . rand(1, 20) . ".jpg",//封面图片
+            'permanent' => $permanent,//是否固定收费 1或0
+            'money' => $money,//收费金额
+            'price_list' => $price_list,//固定+单节收费 的 金额列表 json格式的金额列表
+            'priority' => empty($priority)?1:$priority,//优先级
+            'reseller_enabled' => $reseller_enabled,//是否开启分销
+            'resell_percent' => $resell_percent,//分销比例
         );
+
         $id = db("channel")->insertGetId($data);
         if($id){
             $res['channel_id'] = $id;
-            wlog($this->log_path,"add_channel 获得返回数据：".$id."\n");
+            wlog($this->log_path,"add_channel 频道/专栏保存成功id为：：".$id."\n");
             $this->return_json(OK,$res);
         }else{
-            wlog($this->log_path,"add_channel插入数据失败：".$id."\n");
+            wlog($this->log_path,"add_channel 频道/专栏插入数据失败：".$id."\n");
             $this->return_json(E_OP_FAIL,'插入数据失败');
         }
-       /* if ($count) {
-            //LogController::W_H_Log("频道保存成功id为：" . $count);
-            $res['code'] = 0;
-            $data['channel_id'] = $count;
-
-        } else {
-            //LogController::W_H_Log("频道保存失败！");
-            $res['code'] = 1;
-        }
-        $res['data'] = $data;
-        $this->ajaxReturn($res, 'JSON');*/
     }
 
 
@@ -130,11 +169,12 @@ class Lecture extends Base
             }
             $cost = round($cost,1);
         }
+
         $livehome = db('home')->field('id')->where(['memberid'=>$this->user['id']])->find();
-        if(empty($roomid)){
+
+        if(empty($livehome)){
             $this->return_json(E_OP_FAIL,'请先完善个人信息');
         }
-
         //$member = $this->user;
         //$livehome = db('home')->field('id')->where(['memberid' => $this->user['id']])->find();
         $channel = db("channel")->field("id,category")->where("id=".$channel_id)->find();

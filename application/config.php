@@ -268,4 +268,15 @@ return [
         'ask_progress'=>'d6w5fwuEXdbT0xNEzsktUEBDwudyvNjttJzlWmNwJAo',//用体提问进展提醒
         'nature_test'=>'vQzz1KJLWPkjTyn4tv9FHFhXPQvUTcVWhoePF37rdhc'//九型人格测试结果通知
     ),
+    'WxPayConf_pub'=>array(
+        'APPID' => 'wx8f291dccc9e8f39b',
+        'MCHID' => '1412241902',
+        'KEY' => 'zhang123zhang123zhang123zhang123',
+        'APPSECRET' => '331cf131b3b025fdc71ac7712de86fdd',
+        'JS_API_CALL_URL' => SERVER_URL.'/index.php/Home/WxJsAPI/jsApiCall',
+        'SSLCERT_PATH' => SERVER_URL.'/ThinkPHP/Library/Vendor/wxpay/cacert/apiclient_cert.pem',
+        'SSLKEY_PATH' => SERVER_URL.'/ThinkPHP/Library/Vendor/wxpay/cacert/apiclient_key.pem',
+        'NOTIFY_URL' =>  SERVER_URL.'/index.php/Home/WxJsAPI/notify',
+        'CURL_TIMEOUT' => 30
+    ),
 ];
