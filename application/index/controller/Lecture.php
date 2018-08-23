@@ -6,6 +6,7 @@ use think\Controller;
 use think\Request;
 use think\Input;
 use think\Db;
+use think\Config;
 use think\Session;
 use think\Validate;
 use app\tools\controller\Message;
@@ -87,8 +88,8 @@ class Lecture extends Base
         $cost = input('post.cost');//课程费用
         $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
         $channel_id = input('post.channel_id');
-        $reseller_enabled = input('post.reseller_enabled');
-        $resell_percent = input('post.resell_percent');
+        $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
+        $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
         $tag = input('post.tag');
         $labels = input('post.labels');
         //数据验证
@@ -160,63 +161,71 @@ class Lecture extends Base
             'labels' => $labels,
             'show_on_page'=>$show_on_page
         );
-        $exist_courses = db("course")->where("name='".$data['name']."'")->select();
+        $exist_courses = db("course")->where(['name'=>$data['name']])->select();
         //判断该课程是否已建，已建的不再新建
-        if(!$exist_courses){
-            $cid = db("course")->insertGetId($data);
-        }else{
-            $this->return_json(OK,"已存在同名课程！");
-        }
-        if ($cid) {
-            wlog($this->log_path,"add_lecture 课程保存成功id为：" . $cid);
-            wlog($this->log_path,"add_lecture 课程保存成功id为：" . db()->getLastSql());
-            $res['code'] = 0;
-            $data['lecture_id'] = $cid;
 
-            //插入场景
-            $expend = array(
-                'type' => 'sub_lecture',
-                'memberid' => $this->user['id'],
-                'eventid' => $cid
-            );
-            $expendid = db("expend")->insertGetId($expend);
-            //设置二维码
-            $this->setqrcode($cid, $expendid);
-
-            $invitedata['inviteid'] = $this->user['id'];
-            $invitedata['beinviteid'] = $this->user['id'];
-            $invitedata['invitetype'] = "讲师";
-            $invitedata['is_teacher'] = 1;
-            $invitedata['courseid'] = $cid;
-            $invitedata['addtime'] = date("Y-m-d H:i:s");
-            $icount = db('invete')->insertGetId($invitedata);
-            if ($icount) {
-                LogController::W_H_Log("插入课程id为：" . $cid . "的讲师信息ID为：" . $icount);
+        //开启事务
+        Db::startTrans();
+        try {
+            if (!$exist_courses) {
+                $cid = Db::name('course')->insertGetId($data);
             } else {
-                LogController::W_H_Log("插入课程id为：" . $cid . "的讲师信息失败");
+                $this->return_json(OK, "已存在同名课程！");
             }
-            if($this->user['id'] != 294){
-                $invite['inviteid'] = $this->user['id'];
-                $invite['beinviteid'] = 294;
-                $invite['invitetype'] = "主持人";
-                $invite['courseid'] = $cid;
-                $invite['addtime'] = date("Y-m-d H:i:s");
-                $h_count = db('invete')->insertGetId($invite);
-                if($h_count){
-                    LogController::W_H_Log("插入课程id为：" . $cid . "的主持人信息ID为：" . $h_count);
-                } else {
-                    LogController::W_H_Log("插入课程id为：" . $cid . "的主持人信息失败");
-                }
-            }
+            if ($cid) {
+                wlog($this->log_path, "add_lecture 课程保存成功id为：" . $cid);
+                wlog($this->log_path, "add_lecture 课程保存成功id为：" . db()->getLastSql());
+                $res['code'] = 0;
+                $data['lecture_id'] = $cid;
 
-            LogController::W_H_Log("创建新课程ID为".$cid."开始推送消息提醒！");
-            $this->api_push_lecture_notify("lectureadd",$cid); //添加新课程后推送给已经购买专栏的学员
-        } else {
-            LogController::W_H_Log("课程保存失败！");
-            $res['code'] = 1;
+                //插入场景
+                $expend = array(
+                    'type' => 'sub_lecture',
+                    'memberid' => $this->user['id'],
+                    'eventid' => $cid
+                );
+                $expendid = Db::name("expend")->insertGetId($expend);
+                //设置二维码
+                $this->setqrcode($cid, $expendid);
+
+                $invitedata['inviteid'] = $this->user['id'];
+                $invitedata['beinviteid'] = $this->user['id'];
+                $invitedata['invitetype'] = "讲师";
+                $invitedata['is_teacher'] = 1;
+                $invitedata['courseid'] = $cid;
+                $invitedata['addtime'] = date("Y-m-d H:i:s");
+                $icount = Db::name('invete')->insertGetId($invitedata);
+                if ($icount) {
+                    wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的讲师信息ID为：" . $icount);
+                } else {
+                    wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的讲师信息失败");
+                }
+                if ($this->user['id'] != 294) {
+                    $invite['inviteid'] = $this->user['id'];
+                    $invite['beinviteid'] = 294;
+                    $invite['invitetype'] = "主持人";
+                    $invite['courseid'] = $cid;
+                    $invite['addtime'] = date("Y-m-d H:i:s");
+                    $h_count = Db::name('invete')->insertGetId($invite);
+                    if ($h_count) {
+                        wlog($this->log_path, "插入课程id为：" . $cid . "的主持人信息ID为：" . $h_count);
+                    } else {
+                        wlog($this->log_path, "插入课程id为：" . $cid . "的主持人信息失败");
+                    }
+                }
+            } else {
+                wlog($this->log_path, "课程保存失败！");
+                //$res['code'] = 1;
+            }
+            Db::commit(); // 提交事务
+            wlog($this->log_path, "创建新课程ID为" . $cid . "开始推送消息提醒！");
+            $this->push_lecture_notify("lectureadd", $cid); //添加新课程后推送给已经购买专栏的学员
+        }catch (\Exception $e) {
+            wlog($this->log_path, "创建新课程失败 已回滚");
+            Db::rollback();
+            $this->return_json(E_OP_FAIL,'创建新课程失败 已回滚');
         }
-        $res['data'] = $data;
-        $this->ajaxReturn($res, 'JSON');
+        $this->return_json(OK,$data);
     }
 
 
@@ -244,8 +253,8 @@ class Lecture extends Base
                     "qrcode" => OSS_REMOTE_PATH . "/Public/qrcode/" . $filename . ".jpg",
                     "qrcode_addtime" => date("Y-m-d H:i")
                 );
-                db("course")->where("id=" . $id)->update($update_data);
-                db("expend")->where("id=" . $expendid)->update($update_data);
+                Db::name("course")->where("id=" . $id)->update($update_data);
+                Db::name("expend")->where("id=" . $expendid)->update($update_data);
             } else {
                 $res = $wechatfun->getQRCode($q_content, $qrpath, 1, 2592000);
                 if ($res = 0) {
@@ -254,5 +263,66 @@ class Lecture extends Base
             }
         }
     }
+
+
+    /**
+     * 推送课程给预约人员
+     * type:lectureadd 时推送给购买了专栏的学员
+     */
+    public function push_lecture_notify($type,$lectureid)
+    {
+        $wechat = new WeChat();
+        if ((!empty($type))&&($type == 'lectureadd')) {
+            $lecture = db('course')->field('name,starttime,channel_id')->find($lectureid);
+            $channel_id = $lecture['channel_id'];
+            if ($channel_id > 0) {
+                $pay_list = db('channelpay')->where("channelid=" . $channel_id . " and status='finish'")->select();
+                $url = "http://tianyan199.com/index.php/Home/Lecture/index?id=$lectureid";
+                foreach ($pay_list as $k => $v) {
+                    $member = db('member')->find($v['memberid']);
+                    //LogController::W_H_Log("推送给".$member['name']."消息提醒！！");
+                    wlog($this->log_path, "push_lecture_notify 推送给" . $member['name'] . "消息提醒！！");
+                    //推送图文消息给用户
+                    $data = array(
+                        'userName' => array('value' => urlencode($member['name'] ? $member['name'] : $member['nickname']), 'color' => "#743A3A"),
+                        'courseName' => array('value' => urlencode($lecture['name']), 'color' => '#173177'),
+                        'date' => array('value' => urlencode($lecture['starttime']), 'color' => '#173177'),
+                        'remark' => array('value' => urlencode('\n点击查看详情！'), 'color' => '#173177'),
+                    );
+                    if(is_numeric($member['openid'])){
+                        wlog($this->log_path, "push_lecture_notify 用户" . $member['name'] . "为非微信注册用户，无法推送！");
+                    }else{
+                        $wechat->doSendTempleteMsg($member['openid'], Config::get('template_code.sub_publish'), $url, $data, $topcolor = '#7B68EE');
+                    }
+                }
+            }
+        }else{
+            $lecture_id = $_POST['lecture_id'];
+            if ($lecture_id) {
+                $sub_list = db('subscribe')->where("cid=" . $lecture_id)->select();
+                if ($sub_list) {
+                    $url = "http://tianyan199.com/index.php/Home/Lecture/index?id=$lecture_id";
+                    $lecture = db('course')->find($lecture_id);
+                    foreach ($sub_list as $k => $v) {
+                        $member = db('member')->find($v['mid']);
+                        //  $member = M('member')->getField("name,nickname,openid")->find($v['mid']);
+                        //推送图文消息给用户
+                        $data = array(
+                            'userName' => array('value' => urlencode($member['name'] ? $member['name'] : $member['nickname']), 'color' => "#743A3A"),
+                            'courseName' => array('value' => urlencode($lecture['name']), 'color' => '#173177'),
+                            'date' => array('value' => urlencode($lecture['starttime']), 'color' => '#173177'),
+                            'remark' => array('value' => urlencode('\n点击查看详情！'), 'color' => '#173177'),
+                        );
+                        $wechat->doSendTempleteMsg($member['openid'], Config::get('template_code.sub_publish'), $url, $data, $topcolor = '#7B68EE');
+                    }
+                }
+                $res['code'] = 'success';
+            } else {
+                $res['code'] = 'fail';
+            }
+            $this->return_json(OK,$res);
+        }
+    }
+
 
 }

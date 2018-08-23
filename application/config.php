@@ -257,4 +257,15 @@ return [
         'var_page'  => 'page',
         'list_rows' => 15,
     ],
+
+    'template_code'=>array(
+        'sub_publish'=>'9e-3NANSaqZ92XhRePipG37nRqQsOk9m8lFkHgaGPIg',//预约提醒
+        'auth_publish'=>'YHgfeOK03FI9dYP_jOYbhDlNNO2-OQki1HA6sE89uKw',//加V认证提醒
+        'earns_notice'=>'DoaZh-cA6CplAUZ3S0PLGCaVHIqwlpDX7h85u2wU_JU',//收益到账提醒
+        'lecturepay_notice'=>'ByZ1oI_-xRmGFa-pHC1oE1vJhEDk165Y9webzJFBkxQ',//课程付款提醒
+        'businesscollege_verify'=>'XsSlM7WZARoKywooV5glzY0PEq8vQZbZfr8MMsE6SFM',//商学院审核结果提醒
+        'withdraw_verify'=>'uH70mD8n-vkdlxyULp_egs6_5V0weScF4081qUvTG9E',//提现申请审核结果提醒
+        'ask_progress'=>'d6w5fwuEXdbT0xNEzsktUEBDwudyvNjttJzlWmNwJAo',//用体提问进展提醒
+        'nature_test'=>'vQzz1KJLWPkjTyn4tv9FHFhXPQvUTcVWhoePF37rdhc'//九型人格测试结果通知
+    ),
 ];

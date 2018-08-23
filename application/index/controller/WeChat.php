@@ -14,8 +14,8 @@ header('Content-Type: text/html; charset=utf8');
 
 class WeChat extends  Controller{
 
-	private $_appid = WECHAT_APPID;
-	private $_appsecret = WECHAT_APPSECRET;
+	private $_appid = WECHAT_GZH_APPID;
+	private $_appsecret = WECHAT_GZH_APPSECRET;
 	private $_token = WECHAT_TOKEN;// 公众平台请求开发者时需要标记
 
 	//表示QRCode的类型
@@ -104,7 +104,7 @@ class WeChat extends  Controller{
      * 获取 access_tonken
      * @param string $token_file 用来存储token的临时文件
      */
-    function _getAccessToken($token_file='./access_token.php',$reget_Token=false) {
+    public function _getAccessToken($token_file='./access_token.php',$reget_Token=false) {
         $data = json_decode($this->get_php_file($token_file));
         if ($data->expire_time < time()) {
             //LogController::W_H_Log("access_token 已过期，重新获取！");
@@ -114,9 +114,8 @@ class WeChat extends  Controller{
             //向该URL，发送GET请求
             $result = $this->_requestGet($url);
             if (!$result) {
-                return false;
-                //LogController::W_H_Log("获取access_token 失败！");
                 wlog($this->log_path,"_getAccessToken 获取access_token 失败！");
+                return false;
             }
             // 存在返回响应结果
             $result_obj = json_decode($result);
@@ -131,6 +130,35 @@ class WeChat extends  Controller{
         }
         return $access_token;
 
+    }
+
+    /**
+     * 推送消息到微信
+     * @param $touser
+     * @param $template_id
+     * @param $url
+     * @param $data
+     * @param string $topcolor
+     */
+    public function doSendTempleteMsg($touser, $template_id, $url, $data, $topcolor = '#7B68EE')
+    {
+        $template = array(
+            'touser' => $touser,
+            'template_id' => $template_id,
+            'url' => $url,
+            'topcolor' => $topcolor,
+            'data' => $data
+        );
+        $json_template = json_encode($template);
+        $url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" . $this->_getAccessToken();
+        $dataRes = $this->_requestPost($url, urldecode($json_template));
+        if ($dataRes['errcode'] == 0) {
+            wlog($this->log_path, "doSendTempleteMsg 推送模板消息成功！");
+            return true;
+        } else {
+            wlog($this->log_path, "doSendTempleteMsg 推送模板消息失败！");
+            return false;
+        }
     }
 
     private function set_php_file($filename, $content) {
@@ -149,7 +177,7 @@ class WeChat extends  Controller{
      * @param bool $ssl 是否为https协议
      * @return string 响应主体Content
      */
-    function _requestGet($url, $ssl=true) {
+    public function _requestGet($url, $ssl=true) {
         // curl完成
         $curl = curl_init();
         //设置curl选项
