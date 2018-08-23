@@ -219,12 +219,14 @@ class Lecture extends Base
                 $expendid = Db::name("expend")->insertGetId($expend);
                 if(!$expendid){
                     Db::rollback();
+                    $this->return_json(E_OP_FAIL, '插入expend失败');
                 }
                 //设置二维码
                 $a = $this->setqrcode($cid, $expendid);
                 if(empty($a[0]) || empty($a[1])){
                     wlog($this->log_path, "add_lecture 设置二维码失败");
                     Db::rollback();
+                    $this->return_json(E_OP_FAIL, '设置二维码失败');
                 }
                 $invitedata['inviteid'] = $this->user['id'];
                 $invitedata['beinviteid'] = $this->user['id'];
@@ -238,6 +240,7 @@ class Lecture extends Base
                 } else {
                     Db::rollback();
                     wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的讲师信息失败");
+                    $this->return_json(E_OP_FAIL, '插入课程的讲师信息失败');
                 }
                 if ($this->user['id'] != 294) {
                     $invite['inviteid'] = $this->user['id'];
@@ -251,6 +254,7 @@ class Lecture extends Base
                     } else {
                         Db::rollback();
                         wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的主持人信息失败");
+                        $this->return_json(E_OP_FAIL, '插入课程的主持人信息失败');
                     }
                 }
             } else {
