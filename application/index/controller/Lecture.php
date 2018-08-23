@@ -298,7 +298,7 @@ class Lecture extends Base
                 Tools::UploadFile_OSS("Public/qrcode/" . $filename . ".jpg", FILE_PATH."qrcode/" . $filename . ".jpg");
                 $update_data = array(
                     "qrcode" => OSS_REMOTE_PATH . "/Public/qrcode/" . $filename . ".jpg",
-                    "qrcode_addtime" => date("Y-m-d H:i")
+                    //"qrcode_addtime" => date("Y-m-d H:i")
                 );
                 Db::name("course")->where("id=" . $id)->update($update_data);
                 Db::name("expend")->where("id=" . $expendid)->update($update_data);
