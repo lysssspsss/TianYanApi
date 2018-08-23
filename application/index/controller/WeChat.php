@@ -97,6 +97,9 @@ class WeChat extends  Controller{
         }
         //处理响应数据
         $result_obj = json_decode($result);
+        if(empty($result_obj->ticket)){
+            return false;
+        }
         return $result_obj->ticket;
     }
 
