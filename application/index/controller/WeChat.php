@@ -107,7 +107,8 @@ class WeChat extends  Controller{
      * 获取 access_tonken
      * @param string $token_file 用来存储token的临时文件
      */
-    public function _getAccessToken($token_file='./access_token.php',$reget_Token=false) {
+    public function _getAccessToken($token_file=ROOT_PATH.'access_token.php',$reget_Token=false) {
+        //var_dump(ROOT_PATH.'/access_token.php');exit;
         $data = json_decode($this->get_php_file($token_file));
         if ($data->expire_time < time()) {
             //LogController::W_H_Log("access_token 已过期，重新获取！");
