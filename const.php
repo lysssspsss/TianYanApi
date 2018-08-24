@@ -13,7 +13,8 @@ const SERVER_PATH = '/data/wwwroot/TianYanApi';
 /**
  * 阿里云直播相关
  */
-const LIVE_URL = 'rtmp://video-center-sg.alivecdn.com/';
+//const LIVE_URL = 'rtmp://video-center-sg.alivecdn.com/';
+const LIVE_URL = 'rtmp://video-center.alivecdn.com/';
 const LIVE_APPNAME = 'tianyansxy';
 const LIVE_STREAMNAME_LEFT = 'ty_stream';
 const LIVE_VHOST = 'live.tianyan199.com';

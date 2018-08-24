@@ -7,3 +7,4 @@ application/log/
 .idea/
 .DS_Store
 .idea
+access_token.php

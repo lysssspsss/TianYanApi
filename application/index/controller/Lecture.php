@@ -1,14 +1,10 @@
 <?php
 namespace app\index\controller;
 use app\tools\controller\Tools;
-use think\Controller;
 use think\Request;
-//use think\Input;
 use think\Db;
 use think\Config;
-use think\Session;
-use think\Validate;
-use app\tools\controller\Message;
+
 
 class Lecture extends Base
 {
@@ -17,13 +13,23 @@ class Lecture extends Base
         parent::__construct();
     }
 
-    private $log_path = APP_PATH.'log/Lecture.log';
+    private $log_path = APP_PATH.'log/Lecture.log';//日志路径
+
+    public function get_cover_list()
+    {
+        $data = [];
+        for($i=1;$i<21;$i++){
+            $data[$i-1] = SERVER_URL . "/public/images/cover/cover" . $i . ".jpg";
+        }
+        $this->return_json(OK,$data);
+    }
 
     /**
-     * 添加专栏/频道
+     * 添加或编辑专栏/频道
      */
-    public function add_channel(){
+    public function channel_add_edit(){
         $member = $this->user;
+        $channel_id = input('post.channel_id');
         $expire = input('post.expire');
         $year_money = input('post.year_money');
         $roomid = input('post.liveroom_id');
@@ -38,6 +44,7 @@ class Lecture extends Base
         //数据验证
         $result = $this->validate(
             [
+                'channel_id' => $channel_id,
                 'name' => $name,
                 'expire' => $expire,
                 'year_money' => $year_money,
@@ -49,6 +56,7 @@ class Lecture extends Base
                 'priority' => $priority,
             ],
             [
+                'channel_id'  => 'number',
                 'name'  => 'require',
                 'expire' =>  'number',
                 'year_money' =>  'number',
@@ -72,6 +80,7 @@ class Lecture extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         $reseller_enabled = $resell_percent = 0;
+
         $data = array(
             'memberid' => $member['id'],
             'roomid' => $roomid,//房间ID
@@ -79,7 +88,8 @@ class Lecture extends Base
             'name' => $name,//专栏名称
             'type' => $channel_type,//pay_channel 或 open_channel
             'description' => $description,//专栏介绍
-            'cover_url' => SERVER_URL . "/public/images/cover/cover" . rand(1, 20) . ".jpg",//封面图片
+            //'cover_url' => SERVER_URL . "/public/images/cover/cover" . rand(1, 20) . ".jpg",//封面图片
+            'cover_url' => $cover_url,//封面图片
             'permanent' => $permanent,//是否固定收费 1或0
             'money' => $money,//收费金额
             'price_list' => $price_list,//固定+单节收费 的 金额列表 json格式的金额列表
@@ -88,22 +98,37 @@ class Lecture extends Base
             'resell_percent' => $resell_percent,//分销比例
         );
 
-        $id = db("channel")->insertGetId($data);
+        if(!empty($channel_id)){
+            $id = db('channel')->where(['id'=>$channel_id])->update($data);
+        }else{
+            $id = db('channel')->insertGetId($data);
+        }
         if($id){
             $res['channel_id'] = $id;
-            wlog($this->log_path,"add_channel 频道/专栏保存成功id为：：".$id."\n");
+            wlog($this->log_path,"channel_add_edit 频道/专栏保存成功id为：：".$id."\n");
             $this->return_json(OK,$res);
         }else{
-            wlog($this->log_path,"add_channel 频道/专栏插入数据失败：".$id."\n");
+            wlog($this->log_path,"channel_add_edit 频道/专栏保存数据失败：".$id."\n");
             $this->return_json(E_OP_FAIL,'插入数据失败');
         }
+    }
+
+    public function channel_view_edit()
+    {
+        $data = [];
+        if(Request::instance()->isPost()){
+
+        }else{
+
+        }
+        $this->return_json(OK,$data);
     }
 
 
     /**
      * 添加课程
      */
-    public function add_lecture()
+    public function lecture_add()
     {
         wlog($this->log_path,"add_lecture 进入保存课程方法");
         $name = input('post.name');//课程标题
@@ -267,13 +292,13 @@ class Lecture extends Base
                         'sender_id' => $this->user['id'],
                         'sender_nickname' => $this->user['name'] ? $this->user['name'] : $this->user['nickname'],
                         'sender_headimg' => ($this->user['headimg'] == $this->user['img']) ? $this->user['headimg'] : $this->user['img'],
-                        'sender_title' => '讲师',
+                        'sender_title' => $invitedata['invitetype'],
                         'push_url' => $zhibo_url['push_url'],
                         'pull_url' => $zhibo_url['pull_url'],
                     ];
                     $vid = Db::name('video')->insertGetId($videoinfo);
                     if ($vid) {
-                        wlog($this->log_path, "add_lecture 插入video信息成功！;");
+                        wlog($this->log_path, "add_lecture 插入video信息成功！;id:".$vid);
                     } else {
                         Db::rollback();
                         wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的video信息失败");
@@ -408,15 +433,18 @@ class Lecture extends Base
             $starttime = date('Ymd');
         }
         $yxqtime = strtotime($starttime)+86400;//推/拉流地址有效期
-        $rand = time().rand(100,999);
+        //$rand = time().rand(100,999);
+        $rand = 0;
         $StreamName = LIVE_STREAMNAME_LEFT.$cid.rand(100,999);
         $strpush = '/'.LIVE_APPNAME.'/'.$StreamName.'-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
-        //$strflv =  '/'.LIVE_APPNAME.'/'.$StreamName.'.flv-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
+        $strflv =  '/'.LIVE_APPNAME.'/'.$StreamName.'.flv-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
         $md5 = md5($strpush);
         $auth_key = $yxqtime.'-'.$rand.'-0-'.$md5;
         $data['push_url'] = LIVE_URL.LIVE_APPNAME.'/'.$StreamName.'?vhost='.LIVE_VHOST.'&auth_key='.$auth_key;
         $data['pull_url'] = 'rtmp://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'?auth_key='.$auth_key;
-        //$flvurl = 'http://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'.flv?auth_key='.$yxqtime.'-'.$rand.'-0-'.md5($strflv);
+        $flvurl = 'http://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'.flv?auth_key='.$yxqtime.'-'.$rand.'-0-'.md5($strflv);
+        wlog($this->log_path, "get_stream_url flv拉流地址为： $flvurl");
+        $this->return_json(OK,$data);exit;
         return $data;
     }
 
