@@ -2,7 +2,6 @@
 namespace app\tools\controller;
 require EXTEND_PATH . 'oss/autoload.php';
 use think\Controller;
-use think\Input;
 use Think\Exception;
 use OSS\OssClient;
 

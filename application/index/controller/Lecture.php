@@ -3,7 +3,7 @@ namespace app\index\controller;
 use app\tools\controller\Tools;
 use think\Controller;
 use think\Request;
-use think\Input;
+//use think\Input;
 use think\Db;
 use think\Config;
 use think\Session;
@@ -257,6 +257,30 @@ class Lecture extends Base
                         $this->return_json(E_OP_FAIL, '插入课程的主持人信息失败');
                     }
                 }
+                if($mode == 'video'){//视频类型的课程
+                    $zhibo_url = $this->get_stream_url($data['starttime'],$cid);
+                    $videoinfo = [
+                        'addtime' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+                        'video' => '',
+                        'video_cover' => $data['coverimg'],
+                        'lecture_id' => $cid,
+                        'sender_id' => $this->user['id'],
+                        'sender_nickname' => $this->user['name'] ? $this->user['name'] : $this->user['nickname'],
+                        'sender_headimg' => ($this->user['headimg'] == $this->user['img']) ? $this->user['headimg'] : $this->user['img'],
+                        'sender_title' => '讲师',
+                        'push_url' => $zhibo_url['push_url'],
+                        'pull_url' => $zhibo_url['pull_url'],
+                    ];
+                    $vid = Db::name('video')->insertGetId($videoinfo);
+                    if ($vid) {
+                        wlog($this->log_path, "add_lecture 插入video信息成功！;");
+                    } else {
+                        Db::rollback();
+                        wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的video信息失败");
+                        $this->return_json(E_OP_FAIL, '插入课程的主持人信息失败');
+                    }
+                }
+
             } else {
                 Db::rollback();
                 wlog($this->log_path, "add_lecture 课程保存失败！");
@@ -371,5 +395,29 @@ class Lecture extends Base
         }
     }
 
+
+    /**
+     * 获取阿里云推流地址与拉流地址
+     * @param string $starttime
+     * @param int $cid
+     * @return mixed
+     */
+    public function get_stream_url($starttime = '',$cid = 0)
+    {
+        if(empty($starttime)){
+            $starttime = date('Ymd');
+        }
+        $yxqtime = strtotime($starttime)+86400;//推/拉流地址有效期
+        $rand = time().rand(100,999);
+        $StreamName = LIVE_STREAMNAME_LEFT.$cid.rand(100,999);
+        $strpush = '/'.LIVE_APPNAME.'/'.$StreamName.'-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
+        //$strflv =  '/'.LIVE_APPNAME.'/'.$StreamName.'.flv-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
+        $md5 = md5($strpush);
+        $auth_key = $yxqtime.'-'.$rand.'-0-'.$md5;
+        $data['push_url'] = LIVE_URL.LIVE_APPNAME.'/'.$StreamName.'?vhost='.LIVE_VHOST.'&auth_key='.$auth_key;
+        $data['pull_url'] = 'rtmp://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'?auth_key='.$auth_key;
+        //$flvurl = 'http://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'.flv?auth_key='.$yxqtime.'-'.$rand.'-0-'.md5($strflv);
+        return $data;
+    }
 
 }

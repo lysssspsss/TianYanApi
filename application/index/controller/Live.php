@@ -3,7 +3,6 @@ namespace app\index\controller;
 use app\tools\controller\Tools;
 use think\Controller;
 use think\Request;
-use think\Input;
 use think\Db;
 use think\Session;
 use think\Validate;

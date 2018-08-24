@@ -1,8 +1,9 @@
 <?php
 namespace app\index\controller;
-use think\Exception;
+
 use think\Controller;
-use think\Input;
+//use think\Input;
+use Think\Exception;
 use think\Validate;
 use app\tools\controller\Message;
 use app\tools\controller\Tools;
