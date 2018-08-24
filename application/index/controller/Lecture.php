@@ -444,7 +444,7 @@ class Lecture extends Base
         $data['pull_url'] = 'rtmp://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'?auth_key='.$auth_key;
         $flvurl = 'http://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'.flv?auth_key='.$yxqtime.'-'.$rand.'-0-'.md5($strflv);
         wlog($this->log_path, "get_stream_url flv拉流地址为： $flvurl");
-        $this->return_json(OK,$data);exit;
+        //$this->return_json(OK,$data);exit;
         return $data;
     }
 
