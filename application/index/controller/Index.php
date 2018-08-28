@@ -42,6 +42,52 @@ class Index extends Base
     }
 
     /**
+     * 全部课程
+     */
+    public function all_lecture()
+    {
+        $limit = input('post.limit');//页码
+        $type = input('post.type');//类型
+        //数据验证
+        $result = $this->validate(
+            [
+                'limit' => $limit,
+                'type' => $type,
+            ],
+            [
+                'limit' =>  'require|number|min:1',
+                'type' =>  'require|in:open_lecture,pay_lecture',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+        $leng = 20;
+        $course = db('course');
+        $course->field('id,name,sub_title,coverimg,mode,type,cost');
+        $course->where(['isshow'=>'show','show_on_page'=>1]);
+        if($type=='open_lecture'){
+            $course->where('type!="pay_lecture"');
+        }else{
+            $course->where('type="pay_lecture"');
+        }
+        $data = $course->order('clicknum','desc')->limit($limit-1,$leng)->select();
+        if(empty($data)) {
+            $this->return_json(E_OP_FAIL,'查询失败请重试');
+        }
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * 获取行业大咖
+     */
+    public function get_hydk()
+    {
+
+    }
+
+    /**
      * 获取搜索页面信息
      */
     public function get_search_info()

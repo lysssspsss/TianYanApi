@@ -355,7 +355,7 @@ class Lecture extends Base
         $coverimg = input('post.coverimg');//课程封面
         $intro = input('post.intro');//课程介绍
         $priority = (int)input('post.priority');//课程优先级
-        $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
+        $mode = input('post.mode');//课程模式：picture图文模式，vedio视频模式，ppt模式
         $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
         $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
         $tag = input('post.tag');
