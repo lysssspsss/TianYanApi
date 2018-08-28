@@ -39,7 +39,7 @@ class Base extends Controller
         $pass = ['user' => ['reg', 'sms', 'login','wechat_login'],'index'=>['index']];
 
         $request = Request::instance();
-        $url = $request->controller().$request->action();
+        //$url = $request->controller().$request->action();
 
         //$this->check_sign();/* 签名校验 */
         $this->is_repeat(); /* 重放检测 */
@@ -52,18 +52,18 @@ class Base extends Controller
         }else{
             //$memberid = input('param.memberid');
             $memberid = empty($header['Memberid'])?'':$header['Memberid'];
-            $channel = input('param.channel');
-            !empty($channel) or $channel = '';
+            /*$channel = input('param.channel');
+            !empty($channel) or $channel = '';*/
             $result = $this->validate(
                 [
                    // 'user_token'  => $user_token,
                     'uid'  => $memberid,
-                    'channel'  => $channel,
+                    //'channel'  => $channel,
                 ],
                 [
                    // 'user_token'  => 'require|alphaNum|max:32',
                     'uid'  => 'number|max:16',
-                    'channel'  => 'alphaNum',
+                    //'channel'  => 'alphaNum',
                 ]
             );
             if($result !== true){
@@ -73,7 +73,7 @@ class Base extends Controller
             if(!$user){
                 $this->return_json(E_OP_FAIL,'请重新登录1',true,true);
             }
-            $user['channel'] = $channel;
+            //$user['channel'] = $channel;
             $this->user = $user;
         }
 
@@ -228,7 +228,7 @@ class Base extends Controller
     {
         //header("Content-type:application/octet-stream");        //这句告诉以流的形式来接收数据；
         header('Content-type: text/json; charset=UTF-8' );
-        $houzui_array = ['.jpg','.bmp','.png','.mp4','.mp3','.amr','.ppt'];
+        $houzui_array = ['.jpg','.bmp','.png','.mp4','.m3u8','.mp3','.amr','.ppt'];
         $log_path = APP_PATH.'log/uploadFile.log';
         wlog($log_path,'接收参数file：'.json_encode($_FILES,JSON_UNESCAPED_UNICODE));
         /*wlog($log_path,'接收参数post：'.json_encode($_POST,JSON_UNESCAPED_UNICODE));
@@ -302,6 +302,23 @@ class Base extends Controller
     }
 
 
+    /**
+     * 验证 手机验证码是否正确
+     * @param $tel 手机号码
+     * @param $num 阿里云短信TEMP_CODE后缀
+     * @param $code 验证码
+     * @return bool
+     */
+    protected function check_code($tel,$num='2',$code)
+    {
+        $key = $tel.'_'.$num;
+        $redis_code = $this->redis->hGet(REDIS_YZM_KEY,$key);
+        if($code != $redis_code){
+            //$this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
+        }
+        $this->redis->hdel(REDIS_YZM_KEY,$key);
+        return true;
+    }
 
 
     /**

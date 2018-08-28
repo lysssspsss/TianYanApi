@@ -1,12 +1,8 @@
 <?php
 namespace app\index\controller;
-use think\Controller;
-use think\Request;
-//use think\Input;
 use think\Db;
-use think\Session;
-use think\Validate;
 use app\tools\controller\Message;
+use Think\Exception;
 
 class User extends Base
 {
@@ -76,11 +72,16 @@ class User extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        $redis_code = $this->redis->hGet(REDIS_YZM_KEY,$tel.'_2');
+
+        //检测验证码
+        $this->check_code($tel,'2',$code);
+
+       /* $redis_code = $this->redis->hGet(REDIS_YZM_KEY,$tel.'_2');
         if($code != $redis_code){
             //$this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
         }
-        $this->redis->hdel(REDIS_YZM_KEY,$tel.'_2');
+        $this->redis->hdel(REDIS_YZM_KEY,$tel.'_2');*/
+
         $is_repeat = Db::name('member')->field('id')->where(array('tel'=>$tel))->find();
         if(!empty($is_repeat)){
             $this->return_json(E_OP_FAIL,'注册失败,重复注册');
@@ -198,27 +199,6 @@ class User extends Base
      * 微信授权登录接口
      */
     public function  wechat_login(){
-        /*$res = '{"openid":"omv3N0U0eAAwahpj7-W0Wg5SoQdo","nickname":"陈小明","sex":1,"language":"zh_CN","city":"深圳","province":"广东","country":"中国","headimgurl":"http:\/\/thirdwx.qlogo.cn\/mmopen\/vi_32\/44RVoc0jZ7Skbkrj7icmmYia88gZCBalezsticSXEhtoshkGjLBAbp9q3mXHNbzy8Vu2bnksib8asIp2iagjA3GXtVg\/132","privilege":[],"unionid":"ofeYCxKZ1As51SVIpYtKl__aazqQ"}';
-        $user_obj = json_decode($res, true);
-        $data = array(
-            'nickname' => $user_obj['nickname'],
-            'openid' => $user_obj['openid'],
-            'unionid' => $user_obj['unionid'],
-            'img' => $user_obj['headimgurl'],
-            'headimg' => $user_obj['headimgurl'],
-            'sex' => $user_obj['sex'],
-            //'country' => $user_obj['country'],
-            'city' => $user_obj['city'],
-            'province' => $user_obj['province'],
-            'addtime' => date("Y-m-d H:i:s"),
-            'isfocus' => "no"
-        );
-        $data['issubmit'] = 1;
-        $data['source'] = $this->source;
-        //$member = db('member');
-        $result = Db::name('member')->insertGetId($data);
-        var_dump($result);exit;*/
-
         $log_name = APP_PATH.'log/wechat_login.log';
         $error_log_name = APP_PATH.'log/wechat_login_error.log';
         wlog($log_name,'进入微信登录方法'."\n");
@@ -284,5 +264,137 @@ class User extends Base
             wlog($log_name,"获得返回数据：".$res."\n");
             $this->return_json(OK,$this->user);
         }
+    }
+
+    /**
+     *修改用户信息
+     */
+    public function user_update(){
+        //$today = date("Y-m-d");
+        $name = input('post.name');
+        $tel = input('post.phone');
+        $company = input('post.company');
+        $img = input('post.img');
+        $code = input('post.code');
+        $result = $this->validate(
+            [
+                'tel'  => $tel,
+                'code' => $code,
+                'name' => $name,
+                'company' => $company,
+                'img' => $img,
+            ],
+            [
+                'tel'  => 'require|number|max:11|min:11',
+                'code'  => 'require|number|max:5|min:5',
+                'name'  => 'require|chsAlphaNum',
+                'company'  => 'require|chsAlphaNum',
+                'img'  => 'require',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $this->check_code($tel,'0',$code);
+        //$numbers = input('post.numbers');
+        //$introduction = input('post.introduction');
+        //$paynickname = input('post.paynickname');
+        $data = array(
+            'name'=>$name,
+            'tel'=>$tel,
+            'company'=>$company,
+            'title'=>'lecturer',
+            'issubmit'=>1,
+            'img'=>$img,
+            'lastupdate'=>date('Y-m-d H:i:s')
+            //'numbers'=>$numbers,
+            //'intro'=>$introduction,
+            //'paynickname'=>$paynickname,
+        );
+
+        Db::startTrans();
+        $count = db('member')->where("id=".$this->user['id'])->update($data);
+        if(empty($count)){
+            Db::rollback();
+            wlog($this->log_path,'user_update 修改个人信息失败:'.$this->user['id']);
+            $this->return_json(E_OP_FAIL,'修改个人信息失败');
+
+        }
+        $this->get_user_redis($this->user['id'],true);
+        wlog($this->log_path,'user_update 修改个人信息成功:'.$this->user['id']);
+        //添加到讲师排行中去
+        $ld = ['memberid'=>$this->user['id']];
+        $a = db('teacherrank')->insertGetId($ld);
+        if(empty($a)){
+            Db::rollback();
+            wlog($this->log_path,'user_update 添加讲师排行失败:'.$this->user['id']);
+            $this->return_json(E_OP_FAIL,'添加讲师排行失败');
+        }
+        $member = $this->user;
+        //插入直播间数据
+        $liveroom = db("home");
+        $liveroom = $liveroom->where(['memberid'=>$member['id']])->find();
+        if(empty($liveroom)){
+            $homedata = array(
+                'name'=>$member['name']?$member['name']:$member['nickname'],
+                'memberid'=>$member['id'],
+                'description'=>$member['intro'],
+                'avatar_url'=>($member['headimg']==$member['img'])?$member['headimg']:$member['img'],
+                'attentionnum'=>0,
+                'listennum'=>0,
+                'liveroom_qrcode_url'=>LIVEROOM_QRCODE_URL,
+                'addtime'=>date('Y-m-d H:i:s'),
+                'showstatus'=>"show"
+            );
+            $mcount = db("home")->insertGetId($homedata);
+            if(empty($mcount)){
+                Db::rollback();
+                wlog($this->log_path,'user_update 添加直播间数据失败:'.$this->user['id']);
+                $this->return_json(E_OP_FAIL,'添加直播间数据失败');
+            }
+            //设置课程二维码
+            //插入场景
+            $expend = array(
+                'type'=>'sub_room',
+                'memberid'=>$member['id'],
+                'eventid'=>$mcount
+            );
+            $expendid = db("expend")->insertGetId($expend);
+            if(empty($expendid)){
+                Db::rollback();
+                wlog($this->log_path,'user_update 插入场景数据失败:'.$this->user['id']);
+                $this->return_json(E_OP_FAIL,'插入场景数据失败');
+            }
+            //设置二维码
+            $lecture = Factory::create_obj('lecture');
+            $b = $lecture->setqrcode($mcount,$expendid,'');
+            if(empty($b[0]) ||  empty($b[1])){
+                Db::rollback();
+                wlog($this->log_path,'user_update 设置二维码失败:'.$this->user['id']);
+                $this->return_json(E_OP_FAIL,'设置二维码失败');
+            }
+        }else{
+            $homedata = array(
+                'name'=>$member['name']?$member['name']:$member['nickname'],
+                'description'=>$member['intro'],
+                'avatar_url'=>($member['headimg']==$member['img'])?$member['headimg']:$member['img'],
+            );
+            $mcount = db('home')->where(['id'=>$liveroom['id']])->update($homedata);
+            if(empty($mcount)){
+                Db::rollback();
+                wlog($this->log_path,'user_update 插入场景数据失败:'.$this->user['id']);
+                $this->return_json(E_OP_FAIL,'更新home数据失败');
+            }
+        }
+        Db::commit();
+        $this->return_json(OK,$this->user);
+    }
+
+    /**
+     * 获取个人信息(个人中心)
+     */
+    public function get_user_info()
+    {
+        $this->return_json(OK,$this->user);
     }
 }

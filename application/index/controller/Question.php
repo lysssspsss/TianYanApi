@@ -1,13 +1,7 @@
 <?php
 namespace app\index\controller;
-use think\Controller;
-use think\Request;
-use think\Input;
-use think\Db;
-use think\Session;
-use think\Validate;
-use app\tools\controller\Time;
-use app\tools\controller\Tools;
+//use think\Input;
+
 
 
 class Question extends Base
@@ -36,7 +30,6 @@ class Question extends Base
 
             // 模板推送消息
             $this->send_mould($info['teacher_id'], $_SERVER['HTTP_HOST'].'/'.__APP__."/Home/Lecture/classroom?id=".$info['course_id'] , 0);
-
         }
     }
 

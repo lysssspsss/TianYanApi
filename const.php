@@ -20,7 +20,7 @@ const LIVE_STREAMNAME_LEFT = 'ty_stream';
 const LIVE_VHOST = 'live.tianyan199.com';
 const LIVE_AUTH_KEY = 'Q52CFgY3rN';
 
-
+const LIVEROOM_QRCODE_URL = "/public/images/qrcode_ty.jpg"; //直播间默认二维码
 /**
  * workerman
  */

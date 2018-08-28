@@ -15,6 +15,9 @@ class Lecture extends Base
 
     private $log_path = APP_PATH.'log/Lecture.log';//日志路径
 
+    /**
+     * 添加课程或专栏：显示封面图片列表
+     */
     public function get_cover_list()
     {
         $data = [];
@@ -25,22 +28,41 @@ class Lecture extends Base
     }
 
     /**
+     * 获取专栏信息
+     */
+    public function channel_view()
+    {
+        $channel_id = input('get.channel_id');
+        $result = $this->validate(['channel_id' => $channel_id],['channel_id'  => 'require|number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data = db('channel')->find($channel_id);
+        if(empty($data)){
+            $this->return_json(E_OP_FAIL,'没有找到对应专栏');
+        }
+        $this->return_json(OK,$data);
+    }
+
+    /**
      * 添加或编辑专栏/频道
      */
     public function channel_add_edit(){
         $member = $this->user;
-        $channel_id = input('post.channel_id');
-        $expire = input('post.expire');
-        $year_money = input('post.year_money');
-        $roomid = input('post.liveroom_id');
-        $name = input('post.name');
-        $channel_type = input('post.channel_type');
-        $description = input('post.description');
-        $cover_url = input('post.cover_url');
-        $permanent = input('post.permanent');
-        $money = input('post.money');
+        $channel_id = input('post.channel_id');//频道ID
+        $money = input('post.money');//固定收费
+        $expire = input('post.expire');//收费后期限（单位月）
+        $year_money = input('post.year_money');//按时收费
+        //$roomid = input('post.liveroom_id');//房间ID
+        $name = input('post.name');//专栏标题
+        $channel_type = input('post.channel_type');//专栏类型：pay_channel 或 open_channel
+        $description = input('post.description');//专栏介绍
+        $cover_url = input('post.cover_url');//专栏封面
+        //$permanent = input('post.permanent');//
         $priority = input('post.priority');
         $price_list = '';
+        $is_pay_only_channel = 0;
+        $permanent = 0;
         //数据验证
         $result = $this->validate(
             [
@@ -48,10 +70,9 @@ class Lecture extends Base
                 'name' => $name,
                 'expire' => $expire,
                 'year_money' => $year_money,
-                'roomid' => $roomid,
+                //'roomid' => $roomid,
                 'channel_type' => $channel_type,
                 'cover_url' => $cover_url,
-                'permanent' => $permanent,
                 'money' => $money,
                 'priority' => $priority,
             ],
@@ -60,10 +81,9 @@ class Lecture extends Base
                 'name'  => 'require',
                 'expire' =>  'number',
                 'year_money' =>  'number',
-                'roomid' =>  'require|number',
+                //'roomid' =>  'require|number',
                 'channel_type' =>  'require|in:open_channel,pay_channel',
                 'cover_url' =>  'require',
-                'permanent' =>  'require|number',
                 'money' =>  'number',
                 'priority' =>  'number',
             ]
@@ -71,29 +91,38 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-
-        if(!empty($expire) && !empty($year_money)){
+        $roomid = db('home')->field('id')->where(['memberid'=>$member['id']])->find();
+        if(empty($roomid)){
+            $this->return_json(E_OP_FAIL,'请先完善个人信息');
+        }
+        if(!empty($money) && empty($expire) && empty($year_money)){//固定收费
+            $permanent = 1;
+            $is_pay_only_channel = 1;
+        }elseif(empty($money) && !empty($expire) && !empty($year_money)){
             $tmp[0]['expire'] = (int)$expire;
             $tmp[0]['money'] = (int)$year_money;
             $price_list = json_encode($tmp);
-        }elseif ((empty($expire) xor empty($year_money))){//要么2个都有，要么2个都没有
-            $this->return_json(E_ARGS,'参数错误');
+            $is_pay_only_channel = 0;
+        }else{
+            $this->return_json(E_ARGS,'参数错误:请检查费用');
         }
+
         $reseller_enabled = $resell_percent = 0;
 
         $data = array(
             'memberid' => $member['id'],
-            'roomid' => $roomid,//房间ID
+            'roomid' => $roomid['id'],//房间ID
             'create_time' => date("Y-m-d H:i:s"),
             'name' => $name,//专栏名称
             'type' => $channel_type,//pay_channel 或 open_channel
             'description' => $description,//专栏介绍
             //'cover_url' => SERVER_URL . "/public/images/cover/cover" . rand(1, 20) . ".jpg",//封面图片
             'cover_url' => $cover_url,//封面图片
-            'permanent' => $permanent,//是否固定收费 1或0
             'money' => $money,//收费金额
             'price_list' => $price_list,//固定+单节收费 的 金额列表 json格式的金额列表
             'priority' => empty($priority)?1:$priority,//优先级
+            'is_pay_only_channel' => $is_pay_only_channel,//只付费频道(1)，可付费课程或频道(0)
+            'permanent' => $permanent,//固定收费1 或按时收费0
             'reseller_enabled' => $reseller_enabled,//是否开启分销
             'resell_percent' => $resell_percent,//分销比例
         );
@@ -105,6 +134,10 @@ class Lecture extends Base
         }
         if($id){
             $res['channel_id'] = $id;
+            if(!empty($channel_id)){
+                $data['id'] = $id = $channel_id;
+                $res = $data;
+            }
             wlog($this->log_path,"channel_add_edit 频道/专栏保存成功id为：：".$id."\n");
             $this->return_json(OK,$res);
         }else{
@@ -113,16 +146,6 @@ class Lecture extends Base
         }
     }
 
-    public function channel_view_edit()
-    {
-        $data = [];
-        if(Request::instance()->isPost()){
-
-        }else{
-
-        }
-        $this->return_json(OK,$data);
-    }
 
 
     /**
@@ -166,10 +189,6 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-
-        if($result !== true){
-            $this->return_json(E_ARGS,'参数错误');
-        }
         if($type == 'password_lecture'){
             if(empty($pass)){
                 $this->return_json(E_ARGS,'密码为空');
@@ -184,7 +203,7 @@ class Lecture extends Base
         $livehome = db('home')->field('id')->where(['memberid'=>$this->user['id']])->find();
 
         if(empty($livehome)){
-            $this->return_json(E_OP_FAIL,'请先完善个人信息');
+            $this->return_json(E_OP_FAIL,'请先在 我的-编辑资料 完善个人信息');
         }
         //$member = $this->user;
         //$livehome = db('home')->field('id')->where(['memberid' => $this->user['id']])->find();
@@ -286,7 +305,6 @@ class Lecture extends Base
                     $zhibo_url = $this->get_stream_url($data['starttime'],$cid);
                     $videoinfo = [
                         'addtime' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
-                        'video' => '',
                         'video_cover' => $data['coverimg'],
                         'lecture_id' => $cid,
                         'sender_id' => $this->user['id'],
@@ -294,7 +312,7 @@ class Lecture extends Base
                         'sender_headimg' => ($this->user['headimg'] == $this->user['img']) ? $this->user['headimg'] : $this->user['img'],
                         'sender_title' => $invitedata['invitetype'],
                         'push_url' => $zhibo_url['push_url'],
-                        'pull_url' => $zhibo_url['pull_url'],
+                        'video' => $zhibo_url['pull_url'],
                     ];
                     $vid = Db::name('video')->insertGetId($videoinfo);
                     if ($vid) {
@@ -323,15 +341,104 @@ class Lecture extends Base
         $this->return_json(OK,$data);
     }
 
+    /**
+     * 课程展示&编辑
+     */
+    public function lecture_view_edit()
+    {
+        if(Request::instance()->isPost()){
+            $cid = input('post.lecture_id');//课程id
+            $name = input('post.name');//课程标题
+            $starttime = input('post.starttime');//开始时间
+            $type = input('post.type');//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
+            $pass = input('post.pass');//课程密码
+            $cost = input('post.cost');//课程费用
+            $coverimg = input('post.coverimg');//课程封面
+            $intro = input('post.intro');//课程介绍
+            $priority = (int)input('post.priority');//课程优先级
+            $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
+            $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
+            $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
+            $tag = input('post.tag');
+            $labels = input('post.labels');
+            //数据验证
+            $result = $this->validate(
+                [
+                    'name' => $name,
+                    'cid' => $cid,
+                    'starttime' => $starttime,
+                    'type' => $type,
+                    'pass' => $pass,
+                    'cost' => $cost,
+                    'mode' => $mode,
+                    'priority' => $priority,
+                ],
+                [
+                    'name'  => 'require',
+                    'cid'  => 'require|number',
+                    'starttime' =>  'require|date',
+                    'type' =>  'require|in:open_lecture,password_lecture,pay_lecture',
+                    'pass' =>  'alphaNum',
+                    'cost' =>  'number',
+                    'mode' =>  'require|in:picture,video,ppt',
+                    'priority' =>  'require|number',
+                ]
+            );
+            if($result !== true){
+                $this->return_json(E_ARGS,'参数错误');
+            }
+            if($type == 'password_lecture'){
+                if(empty($pass)){
+                    $this->return_json(E_ARGS,'密码为空');
+                }
+            }elseif ($type == 'pay_lecture'){
+                if(empty($cost)){
+                    $this->return_json(E_ARGS,'费用为空');
+                }
+                $cost = round($cost,1);
+            }
+
+            $data = array(
+                'name' => $name,
+                'starttime' => date('Y-m-d H:i', strtotime($starttime)),
+                'type' =>$type,
+                'mode' => $mode,
+                'pass' => $pass,
+                'cost' => $cost ? $cost : 0,
+                'coverimg' => $coverimg,
+                'intro' => $intro,
+                'priority' => $priority,
+            );
+            $is = db('course')->where(['id'=>$cid])->update($data);
+            if(empty($is)){
+                wlog($this->log_path, "add_lecture 课程保存失败！");
+                //$res['code'] = 1;
+                $this->return_json(E_OP_FAIL,'创建新课程失败');
+            }
+            $data['cid'] = $cid;
+        }else{
+            $lecture_id = input('get.lecture_id');
+            $result = $this->validate(['lecture_id' => $lecture_id,],['lecture_id'  => 'require|number',]);
+            if($result !== true){
+                $this->return_json(E_ARGS,'参数错误');
+            }
+            $data = db('course')->find($lecture_id);
+            if(empty($data)){
+                $this->return_json(E_OP_FAIL,'没有找到对应课程');
+            }
+        }
+        $this->return_json(OK,$data);
+    }
+
 
     //设置课程二维码
-    public function setqrcode($id, $expendid, $qrpath='')
+    public function setqrcode($id, $expendid, $qrpath='', $source='course')
     {
         if ($id) {
             //创建二维码
-            $member = $this->user;
-            $mid = $member['id'];
-            $wechatfun = new WeChat();
+            /*$member = $this->user;
+            $mid = $member['id'];*/
+            $wechatfun = Factory::create_obj('wechat');
             $q_content = $expendid;
             $filename = uniqid();
 
@@ -348,12 +455,12 @@ class Lecture extends Base
                     "qrcode" => OSS_REMOTE_PATH . "/Public/qrcode/" . $filename . ".jpg",
                     //"qrcode_addtime" => date("Y-m-d H:i")
                 );
-                $a[0] = Db::name("course")->where("id=" . $id)->update($update_data);
+                $a[0] = Db::name($source)->where("id=" . $id)->update($update_data);
                 $a[1] = Db::name("expend")->where("id=" . $expendid)->update($update_data);
                 return $a;
             } else {
                 $res = $wechatfun->getQRCode($q_content, $qrpath, 1, 2592000);
-                if ($res = 0) {
+                if ($res == 0) {
                     $wechatfun->getQRCode($q_content, $qrpath, 1, 2592000);
                 }
             }
@@ -365,9 +472,9 @@ class Lecture extends Base
      * 推送课程给预约人员
      * type:lectureadd 时推送给购买了专栏的学员
      */
-    public function push_lecture_notify($type,$lectureid)
+    public function push_lecture_notify($type = '',$lectureid = 0)
     {
-        $wechat = new WeChat();
+        $wechat = Factory::create_obj('wechat');
         if ((!empty($type))&&($type == 'lectureadd')) {
             $lecture = db('course')->field('name,starttime,channel_id')->find($lectureid);
             $channel_id = $lecture['channel_id'];
