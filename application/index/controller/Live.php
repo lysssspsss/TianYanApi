@@ -370,7 +370,7 @@ class Live extends Base
                 'server_id' =>  'number',
                 'reply_message_id'  => 'number',
                 'path' => 'require',
-                'type' => 'require|in:audio,video,picture,music,iframe',
+                'type' => 'require|in:audio,vedio,picture,music,iframe',
             ]
         );
         if($result !== true){

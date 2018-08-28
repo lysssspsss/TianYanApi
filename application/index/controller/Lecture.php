@@ -182,7 +182,7 @@ class Lecture extends Base
                 'type' =>  'require|in:open_lecture,password_lecture,pay_lecture',
                 'pass' =>  'alphaNum',
                 'cost' =>  'number',
-                'mode' =>  'require|in:picture,video,ppt',
+                'mode' =>  'require|in:picture,vedio,ppt',
                 'channel_id' =>  'require|number',
             ]
         );
@@ -380,7 +380,7 @@ class Lecture extends Base
                 'type' =>  'require|in:open_lecture,password_lecture,pay_lecture',
                 'pass' =>  'alphaNum',
                 'cost' =>  'number',
-                'mode' =>  'require|in:picture,video,ppt',
+                'mode' =>  'require|in:picture,vedio,ppt',
                 //'coverimg' =>  'url',
                 'priority' =>  'require|number',
             ]
