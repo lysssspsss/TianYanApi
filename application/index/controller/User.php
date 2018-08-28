@@ -216,12 +216,12 @@ class User extends Base
         }
         $access_token = $json_obj['access_token'];
         $unionid = $json_obj['unionid'];
-        $user = db("member");
+        $user = db('member');
         $list = $user->where(['unionid'=>$unionid])->find();
         if(is_array($list) && !empty($list)){
             $this->get_user_redis($list['id']);
             if (empty($this->user['unionid'])){
-                $get_user_info_url = WECHAT_USER_URL.'?access_token=' . $access_token . '&openid=' . $openid . '&lang=zh_CN';
+                $get_user_info_url = WECHAT_USER_URL.'?access_token=' . $access_token . '&openid=' . $list['openid'] . '&lang=zh_CN';
                 $res = esay_curl($get_user_info_url);
                 //解析json
                 wlog($log_name,"result 1 is :" . $res."\n");
@@ -232,11 +232,11 @@ class User extends Base
                     'lastupdate' => date("Y-m-d H:i:s")
                 );
                 wlog($log_name,json_encode($data,JSON_UNESCAPED_UNICODE)."\n");
-                db("member")->where(['openid'=>$openid])->update($data);
+                db("member")->where(['openid'=>$list['openid']])->update($data);
             }
             $this->return_json(OK,$this->user);
         }else {
-            $get_user_info_url = WECHAT_USER_URL.'?access_token=' . $access_token . '&openid=' . $openid . '&lang=zh_CN';
+            $get_user_info_url = WECHAT_USER_URL.'?access_token=' . $access_token . '&openid=' . $list['openid'] . '&lang=zh_CN';
             $res = esay_curl($get_user_info_url);
             wlog($log_name,"result 2 is :" . $res."\n");
             $user_obj = json_decode($res, true);

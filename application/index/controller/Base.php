@@ -86,7 +86,7 @@ class Base extends Controller
      */
     protected function check_sign()
     {
-        $param = $_POST;
+        $param = input('request.');
         if(empty($param['sign'])){
             $this->return_json(422,'参数为空：sign');
         }

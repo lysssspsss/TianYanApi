@@ -342,90 +342,96 @@ class Lecture extends Base
     }
 
     /**
-     * 课程展示&编辑
+     * 编辑课程
      */
-    public function lecture_view_edit()
+    public function lecture_edit()
     {
-        if(Request::instance()->isPost()){
-            $cid = input('post.lecture_id');//课程id
-            $name = input('post.name');//课程标题
-            $starttime = input('post.starttime');//开始时间
-            $type = input('post.type');//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
-            $pass = input('post.pass');//课程密码
-            $cost = input('post.cost');//课程费用
-            $coverimg = input('post.coverimg');//课程封面
-            $intro = input('post.intro');//课程介绍
-            $priority = (int)input('post.priority');//课程优先级
-            $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
-            $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
-            $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
-            $tag = input('post.tag');
-            $labels = input('post.labels');
-            //数据验证
-            $result = $this->validate(
-                [
-                    'name' => $name,
-                    'cid' => $cid,
-                    'starttime' => $starttime,
-                    'type' => $type,
-                    'pass' => $pass,
-                    'cost' => $cost,
-                    'mode' => $mode,
-                    'priority' => $priority,
-                ],
-                [
-                    'name'  => 'require',
-                    'cid'  => 'require|number',
-                    'starttime' =>  'require|date',
-                    'type' =>  'require|in:open_lecture,password_lecture,pay_lecture',
-                    'pass' =>  'alphaNum',
-                    'cost' =>  'number',
-                    'mode' =>  'require|in:picture,video,ppt',
-                    'priority' =>  'require|number',
-                ]
-            );
-            if($result !== true){
-                $this->return_json(E_ARGS,'参数错误');
-            }
-            if($type == 'password_lecture'){
-                if(empty($pass)){
-                    $this->return_json(E_ARGS,'密码为空');
-                }
-            }elseif ($type == 'pay_lecture'){
-                if(empty($cost)){
-                    $this->return_json(E_ARGS,'费用为空');
-                }
-                $cost = round($cost,1);
-            }
-
-            $data = array(
+        $cid = input('post.lecture_id');//课程id
+        $name = input('post.name');//课程标题
+        $starttime = input('post.starttime');//开始时间
+        $type = input('post.type');//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
+        $pass = input('post.pass');//课程密码
+        $cost = input('post.cost');//课程费用
+        $coverimg = input('post.coverimg');//课程封面
+        $intro = input('post.intro');//课程介绍
+        $priority = (int)input('post.priority');//课程优先级
+        $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
+        $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
+        $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
+        $tag = input('post.tag');
+        $labels = input('post.labels');
+        //数据验证
+        $result = $this->validate(
+            [
                 'name' => $name,
-                'starttime' => date('Y-m-d H:i', strtotime($starttime)),
-                'type' =>$type,
-                'mode' => $mode,
+                'cid' => $cid,
+                'starttime' => $starttime,
+                'type' => $type,
                 'pass' => $pass,
-                'cost' => $cost ? $cost : 0,
-                'coverimg' => $coverimg,
-                'intro' => $intro,
+                'cost' => $cost,
+                'mode' => $mode,
+                //'coverimg' => $coverimg,
                 'priority' => $priority,
-            );
-            $is = db('course')->where(['id'=>$cid])->update($data);
-            if(empty($is)){
-                wlog($this->log_path, "add_lecture 课程保存失败！");
-                //$res['code'] = 1;
-                $this->return_json(E_OP_FAIL,'创建新课程失败');
+            ],
+            [
+                'name'  => 'require',
+                'cid'  => 'require|number',
+                'starttime' =>  'require|date',
+                'type' =>  'require|in:open_lecture,password_lecture,pay_lecture',
+                'pass' =>  'alphaNum',
+                'cost' =>  'number',
+                'mode' =>  'require|in:picture,video,ppt',
+                //'coverimg' =>  'url',
+                'priority' =>  'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        if($type == 'password_lecture'){
+            if(empty($pass)){
+                $this->return_json(E_ARGS,'密码为空');
             }
-            $data['cid'] = $cid;
-        }else{
-            $lecture_id = input('get.lecture_id');
-            $result = $this->validate(['lecture_id' => $lecture_id,],['lecture_id'  => 'require|number',]);
-            if($result !== true){
-                $this->return_json(E_ARGS,'参数错误');
+        }elseif ($type == 'pay_lecture'){
+            if(empty($cost)){
+                $this->return_json(E_ARGS,'费用为空');
             }
-            $data = db('course')->find($lecture_id);
-            if(empty($data)){
-                $this->return_json(E_OP_FAIL,'没有找到对应课程');
-            }
+            $cost = round($cost,1);
+        }
+
+        $data = array(
+            'name' => $name,
+            'starttime' => date('Y-m-d H:i', strtotime($starttime)),
+            'type' =>$type,
+            'mode' => $mode,
+            'pass' => $pass,
+            'cost' => $cost ? $cost : 0,
+            'coverimg' => $coverimg,
+            'intro' => $intro,
+            'priority' => $priority,
+        );
+        $is = db('course')->where(['id'=>$cid])->update($data);
+        if(empty($is)){
+            wlog($this->log_path, "add_lecture 课程保存失败！");
+            $this->return_json(E_OP_FAIL,'保存课程失败');
+        }
+        $data['id'] = $cid;
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * 获取课程信息
+     */
+    public function get_lecture_info()
+    {
+        $lecture_id = input('get.lecture_id');
+        $result = $this->validate(['lecture_id' => $lecture_id,],['lecture_id'  => 'require|number',]);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data = db('course')->find($lecture_id);
+        if(empty($data)){
+            $this->return_json(E_OP_FAIL,'没有找到对应课程');
         }
         $this->return_json(OK,$data);
     }
