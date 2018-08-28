@@ -1,5 +1,7 @@
 <?php
 namespace app\index\controller;
+use app\tools\controller\Time;
+use app\tools\controller\Tools;
 use think\Controller;
 use think\Request;
 use think\Input;
@@ -55,68 +57,55 @@ class Index extends Base
      */
     public function search()
     {
-        /*$q = $_REQUEST['q'];
-        LogController::W_H_Log("q is :" . $q);
-        $type = $_REQUEST['type'];
-        @$p = @$_REQUEST['p'];
-        $count = 20;
-        $p = $p ? $p : 1;
-        LogController::W_H_Log("type is:$type");
-        $data = array();
-        if ($type == 'user') {
-            $list = M('home')->where("name like '%$q%'")->limit(($p - 1) * $count, $count)->select();
-            foreach ($list as $k => $v) {
-                $member = M('member')->find($v['memberid']);
-                $v['member'] = $member;
-                $data[$k] = $v;
+        $input = input('post.input');//搜索内容
+        $limit = input('post.limit');//页码
+        //数据验证
+        $result = $this->validate(
+            [
+                'input' => $input,
+                'limit' => $limit,
+            ],
+            [
+                'input'  => 'require|chsAlphaNum',
+                'limit' =>  'require|number|min:1',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $limit = !empty($limit) ? $limit : 1;
+        $length = 20;
+        $list = db('course')->where("(name like '%$input%' or labels like '%$input%') and isshow='show'")->limit($limit-1, $length)->select();
+        $data = [];
+        if(empty($list)) {
+            $this->return_json(OK,[]);
+        }
+        foreach ($list as $k => $v) {
+            $member = db('member')->find($v['memberid']);
+            $data[$k]['headimgurl'] = $member['headimg'];
+            $data[$k]['img'] = $member['img'];
+            $data[$k]['nickname'] = $member['name'];
+            $data[$k]['cover'] = $v['coverimg'];
+            $data[$k]['has_redpack'] = false;
+            $data[$k]['lecture_id'] = $v['id'];
+            $data[$k]['name'] = $v['name'];
+            $data[$k]['cost'] = $v['cost'];
+            $data[$k]['pass'] = $v['pass'];
+            $data[$k]['starttime'] = $v['starttime'];
+            $status = Time::timediff(strtotime($v['starttime']), time(), $v['mins']);
+            if ($status != '进行中') {
+                $data[$k]['current_status'] = $status ? 'ready' : 'closed';
+            } else {
+                $data[$k]['current_status'] = 'started';
             }
-            $display = "roomlist";
-        } else{
-            if ($type=='lecture'){
-                $display = "lecturelist";
-                $list = M('course')->where("(name like '%$q%' or labels like '%$q%') and isshow='show'")->limit(($p - 1) * $count, $count)->select();
-            }else{
-                $display = "lecturelistlabel";
-                $list = M('course')->where("labels like '%$q%' and isshow='show'")->limit(($p - 1) * $count, $count)->select();
-            }
-            foreach ($list as $k => $v) {
-                $member = M('member')->find($v['memberid']);
-                $data[$k]['account']['headimgurl'] = $member['headimg'];
-                $data[$k]['account']['img'] = $member['img'];
-                $data[$k]['account']['nickname'] = $member['name'];
-                $data[$k]['cover'] = $v['coverimg'];
-                $data[$k]['has_redpack'] = false;
-                $data[$k]['lecid'] = $v['id'];
-                $data[$k]['name'] = $v['name'];
-                $data[$k]['lecture_url'] = "index.php/Home/Lecture/index?id=" . $v['id'];
-                $data[$k]['need_money'] = $v['cost'] ? true : false;
-                $data[$k]['need_password'] = $v['pass'] ? true : false;
-                $data[$k]['start_time'] = $v['starttime'];
-                $status = TimeController::timediff(strtotime($v['starttime']), time(), $v['mins']);
-                if ($status != '进行中') {
-                    $data[$k]['current_status'] = $status ? 'ready' : 'closed';
-                } else {
-                    $data[$k]['current_status'] = 'started';
-                }
-                $data[$k]['current_status_display'] = $status ? $status : '已结束';
-            }
+            $data[$k]['current_status_display'] = $status ? $status : '已结束';
+        }
 
-        }
-        $member = $_SESSION['CurrenMember'];
-        $sdata['content'] = $q;
-        $sdata['memberid'] = $member['id'];
+        $sdata['content'] = $input;
+        $sdata['memberid'] = $this->user['id'];
         $sdata['time'] = date('Y-m-d H:i');
-        M('searchhistory')->add($sdata);
-        if (count($list, 0) > $count) {
-            $this->assign("last", true);
-        } else {
-            $this->assign("last", false);
-        }
-        $this->assign("list", $data);
-        $this->assign("p", $p);
-        $this->assign("q", $q);
-        $this->assign("type", $type);
-        $this->display($display);*/
+        db('searchhistory')->insertGetId($sdata);
+        $this->return_json(OK,$data);
     }
 
     /**
