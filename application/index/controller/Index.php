@@ -411,7 +411,7 @@ class Index extends Base
      */
     public function get_hydk()
     {
-        $data = db('famous')->where('dk_order <> 0')->order('dk_order','desc')->select();
+        $data = db('famous')->field('channel_id,memberid,room_id,name,img,cost,intro,intro1,intro2,fake_clicknum as clicknum')->where('dk_order <> 0')->order('dk_order','desc')->select();
         $this->return_json(OK,$data);
     }
 
