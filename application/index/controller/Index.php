@@ -403,7 +403,7 @@ class Index extends Base
             )
 
         );*/
-        $data = db('famous')->field('channel_id,memberid,room_id,name,img,cost,intro,intro1,intro2')->where('ms_order <> 0')->order('ms_order','desc')->select();
+        $data = db('famous')->field('channel_id,memberid,room_id,name,img,cost,intro,intro1,intro2,js_memberid')->where('ms_order <> 0')->order('ms_order','desc')->select();
         foreach($data as $key => $value){
             $course = db('course')->field('sum(clicknum) as clicknum,count(id) as count')->where(['channel_id'=>$value['channel_id']])->find();
             $top1 = db('course')->field('name as tuijian')->where(['channel_id'=>$value['channel_id']])->order('clicknum','desc')->find();
@@ -419,7 +419,7 @@ class Index extends Base
      */
     public function get_hydk()
     {
-        $data = db('famous')->field('channel_id,memberid,room_id,name,img,cost,intro,intro1,intro2,fake_clicknum as clicknum')->where('dk_order <> 0')->order('dk_order','desc')->select();
+        $data = db('famous')->field('channel_id,memberid,room_id,name,img,cost,intro,intro1,intro2,fake_clicknum as clicknum,js_memberid')->where('dk_order <> 0')->order('dk_order','desc')->select();
         $this->return_json(OK,$data);
     }
 
@@ -539,7 +539,7 @@ class Index extends Base
                 'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_pmy.jpg',
             ),
         ];*/
-        $data = db('famous')->field('memberid,channel_id,name,intro as nick,img')->where(['is_main'=>1])->where('dk_order <> 0')->order('dk_order')->select();
+        $data = db('famous')->field('memberid,channel_id,name,intro as nick,img,js_memberid')->where(['is_main'=>1])->where('dk_order <> 0')->order('dk_order')->select();
         return $data;
     }
 

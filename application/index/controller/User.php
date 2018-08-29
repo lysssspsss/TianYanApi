@@ -306,7 +306,7 @@ class User extends Base
             'company'=>$company,
             'title'=>'lecturer',
             'issubmit'=>1,
-            'img'=>$img,
+            'headimg'=>$img,
             'lastupdate'=>date('Y-m-d H:i:s')
             //'numbers'=>$numbers,
             //'intro'=>$introduction,

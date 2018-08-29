@@ -123,6 +123,7 @@ class Lecture extends Base
             'priority' => empty($priority)?1:$priority,//优先级
             'is_pay_only_channel' => $is_pay_only_channel,//只付费频道(1)，可付费课程或频道(0)
             'permanent' => $permanent,//固定收费1 或按时收费0
+            'lecturer' => $member['id'],//专栏关联讲师
             'reseller_enabled' => $reseller_enabled,//是否开启分销
             'resell_percent' => $resell_percent,//分销比例
         );
@@ -437,11 +438,27 @@ class Lecture extends Base
     }
 
     /**
-     * 获取讲师信息
+     * 获取讲师介绍
      */
     public function get_jiangshi()
     {
-
+        $js_memberid = input('get.js_memberid');
+        $result = $this->validate(['js_memberid' => $js_memberid,],['js_memberid'  => 'require|number',]);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $jiangshi = db('member')->field('id as js_memberid,name,nickname,intro')->where(['id'=>$js_memberid])->find();
+        $cover = db('channel')->field('id,cover_url')->where('memberid='.$js_memberid.' or '.'lecturer='.$js_memberid)->find();
+        if(empty($cover['cover_url'])){
+            $jiangshi['cover_url'] = OSS_REMOTE_PATH. "/public/images/cover14.jpg";
+        }else{
+            $jiangshi['cover_url'] = $cover['cover_url'];
+        }
+        $jiangshi['lecture'] = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title')
+            ->where(['isshow'=>'show','channel_id'=>$cover['id']])
+            //->where('name','like', '%'.$jiangshi['name'].'%')
+            ->select();
+        $this->return_json(OK,$jiangshi);
     }
 
 
