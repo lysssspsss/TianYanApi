@@ -484,10 +484,16 @@ class Index extends Base
             $data[$k]['current_status_display'] = $status ? $status : '已结束';
         }
 
-        $sdata['content'] = $input;
-        $sdata['memberid'] = $this->user['id'];
-        $sdata['time'] = date('Y-m-d H:i');
-        db('searchhistory')->insertGetId($sdata);
+        $a = db('searchhistory')->field('id')->where(['memberid'=>$this->user['id'],'content'=>$input])->find();
+        if(empty($a['id'])){
+            $sdata['content'] = $input;
+            $sdata['memberid'] = $this->user['id'];
+            $sdata['time'] = date('Y-m-d H:i');
+            db('searchhistory')->insertGetId($sdata);
+        }else{
+            $sdata['time'] = date('Y-m-d H:i');
+            db('searchhistory')->where(['id'=>$a['id']])->update($sdata);
+        }
         $this->return_json(OK,$data);
     }
 
