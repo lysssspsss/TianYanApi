@@ -84,7 +84,7 @@ class Index extends Base
      */
     public function get_mszt()
     {
-        $data = array(
+        /*$data = array(
             array('channel_id'=>438,
                 'name'=>'邓万勤',
                 'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_dwq.jpg',
@@ -402,7 +402,15 @@ class Index extends Base
                 'clicknum'=>'8695 '
             )
 
-        );
+        );*/
+        $data = db('famous')->field('channel_id,memberid,room_id,name,img,cost,intro,intro1,intro2')->where('ms_order <> 0')->order('ms_order','desc')->select();
+        foreach($data as $key => $value){
+            $course = db('course')->field('sum(clicknum) as clicknum,count(id) as count')->where(['channel_id'=>$value['channel_id']])->find();
+            $top1 = db('course')->field('name as tuijian')->where(['channel_id'=>$value['channel_id']])->order('clicknum','desc')->find();
+            $data[$key]['clicknum'] = $course['clicknum'];
+            $data[$key]['count'] = $course['count'];
+            $data[$key]['tuijian'] = $top1['tuijian'];
+        }
         $this->return_json(OK,$data);
     }
 
@@ -533,33 +541,6 @@ class Index extends Base
     private function get_mingshi()
     {
         $data = array(
-//            array('id'=>413,
-//                  'name'=>'刘影专栏',
-//                  'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_ly.jpg',
-//                  'cost'=>'￥199/年',
-//                  'intro'=>'华夏人寿内蒙古分公司营销总监',
-//                  'intro2'=>'内蒙古女企业家商会副会长',
-//                  'intro1'=>'《新生代团队的基因裂变》',
-//                  'clicknum'=>'13422人关注'
-//              ),
-//            array('id'=>415,
-//                'name'=>'饶志明专栏',
-//                'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_rzm.jpg',
-//                'cost'=>'￥199/年',
-//                'intro'=>'保寿险第一团队长',
-//                'intro2'=>'中国人民人寿四川分公司高级总监',
-//                'intro1'=>'《新兴团队的增员模式》',
-//                'clicknum'=>'13312人关注'
-//            ),
-//            array('id'=>412,
-//                'name'=>'冯靖贻专栏',
-//                'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_fjy.jpg',
-//                'cost'=>'￥199/年',
-//                'intro'=>'中国平安人寿东莞支公司资深业务总监',
-//                'intro2'=>'全球MDRT年会中国区旗手',
-//                'intro1'=>'《建双优团队 筑长青基业》',
-//                'clicknum'=>'12477人关注'
-//            ),
             array(
                 'channel_id'=>155,
                 'name'=>'安建平专栏',
@@ -610,15 +591,6 @@ class Index extends Base
                 'intro2'=>'《如何建立高绩效团队》',
                 'clicknum'=>'10862人关注'
             ),
-//            array('id'=>154,
-//                'name'=>'肖珊专栏',
-//                'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_xs.jpg',
-//                'cost'=>'￥199/年',
-//                'intro'=>'CMF副主席、全球CIAM寿险博士',
-//                'intro1'=>'《如何一天做到MDRT的TOT》',
-//                'intro2'=>'《如何做大保单？》',
-//                'clicknum'=>'5862人关注'
-//            ),
             array(
                 'channel_id'=>174,
                 'name'=>'王博雯专栏',
