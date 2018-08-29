@@ -436,6 +436,14 @@ class Lecture extends Base
         $this->return_json(OK,$data);
     }
 
+    /**
+     * 获取讲师信息
+     */
+    public function get_jiangshi()
+    {
+
+    }
+
 
     //设置课程二维码
     public function setqrcode($id, $expendid, $qrpath='', $source='course')
