@@ -57,6 +57,7 @@ class Lecture extends Base
         $name = input('post.name');//专栏标题
         $channel_type = input('post.channel_type');//专栏类型：pay_channel 或 open_channel
         $description = input('post.description');//专栏介绍
+        $js_img = input('post.js_img');//专栏介绍的图片
         $cover_url = input('post.cover_url');//专栏封面
         //$permanent = input('post.permanent');//
         $priority = input('post.priority');
@@ -91,6 +92,8 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
+
+        $description = '<p>'.$js_img.'</p><p><br></p><p>'.$description.'</p>';
         $roomid = db('home')->field('id')->where(['memberid'=>$member['id']])->find();
         if(empty($roomid)){
             $this->return_json(E_OP_FAIL,'请先完善个人信息');
@@ -459,6 +462,13 @@ class Lecture extends Base
             //->where('name','like', '%'.$jiangshi['name'].'%')
             ->select();
         $this->return_json(OK,$jiangshi);
+    }
+
+
+    public function get_kecheng()
+    {
+        $lecture_id = input('get.lecture_id');
+
     }
 
 

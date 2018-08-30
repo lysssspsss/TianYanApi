@@ -398,4 +398,63 @@ class User extends Base
     {
         $this->return_json(OK,$this->user);
     }
+
+    /**
+     * 加V认证
+     */
+    public function vip()
+    {
+        $tel = input('post.tel');
+        $wxcode = input('post.wxcode');
+        $name = input('post.name');
+        $company = input('post.company');
+        $intro = input('post.intro');
+        $result = $this->validate(
+            [
+                'tel'  => $tel,
+                'wxcode' => $wxcode,
+                'name' => $name,
+                'company' => $company,
+                'intro' => $intro,
+            ],
+            [
+                'tel'  => 'require|number|max:11|min:11',
+                'wxcode'  => 'require|alphaDash',//字母数字下划线和减号
+                'name'  => 'require|chsAlphaNum',
+                'company'  => 'require|chsAlphaNum',
+                'intro'  => 'require',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data['tel'] = $tel;
+        $data['wxcode'] = $wxcode;
+        $data['name'] = $name;
+        $data['company'] = $company;
+        $data['address'] = '';
+        $data['check_time'] = '';
+        $data['memberid'] = $this->user['id'];
+        $data['apply_time'] = date("Y-m-d H:i");
+        $data['status'] = 'wait';
+        $verify = db('verify')->where('memberid='.$this->user['id'])->select();
+        if(empty($verify)){
+            $count = db('verify')->insertGetId($data);
+        }else{
+            if($verify[count($verify)-1]['status'] == 'sucess'){
+                $data['status'] = 'sucess';
+                $count = db('verify')->where('id='.$verify[count($verify)-1]['id'])->update($data);
+            }else{
+                $count = db('verify')->insertGetId($data);
+            }
+        }
+        if(empty($count)){
+            $this->return_json(E_OP_FAIL,'数据插入或更新失败');
+        }
+        $data['intro'] = $intro;
+        $data['lastupdate'] = $data['apply_time'];
+        unset($data['apply_time'],$data['status'],$data['memberid'],$data['check_time'],$data['address']);
+        db('member')->where(['id'=>$this->user['id']])->update($data);
+        $this->return_json(OK,['memberid'=>$this->user['id']]);
+    }
 }
