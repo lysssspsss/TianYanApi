@@ -48,6 +48,10 @@ class Lecture extends Base
      * 添加或编辑专栏/频道
      */
     public function channel_add_edit(){
+        /*$a[0] = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/cover/cover1.jpg';
+        $a[1] = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/cover/cover2.jpg';
+        $a[2] = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/cover/cover3.jpg';
+        var_dump(json_encode($a));exit;*/
         $member = $this->user;
         $channel_id = input('post.channel_id');//频道ID
         $money = input('post.money');//固定收费
@@ -94,7 +98,8 @@ class Lecture extends Base
         }
 
         if(!empty($js_img)){
-            $js_img = json_decode($js_img,true);
+            //$js_img = json_decode($js_img,true);
+            $js_img = explode(',',$js_img);
             $content = '';
             foreach($js_img as $key => $oneimg){
                 $content .= '<p><img src="'.$oneimg.'"/></p><p><br/></p>';
@@ -542,33 +547,36 @@ class Lecture extends Base
             $result['timestr'] = $timestr;
 
             if (isset($lecture['live_homeid'])&&(!empty($lecture['live_homeid'])) && $lecture['live_homeid']!=0) {
-                $manager = db('home_manager')->where('homeid=' . $lecture['live_homeid'] . ' AND beinviteid=' . $this->user['id'])->find();
+                $manager = db('home_manager')->field('id')->where('homeid=' . $lecture['live_homeid'] . ' AND beinviteid=' . $this->user['id'])->find();
             }
             if($manager) {
-                $this->assign('manager',true);
+                $result['manager'] = 'true';
             }else{
-                $this->assign('manager',false);
+                $result['manager'] = 'false';
+                //$this->assign('manager',false);
             }
-            $subcount = M("subscribe")->where("cid=" . $id)->count();
+            $subcount = db("subscribe")->where("cid=" . $id)->count();
 
-            $this->assign("subscribe", $subcount);
+            $result['subscribe'] = $subcount;
+            //$this->assign("subscribe", $subcount);
 
             //查找邀请人员
-            $inlist = M('invete')->where("courseid=$id")->select();
-            $this->assign("isbeinvite","no");
+            /*$inlist = db('invete')->where("courseid=$id")->select();
+            $result['isbeinvite'] = 'no';
+            //$this->assign("isbeinvite","no");
             if ($inlist) {
                 foreach ($inlist as $k => $v) {
-                    if ($cmember['id']==$v['beinviteid']){
+                    if ($this->user['id']==$v['beinviteid']){
                         $this->assign("isbeinvite","yes");
                     }
-                    $liveroom = M('home')->where("memberid=".$v['beinviteid'])->find();
+                    $liveroom = db('home')->where("memberid=".$v['beinviteid'])->find();
                     $v['liveroom'] = $liveroom['id'];
-                    $temp_m = M("member")->find($v['beinviteid']);
+                    $temp_m = db("member")->find($v['beinviteid']);
                     $v['member'] = $temp_m;
                     $invelist[$k] = $v;
                 }
                 $this->assign("invetelist", $invelist);
-            }
+            }*/
 
             //更新人气
             /*if ($cmember['id'] != $lecture['memberid']) {
