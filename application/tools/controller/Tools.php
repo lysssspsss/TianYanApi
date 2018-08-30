@@ -122,6 +122,23 @@ class Tools extends Controller
     }
 
 
+    public static function isout($addtime,$h){
+        if($addtime){
+            $filetime = strtotime($addtime);
+            $now = time();
+            //计算天数
+            $timediff = $now-$filetime;
+            $days = intval($timediff/86400);
+            /*LogController::W_H_Log("days is :".$days);
+            LogController::W_H_Log("h is :".$h);*/
+            if($days > $h){
+                return false;
+            }else{
+                return true;
+            }
+        }
+    }
+
     /**
      * 上传文件到OSS
      * @param $object 远程文件名

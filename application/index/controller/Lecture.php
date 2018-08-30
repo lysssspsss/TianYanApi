@@ -94,7 +94,12 @@ class Lecture extends Base
         }
 
         if(!empty($js_img)){
-            $description = '<p>'.$js_img.'</p><p><br></p><p>'.$description.'</p>';
+            $js_img = json_decode($js_img,true);
+            $content = '';
+            foreach($js_img as $key => $oneimg){
+                $content .= '<p><img src="'.$oneimg.'"/></p><p><br/></p>';
+            }
+            $description = $content.'<p>'.$description.'</p>';
         }
         $roomid = db('home')->field('id')->where(['memberid'=>$member['id']])->find();
         if(empty($roomid)){
@@ -469,11 +474,261 @@ class Lecture extends Base
     }
 
 
+    /**
+     * 获取课程
+     */
     public function get_kecheng()
     {
-        $lecture_id = input('get.lecture_id');
+        //$lecture_id = input('get.lecture_id');
 
+        $this->get_user_redis($this->user,true);
+        $id = $_GET['id'];
+        $channel_id = $_GET['channel_id'];
+        $inviter_id = $_GET['inviter_id'];
+        /*if (strpos($id, 'Q') !== false){
+            $ids = explode('Q',$id);
+            $id = $ids[0];
+            $code = $ids[1];
+            $discount_pack_id = $ids[2];
+        }*/
+        /*if (strpos($id, 'P') !== false){
+            $ids = explode('P',$id);
+            $id = $ids[0];
+            $inviter_id = $ids[1];
+            //针对 1746这堂课推送用户点击消息
+            if ($id==1746 && isset($inviter_id)){
+                $this->assign("issentmsg","yes");
+                $this->assign("inviterid",$inviter_id);
+            }
+        }*/
+        //LogController::W_H_Log("lecture index id:" . $id);
+        if ($id) {
+            //$lsql = "select * from live_course where id=".$id;
+            //$lecture = MemcacheToolController::Mem_Data_process($lsql,'get',null)[0];
+            $lecture = db("course")->where("id=" . $id)->find();
+            if ($channel_id&&$lecture['channel_id'] != $channel_id){
+                $lecture['channel_id'] = $channel_id;
+            }
+            //$mtsql = "select * from live_member where id=".$lecture['memberid'];
+            //$member =  MemcacheToolController::Mem_Data_process($mtsql,'get',null)[0];
+             $member = db('member')->find($lecture['memberid']);
+            //临时做法
+
+
+            //判断二维码是否已过期
+            if (Tools::isout($lecture['qrcode_addtime'], 29) && getimagesize($lecture['qrcode'])) {
+                /*LogController::W_H_Log("二维码未过期");
+                LogController::W_H_Log("lecture qrcode:" . $lecture['qrcode']);*/
+
+            } else {
+                //LogController::W_H_Log("二维码已过期");
+                wlog($this->log_path,"get_kecheng 二维码已过期");
+                //$mtsql = "select * from live_expend where eventid=".$id." and type='sub_lecture'";
+                //$expend =  MemcacheToolController::Mem_Data_process($mtsql,'get',null)[0];
+                $expend = db("expend")->where("eventid=$id and type='sub_lecture'")->find();
+                $this->setqrcode($id, $expend['id']);
+                $lecture = db("course")->where("id=" . $id)->find();
+            }
+            $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
+            if ($status != '进行中') {
+                $lecture['current_status'] = $status ? 'ready' : 'closed';
+            } else {
+                $lecture['current_status'] = 'started';
+            }
+            $w = date("w",strtotime($lecture['starttime']));
+            $w = ($w==0)?'日':$w;
+            $timestr = date("n",strtotime($lecture['starttime']))."月".date("j",strtotime($lecture['starttime']))."日"."(周".$w.")".date("H",strtotime($lecture['starttime']))."时".date("i",strtotime($lecture['starttime']))."准时开课";
+            //$this->assign("timestr",$timestr);
+            $result['timestr'] = $timestr;
+
+            if (isset($lecture['live_homeid'])&&(!empty($lecture['live_homeid'])) && $lecture['live_homeid']!=0) {
+                $manager = db('home_manager')->where('homeid=' . $lecture['live_homeid'] . ' AND beinviteid=' . $this->user['id'])->find();
+            }
+            if($manager) {
+                $this->assign('manager',true);
+            }else{
+                $this->assign('manager',false);
+            }
+            $subcount = M("subscribe")->where("cid=" . $id)->count();
+
+            $this->assign("subscribe", $subcount);
+
+            //查找邀请人员
+            $inlist = M('invete')->where("courseid=$id")->select();
+            $this->assign("isbeinvite","no");
+            if ($inlist) {
+                foreach ($inlist as $k => $v) {
+                    if ($cmember['id']==$v['beinviteid']){
+                        $this->assign("isbeinvite","yes");
+                    }
+                    $liveroom = M('home')->where("memberid=".$v['beinviteid'])->find();
+                    $v['liveroom'] = $liveroom['id'];
+                    $temp_m = M("member")->find($v['beinviteid']);
+                    $v['member'] = $temp_m;
+                    $invelist[$k] = $v;
+                }
+                $this->assign("invetelist", $invelist);
+            }
+
+            //更新人气
+            /*if ($cmember['id'] != $lecture['memberid']) {
+                $lecdata = array(
+                    'clicknum' => $lecture['clicknum'] + 1,
+                );
+                M("course")->where("id=" . $id)->save($lecdata);
+            }*/
+            $this->assign("member", $member);
+            $this->assign("cmember", $_SESSION["CurrenMember"]);
+            $liveroom = db("home")->where("memberid=" . $member['id'])->find();
+            $this->assign("liveroom", $liveroom);
+
+            //优惠券
+            $discountcode = db('discountcode')->where('lecture_id='.$id." AND remarks is null AND use_status='no'")->select();
+            if(!empty($code) && !empty($discount_pack_id)){
+                $discount = db('discountcode')->field('id,price,discountcode,use_status')->find($discount_pack_id);
+            }else if(!empty($code) && empty($discount_pack_id)){
+                $discount = db('discountcode')->field('id,price,discountcode,use_status')->where('discountcode='.$code)->find();
+            }
+            $need_pay = $lecture['cost'] - $discount['price'];
+            $this->assign('discount_pack_id',$discount_pack_id);
+            $this->assign('need_pay',$need_pay);
+            $this->assign('discount',$discount);
+            $this->assign('discountcode',$discountcode);
+            $this->assign('flag',1);
+            if($lecture['channel_id']){
+                $channel = M('channel')->where('id='.$lecture['channel_id'])->find();
+                $this->assign("channel", $channel);
+            }
+            //是否是vip会员
+
+            if($lecture['is_for_vip']){
+                $api4 = new Api4DataController();
+                $verifyMember = $api4->verifyMember($cmember['unionid']);
+                $is_vip = $verifyMember['result'];
+            }
+            if($is_vip){
+                $this->assign("is_vip",true);
+            }else{
+                $this->assign("is_vip",false);
+            }
+            //是否已付费
+            if($lecture['channel_id']){
+                if($channel['is_pay_only_channel']){
+                    $ispay = M('channelpay')->where("memberid=" . $cmember['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
+                }else{
+                    $ispay = M('channelpay')->where("memberid=" . $cmember['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
+                    if(!$ispay){
+                        $ispay = M('coursepay')->where("memberid=" . $cmember['id'] . " and courseid=" . $id . " and status='finish'")->find();
+                    }
+                }
+            }else{
+                $ispay = M('coursepay')->where("memberid=" . $cmember['id'] . " and courseid=" . $id . " and status='finish'")->find();
+            }
+            if ($ispay) {
+                $this->assign("ispay", true);
+            } else {
+                $ispay = false;
+                $this->assign("ispay", false);
+                // if (($lecture['channel_id']==217 && $cmember['remarks']=='武汉峰会签到')||$cmember['company']=='利世优品'||$cmember['company']=='利世营销'){
+                if (($lecture['channel_id']==217 && $cmember['remarks']=='武汉峰会签到') || $cmember['id']==148327 || $cmember['id']==300 || $cmember['id']==23752 || $cmember['id']==75575 || $cmember['id']==5022 || $cmember['id']==4984 || $cmember['id']==2394 || $cmember['id']==2299 || $cmember['id']==141816|| $cmember['id']==126043 || $cmember['id']==8370 || $cmember['id']==127961 || $cmember['id']==232550 || $cmember['id']==224178 || $cmember['id']==75575 || $cmember['id']==117556 ){
+                    $this->assign("ispay", true);
+                    $ispay = true;
+                }
+            }
+
+
+            if ($lecture['channel_id']==217 && $cmember['remarks']=='武汉峰会签到'){ //武汉峰会 会员进入
+                $shareTitle = $cmember['name']."花980元邀请您1元钱收听".$lecture['name'];
+            }else{
+                $shareTitle = $lecture['name'];
+            }
+            $this->assign("shareTitle",$shareTitle);
+
+
+            /*     if (!$ispay){
+                     $inviter_member = M('member')->find($inviter_id);
+                     if ($inviter_member['remarks']=='武汉峰会签到'){
+                         $sql = "select * from live_coursepay c inner join live_course h on c.courseid=h.id and h.channel_id=217 and c.fee=1 and c.status='finish' and c.memberid=".$cmember['id'];
+                         $paylist = M()->query($sql);
+                         if ((!isset($paylist)) || empty($paylist)){
+                             $lecture['cost'] = 1;
+                         }
+                     }
+                 }*/
+            $this->assign("lecture", $lecture);
+
+            //设置分销推广数据
+
+            if ($lecture['id'] == $_SESSION['lecture_id']){
+                $inviter_id = $inviter_id?$inviter_id:$_SESSION['inviter_id'];
+            }
+            if ($inviter_id){
+                $popular = array(
+                    'lecture_id'=>$lecture['id'],
+                    'pid'=>$inviter_id,
+                    'bpid'=>$cmember['id'],
+                    'way'=>'sharelink',
+                    'addtime'=> date("Y-m-d H:i:s")
+                );
+                $ps =  M("popularize")->where("lecture_id=".$lecture['id']." and pid=".$inviter_id." and bpid=".$cmember['id'])->select();
+                if (!(isset($ps) && (!empty($ps)))){
+                    $pcount = M("popularize")->add($popular);
+                    LogController::W_H_Log("分享链接插入分销推广数据：".$pcount);
+                }else{
+                    LogController::W_H_Log("分享链接未插入分销推广数据，已存在");
+                }
+            }else{
+                LogController::W_H_Log("分享链接未取到分享人ID信息");
+            }
+        }else{
+            $code = $_GET['code'];
+            if($code){
+                $id = M('discountcode')->where('discountcode='.$code)->getField('lecture_id');
+            }
+
+        }
+        //预约人数
+        $sub_count = db('subscribe')->where("cid=" . $id)->count();
+        if ($id==105){
+            $sub_count+=215;
+        }
+        if ($id==102){
+            $sub_count+=1139;
+        }
+        if ($id==121){
+            $sub_count+=1530;
+        }
+        if ($id==122){
+            $sub_count+=1000;
+        }
+        if ($id==130){
+            $sub_count+=503;
+        }
+        if ($id==128){
+            $sub_count+=503;
+        }
+        if (isset($lecture['basescrib'])){
+            $sub_count += $lecture['basescrib'];
+        }
+        $this->assign("sub_count", $sub_count);
+
+        //是否已预约
+        $sub = M('subscribe')->where("cid=" . $id . " and mid=" . $_SESSION["CurrenMember"]['id'])->getField('id');
+        if ($sub) {
+            $this->assign("issub", true);
+        } else {
+            $this->assign("issub", false);
+        }
+
+        $this->assign("appid", C("wechat.APPID"));
+        $jssdk = new JsApiController(C("wechat.APPID"), C("wechat.APPSECRET"));
+        $signPackage = $jssdk->GetSignPackage();
+        $this->assign("signpack", $signPackage);
+
+        $this->display();
     }
+
+
 
 
     //设置课程二维码
@@ -498,9 +753,10 @@ class Lecture extends Base
                 Tools::UploadFile_OSS("Public/qrcode/" . $filename . ".jpg", FILE_PATH."qrcode/" . $filename . ".jpg");
                 $update_data = array(
                     "qrcode" => OSS_REMOTE_PATH . "/Public/qrcode/" . $filename . ".jpg",
-                    //"qrcode_addtime" => date("Y-m-d H:i")
+                    "qrcode_addtime" => date("Y-m-d H:i")
                 );
                 $a[0] = Db::name($source)->where("id=" . $id)->update($update_data);
+                unset($update_data['qrcode_addtime']);
                 $a[1] = Db::name("expend")->where("id=" . $expendid)->update($update_data);
                 return $a;
             } else {
