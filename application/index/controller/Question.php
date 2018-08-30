@@ -69,7 +69,7 @@ class Question extends Base
                 $describe = "老师已经回复，快去后台审核吧！";
             }
 
-            $wechat = new WeChatController();
+            $wechat = new WeChat();
 
             $data = array(
                 'first'    => array('value' => urldecode($str), 'color' => '#743A3A'),

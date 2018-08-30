@@ -93,21 +93,25 @@ class Lecture extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
 
-        $description = '<p>'.$js_img.'</p><p><br></p><p>'.$description.'</p>';
+        if(!empty($js_img)){
+            $description = '<p>'.$js_img.'</p><p><br></p><p>'.$description.'</p>';
+        }
         $roomid = db('home')->field('id')->where(['memberid'=>$member['id']])->find();
         if(empty($roomid)){
             $this->return_json(E_OP_FAIL,'请先完善个人信息');
         }
-        if(!empty($money) && empty($expire) && empty($year_money)){//固定收费
-            $permanent = 1;
-            $is_pay_only_channel = 1;
-        }elseif(empty($money) && !empty($expire) && !empty($year_money)){
-            $tmp[0]['expire'] = (int)$expire;
-            $tmp[0]['money'] = (int)$year_money;
-            $price_list = json_encode($tmp);
-            $is_pay_only_channel = 0;
-        }else{
-            $this->return_json(E_ARGS,'参数错误:请检查费用');
+        if($channel_type=='pay_channel'){
+            if(!empty($money) && empty($expire) && empty($year_money)){//固定收费
+                $permanent = 1;
+                $is_pay_only_channel = 1;
+            }elseif(empty($money) && !empty($expire) && !empty($year_money)){
+                $tmp[0]['expire'] = (int)$expire;
+                $tmp[0]['money'] = (int)$year_money;
+                $price_list = json_encode($tmp);
+                $is_pay_only_channel = 0;
+            }else{
+                $this->return_json(E_ARGS,'参数错误:请检查费用');
+            }
         }
 
         $reseller_enabled = $resell_percent = 0;
