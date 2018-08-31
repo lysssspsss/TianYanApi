@@ -471,13 +471,26 @@ class User extends Base
         $limit = !empty($limit)?abs($limit):1;
         $count = 10;
         $offset = ($limit-1)*$count;
-        $list = db('home')->alias('h')->join('attention a','h.id=a.roomid')->field('a.roomid,h.memberid,h.name,h.avatar_url,h.description')
-            ->where(['a.memberid'=>$member['id']])->limit($offset,$count)->select();
-        if(count($list,0) == $count){
-            $data['last'] = 'true';
-        }else{
-            $data['last'] = 'false';
+        $list = db('channel')->alias('h')->join('attention a','h.id=a.roomid')->field('a.roomid as channel_id,h.memberid,h.lecturer,h.name as title,h.cover_url')
+            ->where(['a.memberid'=>$member['id'],'a.type'=>1])->limit($offset,$count)->select();
+        $count = db('channel')->alias('h')->join('attention a','h.id=a.roomid')->field('a.roomid as channel_id,h.memberid,h.lecturer,h.name as title,h.cover_url')
+            ->where(['a.memberid'=>$member['id'],'a.type'=>1])->count();
+        if(empty($list)){
+            $this->return_json(OK,[]);
         }
+        foreach($list as $key => $value){
+            if($value['memberid']=='294'){
+                $where['id'] =  $value['lecturer'];
+            }else{
+                $where['id'] =  $value['memberid'];
+            }
+            $member = db('member')->field('name,nickname')->where($where)->find();
+            if(empty($member['name'])){
+                $member['name'] = $member['nickname'];
+            }
+            $list[$key]['name'] = $member['name'];
+        }
+        $data['count'] = $count;
         $data['limit'] = $limit;
         $data['list'] = $list;
         $this->return_json(OK,$data);

@@ -487,6 +487,12 @@ class Lecture extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         $jiangshi = db('member')->field('id as js_memberid,name,nickname,intro')->where(['id'=>$js_memberid])->find();
+        if(empty($jiangshi)){
+            $this->return_json(E_OP_FAIL,'没有找到讲师信息');
+        }
+        if(empty($jiangshi['name'])){
+            $jiangshi['name'] = $jiangshi['nickname'];
+        }
         $cover = db('channel')->field('id,cover_url')->where('memberid='.$js_memberid.' or '.'lecturer='.$js_memberid)->find();
         if(empty($cover['cover_url'])){
             $jiangshi['cover_url'] = OSS_REMOTE_PATH. "/public/images/cover14.jpg";
