@@ -457,4 +457,29 @@ class User extends Base
         db('member')->where(['id'=>$this->user['id']])->update($data);
         $this->return_json(OK,['memberid'=>$this->user['id']]);
     }
+
+    /**
+     * 个人中心-我的关注列表
+     */
+    public function attention(){
+        $limit = input('get.limit');
+        $result = $this->validate(['limit' => $limit,],['limit'  => 'require|number',]);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $member = $this->user;
+        $limit = !empty($limit)?abs($limit):1;
+        $count = 10;
+        $offset = ($limit-1)*$count;
+        $list = db('home')->alias('h')->join('attention a','h.id=a.roomid')->field('a.roomid,h.memberid,h.name,h.avatar_url,h.description')
+            ->where(['a.memberid'=>$member['id']])->limit($offset,$count)->select();
+        if(count($list,0) == $count){
+            $data['last'] = 'true';
+        }else{
+            $data['last'] = 'false';
+        }
+        $data['limit'] = $limit;
+        $data['list'] = $list;
+        $this->return_json(OK,$data);
+    }
 }
