@@ -614,8 +614,8 @@ class Lecture extends Base
         }
         $this->get_user_redis($this->user['id'],true);
         $channel = db('channel')
-            ->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,description,roomid,permanent,clicknum,money,price_list.lecturer,b.is_pay_only_channel')
-            ->where(['a.id'=>$channel_id,'a.isshow'=>'show'])->find();
+            ->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,description,roomid,permanent,money,price_list,lecturer,is_pay_only_channel')
+            ->where(['id'=>$channel_id,'isshow'=>'show'])->find();
 
         if(empty($channel)){
             $this->return_json(E_OP_FAIL,'找不到对应专栏');
@@ -629,62 +629,63 @@ class Lecture extends Base
         ->where(['isshow'=>'show','channel_id'=>$channel['channel_id']])
             ->order('priority desc,clicknum desc')
             ->select();
-        $lecture['name'] = $jiangshi['name'];
+        $channel['name'] = $jiangshi['name'];
         /* $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
          if ($status != '进行中') {
              $lecture['current_status'] = $status ? 'ready' : 'closed';
          } else {
              $lecture['current_status'] = 'started';
          }*/
-        if (!empty($lecture['live_homeid'])) {
-            $manager = db('home_manager')->field('id')->where('homeid=' . $lecture['live_homeid'] . ' AND beinviteid=' . $this->user['id'])->find();
+        if (!empty($channel['roomid'])) {
+            $manager = db('home_manager')->field('id')->where('homeid=' . $channel['roomid'] . ' AND beinviteid=' . $this->user['id'])->find();
         }
         $result = [];
-        $result['lecture'] = $lecture;
+        $result['channel'] = $channel;
         $result['jiangshi'] = $jiangshi;
         $result['lecture_list'] = $lecture_list;
         $result['memberid'] = $this->user['id'];
         //当前用户是否为直播间管理员
         !empty($manager)?$result['manager'] = 'true':$result['manager'] = 'false';
 
-        if ($this->user['id'] != $lecture['lecture_memberid']) {
-            $lecdata = ['clicknum' => $lecture['clicknum'] + mt_rand(1,99)];
-            db('course')->where(['id'=>$lecture['lecture_id']])->update($lecdata);
-        }
+        /*if ($this->user['id'] != $channel['channel_memberid']) {
+            $lecdata = ['clicknum' => $channel['clicknum'] + mt_rand(1,99)];
+            db('course')->where(['id'=>$channel['lecture_id']])->update($lecdata);
+        }*/
 
         //是否是vip会员
 
-        if($lecture['is_for_vip']){
+        /*if($lecture['is_for_vip']){
             $verifyMember = $this->verifyMember($this->user['unionid']);
             $is_vip = $verifyMember['result'];
         }
-        !empty($is_vip)?$result['is_vip'] = 'true':$result['is_vip'] = 'false';
+        !empty($is_vip)?$result['is_vip'] = 'true':$result['is_vip'] = 'false';*/
 
         //是否已付费
-        if(!empty($lecture['channel_id'])){
-            if($lecture['is_pay_only_channel']){
-                $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
+        $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $channel['channel_id'] . " and status='finish'")->find();
+       /* if(!empty($channel['channel_id'])){
+            if($channel['is_pay_only_channel']){
+                $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $channel['channel_id'] . " and status='finish'")->find();
             }else{
-                $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
+                $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $channel['channel_id'] . " and status='finish'")->find();
                 if(!$ispay){
                     $ispay = db('coursepay')->field('id')->where("memberid=" . $this->user['id'] . " and courseid=" . $lecture['lecture_id'] . " and status='finish'")->find();
                 }
             }
         }else{
             $ispay = db('coursepay')->field('id')->where("memberid=" . $this->user['id'] . " and courseid=" . $lecture['lecture_id'] . " and status='finish'")->find();
-        }
+        }*/
         if (!empty($ispay)) {
             $result['is_pay'] = 'true';
         } else {
             $result['is_pay'] = 'false';
-            if (($lecture['channel_id']==217 && $this->user['remarks']=='武汉峰会签到') || $this->user['id']==148327 || $this->user['id']==300 || $this->user['id']==23752 || $this->user['id']==75575 || $this->user['id']==5022 || $this->user['id']==4984 || $this->user['id']==2394 || $this->user['id']==2299 || $this->user['id']==141816|| $this->user['id']==126043 || $this->user['id']==8370 || $this->user['id']==127961 || $this->user['id']==232550 || $this->user['id']==224178 || $this->user['id']==75575 || $this->user['id']==117556 ){
+            if (($channel['channel_id']==217 && $this->user['remarks']=='武汉峰会签到') || $this->user['id']==148327 || $this->user['id']==300 || $this->user['id']==23752 || $this->user['id']==75575 || $this->user['id']==5022 || $this->user['id']==4984 || $this->user['id']==2394 || $this->user['id']==2299 || $this->user['id']==141816|| $this->user['id']==126043 || $this->user['id']==8370 || $this->user['id']==127961 || $this->user['id']==232550 || $this->user['id']==224178 || $this->user['id']==75575 || $this->user['id']==117556 ){
                 $result['is_pay'] = 'true';
             }
         }
-        if ($lecture['channel_id']==217 && $this->user['remarks']=='武汉峰会签到'){ //武汉峰会 会员进入
-            $shareTitle = $this->user['name']."花980元邀请您1元钱收听".$lecture['title'];
+        if ($channel['channel_id']==217 && $this->user['remarks']=='武汉峰会签到'){ //武汉峰会 会员进入
+            $shareTitle = $this->user['name']."花980元邀请您1元钱收听".$channel['title'];
         }else{
-            $shareTitle = $lecture['title'];
+            $shareTitle = $channel['title'];
         }
         $result['shareTitle'] = $shareTitle;
         $this->return_json(OK,$result);
