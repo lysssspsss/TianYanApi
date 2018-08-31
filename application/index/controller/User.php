@@ -482,4 +482,59 @@ class User extends Base
         $data['list'] = $list;
         $this->return_json(OK,$data);
     }
+
+
+    /**
+     * 个人中心-我的收益
+     */
+    public function my_income()
+    {
+        $type = input('get.type');
+        $result = $this->validate(['limit' => $type,],['limit'  => 'require|in:1,2',]);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $this->get_user_redis($this->user['id'],true);
+        $data['sumearn'] = Cash::memberEarnings($this->user['id']);
+        $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+
+        $data['sumearn'] =  $this->floor_down($data['sumearn']);
+        $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
+        $data['memberid'] = $this->user['id'];
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * 个人中心-收益规则
+     */
+    public function bill()
+    {
+        $type = input('get.type');
+        $result = $this->validate(['limit' => $type,],['limit'  => 'require|in:1,2']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $shuju = Cash::memberEarnings_array($this->user['id']);
+        $data['channel_income'] = round($shuju['channel_pay'],0);//专栏总收益
+        $data['channel_jiangshi'] = round($shuju['channel_pay']*0.5,0);//专栏讲师收益
+        $data['channel_liuliang'] = round($shuju['channel_pay']*0.3,0);//专栏流量费用
+        $data['channel_tuiguang'] = $data['channel_fuwu'] = round($shuju['channel_pay']*0.1,0);//推广费用和服务费用
+        $data['jiangshi_income'] = round($shuju['course_pay']+$shuju['course_pay1']+$shuju['course_play']+$shuju['course_play1']+$shuju['popular'],0);//讲师总收益
+        $data['lecture_pay'] = round($shuju['course_pay']+$shuju['course_pay1'],0);//课程付费收益
+        $data['lecture_reward'] = round($shuju['course_play']+$shuju['course_play1'],0);//课程打赏收益
+        $data['lecture_tuiguang'] = round($shuju['popular'],2);//推广收益
+        $data['memberid'] = $this->user['id'];
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * floor向下取整
+     * @param $num
+     * @return float|int
+     */
+    private function floor_down($num)
+    {
+        $a = floor($num*100)/100;
+        return $a ;
+    }
 }
