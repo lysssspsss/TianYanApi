@@ -503,7 +503,7 @@ class User extends Base
     public function my_income()
     {
         $type = input('get.type');
-        $result = $this->validate(['limit' => $type,],['limit'  => 'require|in:1,2',]);
+        $result = $this->validate(['type' => $type,],['type'  => 'require|in:1,2',]);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
@@ -523,7 +523,7 @@ class User extends Base
     public function bill()
     {
         $type = input('get.type');
-        $result = $this->validate(['limit' => $type,],['limit'  => 'require|in:1,2']);
+        $result = $this->validate(['type' => $type,],['type'  => 'require|in:1,2']);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
@@ -540,6 +540,71 @@ class User extends Base
         $this->return_json(OK,$data);
     }
 
+
+    /**
+     * 课程收益明细
+     */
+    public function lecture_income_detail(){
+        $limit = input('get.limit');
+        $result = $this->validate(['limit' => $limit,],['limit'  => 'require|in:1,2']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $member = $this->user;
+        $lecture_data = db('invete')->join('live_course','live_invete.courseid=live_course.id')->field('live_invete.courseid,live_course.name,live_course.sumearns,live_course.playearns,live_course.payearns')
+            ->where('beinviteid='.$member['id'])->order("live_course.starttime desc")->select();
+        if(!empty($lecture_data)){
+            foreach($lecture_data as $k=>$v){
+                $lecture_data[$k]['member'] = db("invete")->join('live_member','live_invete.beinviteid=live_member.id')->field('live_invete.courseid,live_member.id,live_member.nickname,live_member.headimg')->where("courseid=".$v['courseid'])->select();
+                if($lecture_data[$k]['member']){
+                    foreach($lecture_data[$k]['member'] as $key=>$val){
+                        $sum = db('earns')->where("lectureid=".$val['courseid']." and memberid=".$val['id']." and type='play' and status='finish'")->sum('fee');
+                        if($sum){
+                            $lecture_data[$k]['member'][$key]['playsum'] = $sum;
+                        }else{
+                            $lecture_data[$k]['member'][$key]['playsum'] = 0;
+                        }
+                    }
+                }
+            }
+        }else{
+            $this->return_json(OK,['msg'=>'暂无收益']);
+        }
+        $this->return_json(OK,$lecture_data);
+    }
+
+
+    /**
+     * 专栏收益明细
+     */
+    public function channel_income_detail(){
+        $limit = input('get.limit');
+        $result = $this->validate(['limit' => $limit,],['limit'  => 'number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $limit = !empty($limit)?abs($limit):1;
+        $count = 10;
+        $limit_start = ($limit-1)*$count;
+        //$member = $this->user;
+        $sql = "select p.fee,p.addtime,m.body from live_channelpay as p inner join live_orders as m on p.out_trade_no=m.out_trade_no and p.status='finish' and p.channelid in (select id from live_channel where lecturer=".$this->user['id']." or memberid=".$this->user['id'].") order by p.channelid desc,p.addtime desc limit $limit_start,$count";
+        $lists = db()->query($sql);
+        $sql2 = "select COUNT(*) as count from live_channelpay as p inner join live_orders as m on p.out_trade_no=m.out_trade_no and p.status='finish' and p.channelid in (select id from live_channel where lecturer=".$this->user['id']." or memberid=".$this->user['id'].")";
+        $allcount = db()->query($sql2);
+        foreach($lists as $k => $v) {
+            //$lists[$k]['name'] = substr($v['body'],0,strrpos($v['body'],'支付'));
+            $lists[$k]['name'] = strstr($v['body'],'支付',true);;
+            //strstr("123456789","5",true);
+            //$str = '<h1>字符</h1>';
+            preg_match("|《([^^]*?)》|u", $v['body'], $matches);
+            $lists[$k]['title'] = '《'.$matches[1].'》';
+            $lists[$k]['money'] = ltrim(strstr($v['body'],'》'),'》');
+        }
+        $data['limit'] = $limit;
+        $data['count'] = $allcount;
+        $data['list'] = $lists;
+        $this->return_json(OK,$data);
+    }
     /**
      * floor向下取整
      * @param $num
@@ -550,4 +615,7 @@ class User extends Base
         $a = floor($num*100)/100;
         return $a ;
     }
+
+
+
 }
