@@ -555,8 +555,10 @@ class User extends Base
             ->where('beinviteid='.$member['id'])->order("live_course.starttime desc")->select();
         if(!empty($lecture_data)){
             foreach($lecture_data as $k=>$v){
-                $lecture_data[$k]['member'] = db("invete")->join('live_member','live_invete.beinviteid=live_member.id')->field('live_invete.courseid,live_member.id,live_member.nickname,live_member.headimg')->where("courseid=".$v['courseid'])->select();
-                if($lecture_data[$k]['member']){
+                $sql = "select p.fee,p.addtime,m.body from live_channelpay as p inner join live_orders as m on p.out_trade_no=m.out_trade_no and p.status='finish' and p.channelid in (select id from live_channel where lecturer=".$this->user['id']." or memberid=".$this->user['id'].") order by p.channelid desc,p.addtime desc limit $limit_start,$count";
+                $lists = db()->query($sql);
+               /* $lecture_data[$k]['member'] = db("invete")->join('live_member','live_invete.beinviteid=live_member.id')->field('live_invete.courseid,live_member.id,live_member.nickname,live_member.headimg')->where("courseid=".$v['courseid'])->select();
+                if(!empty($lecture_data[$k]['member'])){
                     foreach($lecture_data[$k]['member'] as $key=>$val){
                         $sum = db('earns')->where("lectureid=".$val['courseid']." and memberid=".$val['id']." and type='play' and status='finish'")->sum('fee');
                         if($sum){
@@ -565,11 +567,12 @@ class User extends Base
                             $lecture_data[$k]['member'][$key]['playsum'] = 0;
                         }
                     }
-                }
+                }*/
             }
         }else{
             $this->return_json(OK,['msg'=>'暂无收益']);
         }
+        dump($lecture_data);exit;
         $this->return_json(OK,$lecture_data);
     }
 
@@ -604,6 +607,81 @@ class User extends Base
         $data['list'] = $lists;
         $this->return_json(OK,$data);
     }
+
+    /**
+     * 提现记录
+     */
+    public function withdraw_record(){
+        $limit = input('get.limit');
+        $result = $this->validate(['limit' => $limit,],['limit'  => 'number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $limit = !empty($limit)?abs($limit):1;
+        $count = 10;
+        $limit_start = ($limit-1)*$count;
+
+        $list = db('takeout')->where('memberid='.$this->user['id'])->order('applytime desc')->limit($limit_start,$count)->select();
+        $allcount = db('takeout')->field('count(id) as count')->where('memberid='.$this->user['id'])->select();
+        $data['limit'] = $limit;
+        $data['count'] = $allcount[0]['count'];
+        $data['list'] = $list;
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * 购买记录
+     */
+    public function shop_record(){
+        $type = input('get.type');
+        $result = $this->validate(['type' => $type,],['type'  => 'number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        //课程购买记录
+        $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("addtime desc")->select();
+        //专栏购买记录
+        $data['channelpay'] = db('channelpay')->alias('p')->join('live_channel c','p.channelid=c.id')->field("c.name,c.cover_url,p.*,p.fee/100 as fee")->where("p.status='finish' and p.memberid=".$this->user['id']." and ((unix_timestamp(p.expire)>unix_timestamp(now())) or ( p.expire is null))")->order("addtime desc")->select();
+        $data['memberid'] = $this->user['id'];
+        $this->return_json(OK,$data);
+    }
+
+
+    /**
+     * 处理申请提现
+     */
+    function withdraw_business(){
+        $member = $_SESSION['CurrenMember'];
+        $real_name = $_POST['real_name'];
+        $money = $_POST['money'];
+        $code = "transfers".date("YmdHis") . rand(000000, 999999);
+        $data = array(
+            'code'=>$code,
+            'memberid'=>$member['id'],
+            'num'=>$money,
+            'applytime'=>date("Y-m-d H:i:s"),
+            'status'=>"wait",
+            'name'=>$real_name,
+        );
+        $count = M('takeout')->add($data);
+        if ($count){
+            $res['code'] = 0;
+            $res['msg'] = "申请提现成功，请等待处理！";
+            /**
+             * 改变可提现收益
+             */
+            $USE = M('member')->find($member['id']);
+            //$unuseearn = $USE['unuseearn'] - $money;
+            //$datas['unuseearn'] = $unuseearn;
+            $datas['unpassnum'] = $money+$USE['unpassnum'];
+            M('member')->where('id='.$member['id'])->setField('unpassnum',$datas['unpassnum']);
+        }else{
+            $res['code'] = 1;
+            $res['msg'] = "申请提现失败！";
+        }
+        $this->ajaxReturn($res,'JSON');
+    }
+
     /**
      * floor向下取整
      * @param $num
