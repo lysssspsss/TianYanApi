@@ -19,6 +19,11 @@ class Index extends Base
         parent::__construct();
     }
 
+    public function index()
+    {
+        echo 'index';exit;
+    }
+
 
     /**
      * 获取首页

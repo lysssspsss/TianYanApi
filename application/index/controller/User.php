@@ -592,16 +592,15 @@ class User extends Base
         $sql2 = "select COUNT(*) as count from live_channelpay as p inner join live_orders as m on p.out_trade_no=m.out_trade_no and p.status='finish' and p.channelid in (select id from live_channel where lecturer=".$this->user['id']." or memberid=".$this->user['id'].")";
         $allcount = db()->query($sql2);
         foreach($lists as $k => $v) {
-            //$lists[$k]['name'] = substr($v['body'],0,strrpos($v['body'],'支付'));
             $lists[$k]['name'] = strstr($v['body'],'支付',true);;
-            //strstr("123456789","5",true);
-            //$str = '<h1>字符</h1>';
             preg_match("|《([^^]*?)》|u", $v['body'], $matches);
             $lists[$k]['title'] = '《'.$matches[1].'》';
-            $lists[$k]['money'] = ltrim(strstr($v['body'],'》'),'》');
+            //$lists[$k]['money'] = ltrim(strstr($v['body'],'》'),'》');
+            $lists[$k]['money'] = sprintf('%.1f',$v['fee']/100);
+            unset($lists[$k]['body'],$lists[$k]['fee']);
         }
         $data['limit'] = $limit;
-        $data['count'] = $allcount;
+        $data['count'] = $allcount[0]['count'];
         $data['list'] = $lists;
         $this->return_json(OK,$data);
     }
