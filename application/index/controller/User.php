@@ -553,10 +553,17 @@ class User extends Base
         $member = $this->user;
         $lecture_data = db('invete')->join('live_course','live_invete.courseid=live_course.id')->field('live_invete.courseid,live_course.name,live_course.sumearns,live_course.playearns,live_course.payearns')
             ->where('beinviteid='.$member['id'])->order("live_course.starttime desc")->select();
+        //dump($lecture_data);exit;
         if(!empty($lecture_data)){
             foreach($lecture_data as $k=>$v){
-                $sql = "select p.fee,p.addtime,m.body from live_channelpay as p inner join live_orders as m on p.out_trade_no=m.out_trade_no and p.status='finish' and p.channelid in (select id from live_channel where lecturer=".$this->user['id']." or memberid=".$this->user['id'].") order by p.channelid desc,p.addtime desc limit $limit_start,$count";
-                $lists = db()->query($sql);
+                /*$sql = "select p.fee,p.addtime,m.body from live_coursepay as p inner join live_orders as m on p.out_trade_no=m.out_trade_no and p.status='finish' order by p.channelid desc,p.addtime desc";
+                $lists = db()->query($sql);*/
+                $lecture_data[$k]['pay_lecture'] = db('coursepay')->join('live_orders','live_coursepay.out_trade_no = live_orders.out_trade_no')
+                    ->field('live_coursepay.id as coursepay_id,live_coursepay.fee,live_coursepay.addtime,live_coursepay.status,live_orders.body')
+                    ->where(['live_coursepay.courseid'=>$v['courseid'],'live_orders.goods_tag'=>'pay_lecture'])->order('live_coursepay.addtime desc')->select();
+                $lecture_data[$k]['reward'] = db('coursepay')->join('live_orders','live_coursepay.out_trade_no = live_orders.out_trade_no')
+                    ->field('live_coursepay.id as coursepay_id,live_coursepay.fee,live_coursepay.addtime,live_coursepay.status,live_orders.body')
+                    ->where(['live_coursepay.courseid'=>$v['courseid'],'live_orders.goods_tag'=>'reward'])->order('live_coursepay.addtime desc')->select();
                /* $lecture_data[$k]['member'] = db("invete")->join('live_member','live_invete.beinviteid=live_member.id')->field('live_invete.courseid,live_member.id,live_member.nickname,live_member.headimg')->where("courseid=".$v['courseid'])->select();
                 if(!empty($lecture_data[$k]['member'])){
                     foreach($lecture_data[$k]['member'] as $key=>$val){
@@ -651,7 +658,6 @@ class User extends Base
      * 处理申请提现
      */
     public function withdraw_business(){
-        //$member = $_SESSION['CurrenMember'];
         $real_name = input('post.real_name');
         $money = input('post.money');
 
