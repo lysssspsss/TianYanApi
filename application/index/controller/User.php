@@ -572,7 +572,7 @@ class User extends Base
         }else{
             $this->return_json(OK,['msg'=>'暂无收益']);
         }
-        dump($lecture_data);exit;
+        //dump($lecture_data);exit;
         $this->return_json(OK,$lecture_data);
     }
 
@@ -650,36 +650,76 @@ class User extends Base
     /**
      * 处理申请提现
      */
-    function withdraw_business(){
-        $member = $_SESSION['CurrenMember'];
-        $real_name = $_POST['real_name'];
-        $money = $_POST['money'];
+    public function withdraw_business(){
+        //$member = $_SESSION['CurrenMember'];
+        $real_name = input('post.real_name');
+        $money = input('post.money');
+
+        $result = $this->validate(
+            [
+                'money'  => $money,
+                'real_name' => $real_name,
+            ],
+            [
+                'money'  => 'require|number',
+                'real_name'  => 'require|chsAlphaNum',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
         $code = "transfers".date("YmdHis") . rand(000000, 999999);
         $data = array(
             'code'=>$code,
-            'memberid'=>$member['id'],
+            'memberid'=>$this->user['id'],
             'num'=>$money,
             'applytime'=>date("Y-m-d H:i:s"),
             'status'=>"wait",
             'name'=>$real_name,
+            'checktime'=>'',
         );
-        $count = M('takeout')->add($data);
-        if ($count){
-            $res['code'] = 0;
-            $res['msg'] = "申请提现成功，请等待处理！";
-            /**
-             * 改变可提现收益
-             */
-            $USE = M('member')->find($member['id']);
-            //$unuseearn = $USE['unuseearn'] - $money;
-            //$datas['unuseearn'] = $unuseearn;
-            $datas['unpassnum'] = $money+$USE['unpassnum'];
-            M('member')->where('id='.$member['id'])->setField('unpassnum',$datas['unpassnum']);
-        }else{
-            $res['code'] = 1;
-            $res['msg'] = "申请提现失败！";
+        $USE = db('member')->find($this->user['id']);
+        $datas['unpassnum'] = $money+$USE['unpassnum'];
+
+        Db::startTrans();
+        $count = db('takeout')->insertGetId($data);
+        if(!$count){
+            Db::rollback();
+            $this->return_json(E_OP_FAIL,"申请提现失败！");
         }
-        $this->ajaxReturn($res,'JSON');
+        //改变可提现收益
+        $a = db('member')->where('id='.$this->user['id'])->setField('unpassnum',$datas['unpassnum']);
+        if(!$a){
+            Db::rollback();
+            $this->return_json(E_OP_FAIL,"申请提现失败！");
+        }
+        Db::commit();
+        $this->return_json(OK,['memberid'=>$this->user['id'],'takeout_id'=>$count]);
+    }
+
+    /**
+     * 提现详情
+     */
+    public function withdraw_detail()
+    {
+        //$status_arr = ['success','wait','fail','refuse'];
+        $takeout_id = input('get.takeout_id');
+        $result = $this->validate(['takeout_id' => $takeout_id,],['takeout_id'  => 'require|number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data = db('takeout')->alias('a')->join('member b','a.memberid = b.id')->field('a.id as takeout_id,a.status,a.applytime,a.num,b.wxcode')->where(['a.id'=>$takeout_id])->find();
+        if(empty($data)){
+            $this->return_json(E_OP_FAIL,"没有该提现记录！");
+        }
+        /*$timestramp = strtotime($data['applytime']);
+        $time = date('m-d',$timestramp);
+        $hour = date('H',$timestramp);
+        $day = date('w',$timestramp);//还需完善*/
+        $data['finish_time'] = date('m-d',strtotime($data['applytime'])+86400);
+        unset($data['applytime']);
+        $this->return_json(OK,$data);
     }
 
     /**
