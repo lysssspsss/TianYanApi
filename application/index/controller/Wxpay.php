@@ -2,6 +2,7 @@
 namespace app\index\controller;
 use Think\Exception;
 use app\tools\controller\Tools;
+use Think\Log;
 use think\Request;
 use think\Db;
 use think\Config;
@@ -37,6 +38,7 @@ class Wxpay extends Base
     public function jsApiCall()
     {
         //LogController::W_P_Log("进入支付方法!");
+        wlog($this->log_path,"jsApiCall 进入支付方法");
         $lecture_id = $_GET['lecture_id'];
         $lecture = db('course')->find($lecture_id);
         $channel_id = $_GET['channel_id'];
@@ -72,13 +74,14 @@ class Wxpay extends Base
         $logHandler= new \CLogFileHandler("./logs/".date('Y-m-d').'.log');
         $log = \Log::Init($logHandler, 15);
 
+
         //①、获取用户openid
         $tools = new \JsApiPay();
 
         if (!$openId){
             $openId = $tools->GetOpenid();
         }
-        LogController::W_P_Log("下单用户openid 为：".$openId);
+        //LogController::W_P_Log("下单用户openid 为：".$openId);
         //②、统一下单
         $input = new \WxPayUnifiedOrder();
         try{
@@ -194,7 +197,7 @@ class Wxpay extends Base
         $orderData['paymember'] = $member['id'];
         $orderData['getmember'] = $targetmember['id'];
         $orderData['status'] = "wait";
-        M('orders')->add($orderData); //保存订单数据
+        db('orders')->add($orderData); //保存订单数据
 
         switch ($product){
             case 'reward' :
