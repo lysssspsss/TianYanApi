@@ -546,8 +546,11 @@ class User extends Base
      */
     public function lecture_income_detail(){
         $limit = input('get.limit');
+        $type = input('get.type');
         $hashkey = 'lecture_income_detail:';
-        $result = $this->validate(['limit' => $limit,],['limit'  => 'require|number']);
+        $result = $this->validate(
+            ['limit' => $limit, 'type' => $type,],
+            ['limit'  => 'require|number' , 'type'  => 'require|in:1,2']);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
@@ -563,7 +566,16 @@ class User extends Base
                     $lecture_data[$k]['pay_lecture'] = db('coursepay')->join('live_orders','live_coursepay.out_trade_no = live_orders.out_trade_no')
                         ->field('live_coursepay.id as coursepay_id,live_coursepay.fee,live_coursepay.addtime,live_coursepay.status,live_orders.body')
                         ->where(['live_coursepay.courseid'=>$v['courseid'],'live_orders.goods_tag'=>'pay_lecture','live_coursepay.status'=>'finish'])->order('live_coursepay.addtime desc')->select();
-                    $this->redis->hset($hashkey.'pay_lecture',$v['courseid'],json_encode($lecture_data[$k]['pay_lecture'],JSON_UNESCAPED_UNICODE));
+                    if(!empty($lecture_data[$k]['pay_lecture'])){
+                        foreach($lecture_data[$k]['pay_lecture'] as $c => $d) {
+                            $lecture_data[$k]['pay_lecture'][$c]['name'] = strstr($d['body'],'支付',true);;
+                            preg_match("|《([^^]*?)》|u", $d['body'], $matches);
+                            $lecture_data[$k]['pay_lecture'][$c]['title'] = $matches[1].'》';
+                            $lecture_data[$k]['pay_lecture'][$c]['money'] = sprintf('%.2f',$d['fee']);
+                            unset($lecture_data[$k]['pay_lecture'][$c]['fee']);
+                        }
+                        $this->redis->hset($hashkey.'pay_lecture',$v['courseid'],json_encode($lecture_data[$k]['pay_lecture'],JSON_UNESCAPED_UNICODE));
+                    }
                 }else{
                     $lecture_data[$k]['pay_lecture'] = json_decode($pay_lecture,true);
                 }
@@ -577,9 +589,18 @@ class User extends Base
                         ->field('live_earns.id as earns_id,live_earns.fee,live_earns.addtime,live_earns.status,live_orders.body')
                         ->where(['live_earns.lectureid' => $v['courseid'],'live_earns.type' => 'play', 'live_earns.status' => 'finish'])
                         ->order('live_earns.addtime desc')->select();
+                    if(!empty($lecture_data[$k]['reward'])){
+                        foreach($lecture_data[$k]['reward'] as $a => $b) {
+                            $body_arr = explode(' ',$b['body']);
+                            $lecture_data[$k]['reward'][$a]['name'] = $body_arr[0];
+                            $lecture_data[$k]['reward'][$a]['title'] = $body_arr[1].'老师';
+                            $lecture_data[$k]['reward'][$a]['money'] = sprintf('%.2f',$b['fee']);
+                            unset($lecture_data[$k]['reward'][$a]['fee']);
+                        }
+                        $this->redis->hset($hashkey . 'reward', $v['courseid'], json_encode($lecture_data[$k]['reward'], JSON_UNESCAPED_UNICODE));
+                    }
                     //$course_pay_sql = "select * from live_earns n where n.lectureid in (select c.id from live_course c where c.channel_id=" . $v['id'] . ") and n.type='play' and n.status='finish' and n.memberid=" . $this->user;
                     //$course_play_t = M()->query($course_pay_sql);
-                    $this->redis->hset($hashkey . 'reward', $v['courseid'], json_encode($lecture_data[$k]['reward'], JSON_UNESCAPED_UNICODE));
                 }else{
                     $lecture_data[$k]['reward'] = json_decode($reward,true);
                 }
