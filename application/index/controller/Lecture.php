@@ -50,6 +50,23 @@ class Lecture extends Base
     }
 
     /**
+     * 获取用户所有专栏列表
+     */
+    public function get_member_channel()
+    {
+        $memberid = input('get.js_memberid');
+        $result = $this->validate(['memberid' => $memberid],['memberid'  => 'require|number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data = db('channel')->field('id as channel_id,name')->where('memberid='.$memberid.' or '.'lecturer='.$memberid)->select();
+        if(empty($data)){
+            $this->return_json(OK,[]);
+        }
+        $this->return_json(OK,$data);
+    }
+
+    /**
      * 添加或编辑专栏/频道
      */
     public function channel_add_edit(){
