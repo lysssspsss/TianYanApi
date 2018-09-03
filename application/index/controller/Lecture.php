@@ -41,6 +41,7 @@ class Lecture extends Base
         if(empty($data)){
             $this->return_json(E_OP_FAIL,'没有找到对应专栏');
         }
+        $data['memberid_bak'] = 0;
         if($data['memberid']==294){
             $data['memberid'] = $data['lecturer'];
             $data['memberid_bak'] = 294;
@@ -204,7 +205,7 @@ class Lecture extends Base
                 'starttime' =>  'require|date',
                 'type' =>  'require|in:open_lecture,password_lecture,pay_lecture',
                 'pass' =>  'alphaNum',
-                'cost' =>  'number',
+                'cost' =>  'float',
                 'mode' =>  'require|in:picture,vedio,ppt',
                 'channel_id' =>  'require|number',
             ]
@@ -477,6 +478,7 @@ class Lecture extends Base
         if(empty($data)){
             $this->return_json(E_OP_FAIL,'没有找到对应课程');
         }
+        $data['memberid_bak'] = 0;
         if($data['memberid']==294 && !empty($data['channel_id'])){
             $mbid = db('channel')->field('lecturer')->where(['id'=>$data['channel_id']])->find();
             $data['memberid'] = $mbid['lecturer'];
@@ -623,13 +625,13 @@ class Lecture extends Base
     public function get_zhuanlan()
     {
         $channel_id = input('get.channel_id');
-        $result = $this->validate(['lecture_id' => $channel_id,],['lecture_id'  => 'require|number',]);
+        $result = $this->validate(['channel_id' => $channel_id,],['channel_id'  => 'require|number',]);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
         $this->get_user_redis($this->user['id'],true);
         $channel = db('channel')
-            ->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,description,roomid,permanent,money,price_list,lecturer,is_pay_only_channel')
+            ->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,description,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')
             ->where(['id'=>$channel_id,'isshow'=>'show'])->find();
 
         if(empty($channel)){
@@ -645,7 +647,6 @@ class Lecture extends Base
             ->order('priority desc,clicknum desc')
             ->select();
         $channel['name'] = $jiangshi['name'];
-
         if (!empty($channel['roomid'])) {
             $manager = db('home_manager')->field('id')->where('homeid=' . $channel['roomid'] . ' AND beinviteid=' . $this->user['id'])->find();
         }
@@ -678,6 +679,30 @@ class Lecture extends Base
     }
 
 
+    /**
+     * 获取专栏/课程支付信息
+     */
+    public function get_channel_pay_info(){
+        $channel_id = input('get.channel_id');
+        $result = $this->validate(['channel_id' => $channel_id,],['channel_id'  => 'require|number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $channel = db('channel')->where('id='.$channel_id)->find();
+        $course = db('course')->field('id,name,cost')->where('channel_id='.$channel_id)->select();
+        if(empty($course)){
+            $this->return_json(E_OP_FAIL,'课程为空');
+        }
+        $data = [];
+        $data['all_lecture_money'] = 0;
+        foreach($course as $key=>$value){
+            $data['all_lecture_money'] += $value['cost'];
+        }
+        $data['money'] = $channel['money'];
+        $data['lectures'] = $course;
+        $data['channel_lecture_count'] = count($course);
+        $this->return_json(OK,$data);
+    }
 
     /**
      * @return string
@@ -813,6 +838,7 @@ class Lecture extends Base
             $this->return_json(OK,$res);
         }
     }
+
 
 
     /**
