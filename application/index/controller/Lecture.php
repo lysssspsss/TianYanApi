@@ -54,12 +54,12 @@ class Lecture extends Base
      */
     public function get_member_channel()
     {
-        $memberid = input('get.js_memberid');
+        /*$memberid = input('get.js_memberid');
         $result = $this->validate(['memberid' => $memberid],['memberid'  => 'require|number']);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
-        }
-        $data = db('channel')->field('id as channel_id,name')->where('memberid='.$memberid.' or '.'lecturer='.$memberid)->select();
+        }*/
+        $data = db('channel')->field('id as channel_id,name')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
         if(empty($data)){
             $this->return_json(OK,[]);
         }

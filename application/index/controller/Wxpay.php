@@ -37,7 +37,6 @@ class Wxpay extends Base
     public function jsApiCall()
     {
         //LogController::W_P_Log("进入支付方法!");
-
         $lecture_id = $_GET['lecture_id'];
         $lecture = db('course')->find($lecture_id);
         $channel_id = $_GET['channel_id'];
