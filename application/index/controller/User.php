@@ -551,11 +551,11 @@ class User extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        $member = $this->user;
+        //$member = $this->user;
         $limit = $limit?$limit:1;
         $count = 10;
         $lecture_data = db('invete')->join('live_course','live_invete.courseid=live_course.id')->field('live_invete.courseid,live_course.name,live_course.sumearns,live_course.playearns,live_course.payearns')
-            ->where('beinviteid='.$member['id'])->order("live_course.starttime desc")->limit($limit,$count)->select();
+            ->where('beinviteid='.$this->user['id'])->order("live_course.starttime desc")->limit($limit,$count)->select();
         if(!empty($lecture_data)){
             foreach($lecture_data as $k=>$v){
                 $pay_lecture = $this->redis->hget($hashkey.'pay_lecture',$v['courseid']);
@@ -569,9 +569,16 @@ class User extends Base
                 }
                 $reward = $this->redis->hget($hashkey.'reward',$v['courseid']);
                 if(empty($reward)) {
-                    $lecture_data[$k]['reward'] = db('coursepay')->join('live_orders', 'live_coursepay.out_trade_no = live_orders.out_trade_no')
+                   /* $lecture_data[$k]['reward'] = db('coursepay')->join('live_orders', 'live_coursepay.out_trade_no = live_orders.out_trade_no')
                         ->field('live_coursepay.id as coursepay_id,live_coursepay.fee,live_coursepay.addtime,live_coursepay.status,live_orders.body')
-                        ->where(['live_coursepay.courseid' => $v['courseid'], 'live_orders.goods_tag' => 'reward', 'live_coursepay.status' => 'finish'])->order('live_coursepay.addtime desc')->select();
+                        ->where(['live_coursepay.courseid' => $v['courseid'], 'live_orders.goods_tag' => 'reward', 'live_coursepay.status' => 'finish'])
+                        ->order('live_coursepay.addtime desc')->select();*/
+                    $lecture_data[$k]['reward'] = db('earns')->join('live_orders', 'live_earns.out_trade_no = live_orders.out_trade_no')
+                        ->field('live_earns.id as earns_id,live_earns.fee,live_earns.addtime,live_earns.status,live_orders.body')
+                        ->where(['live_earns.lectureid' => $v['courseid'],'live_earns.type' => 'play', 'live_earns.status' => 'finish'])
+                        ->order('live_earns.addtime desc')->select();
+                    //$course_pay_sql = "select * from live_earns n where n.lectureid in (select c.id from live_course c where c.channel_id=" . $v['id'] . ") and n.type='play' and n.status='finish' and n.memberid=" . $this->user;
+                    //$course_play_t = M()->query($course_pay_sql);
                     $this->redis->hset($hashkey . 'reward', $v['courseid'], json_encode($lecture_data[$k]['reward'], JSON_UNESCAPED_UNICODE));
                 }else{
                     $lecture_data[$k]['reward'] = json_decode($reward,true);
@@ -647,9 +654,14 @@ class User extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         if($type==1){//课程购买记录
-            $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("addtime desc")->select();
+            $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,c.mode,c.type,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("addtime desc")->select();
         }else{//专栏购买记录
             $data['channelpay'] = db('channelpay')->alias('p')->join('live_channel c','p.channelid=c.id')->field("c.name,c.cover_url,p.*,p.fee/100 as fee")->where("p.status='finish' and p.memberid=".$this->user['id']." and ((unix_timestamp(p.expire)>unix_timestamp(now())) or ( p.expire is null))")->order("addtime desc")->select();
+            foreach($data['channelpay'] as $k => $v){
+                $sub_title = db('course')->field('name')->where(['channel_id'=>$v['channelid']])->order('clicknum','desc')->limit(2)->select();
+                $data['channelpay'][$k]['sub_title1'] = empty($sub_title[0]['name'])?'天雁商学院特级讲师':$sub_title[0]['name'];
+                $data['channelpay'][$k]['sub_title2'] = empty($sub_title[0]['name'])?'天雁商学院特级讲师':$sub_title[1]['name'];
+            }
         }
         $data['memberid'] = $this->user['id'];
         $this->return_json(OK,$data);
