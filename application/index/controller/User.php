@@ -546,35 +546,36 @@ class User extends Base
      */
     public function lecture_income_detail(){
         $limit = input('get.limit');
-        $result = $this->validate(['limit' => $limit,],['limit'  => 'require|in:1,2']);
+        $hashkey = 'lecture_income_detail:';
+        $result = $this->validate(['limit' => $limit,],['limit'  => 'require|number']);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
         $member = $this->user;
+        $limit = $limit?$limit:1;
+        $count = 10;
         $lecture_data = db('invete')->join('live_course','live_invete.courseid=live_course.id')->field('live_invete.courseid,live_course.name,live_course.sumearns,live_course.playearns,live_course.payearns')
-            ->where('beinviteid='.$member['id'])->order("live_course.starttime desc")->select();
-        //dump($lecture_data);exit;
+            ->where('beinviteid='.$member['id'])->order("live_course.starttime desc")->limit($limit,$count)->select();
         if(!empty($lecture_data)){
             foreach($lecture_data as $k=>$v){
-                /*$sql = "select p.fee,p.addtime,m.body from live_coursepay as p inner join live_orders as m on p.out_trade_no=m.out_trade_no and p.status='finish' order by p.channelid desc,p.addtime desc";
-                $lists = db()->query($sql);*/
-                $lecture_data[$k]['pay_lecture'] = db('coursepay')->join('live_orders','live_coursepay.out_trade_no = live_orders.out_trade_no')
-                    ->field('live_coursepay.id as coursepay_id,live_coursepay.fee,live_coursepay.addtime,live_coursepay.status,live_orders.body')
-                    ->where(['live_coursepay.courseid'=>$v['courseid'],'live_orders.goods_tag'=>'pay_lecture'])->order('live_coursepay.addtime desc')->select();
-                $lecture_data[$k]['reward'] = db('coursepay')->join('live_orders','live_coursepay.out_trade_no = live_orders.out_trade_no')
-                    ->field('live_coursepay.id as coursepay_id,live_coursepay.fee,live_coursepay.addtime,live_coursepay.status,live_orders.body')
-                    ->where(['live_coursepay.courseid'=>$v['courseid'],'live_orders.goods_tag'=>'reward'])->order('live_coursepay.addtime desc')->select();
-               /* $lecture_data[$k]['member'] = db("invete")->join('live_member','live_invete.beinviteid=live_member.id')->field('live_invete.courseid,live_member.id,live_member.nickname,live_member.headimg')->where("courseid=".$v['courseid'])->select();
-                if(!empty($lecture_data[$k]['member'])){
-                    foreach($lecture_data[$k]['member'] as $key=>$val){
-                        $sum = db('earns')->where("lectureid=".$val['courseid']." and memberid=".$val['id']." and type='play' and status='finish'")->sum('fee');
-                        if($sum){
-                            $lecture_data[$k]['member'][$key]['playsum'] = $sum;
-                        }else{
-                            $lecture_data[$k]['member'][$key]['playsum'] = 0;
-                        }
-                    }
-                }*/
+                $pay_lecture = $this->redis->hget($hashkey.'pay_lecture',$v['courseid']);
+                if(empty($pay_lecture)){
+                    $lecture_data[$k]['pay_lecture'] = db('coursepay')->join('live_orders','live_coursepay.out_trade_no = live_orders.out_trade_no')
+                        ->field('live_coursepay.id as coursepay_id,live_coursepay.fee,live_coursepay.addtime,live_coursepay.status,live_orders.body')
+                        ->where(['live_coursepay.courseid'=>$v['courseid'],'live_orders.goods_tag'=>'pay_lecture','live_coursepay.status'=>'finish'])->order('live_coursepay.addtime desc')->select();
+                    $this->redis->hset($hashkey.'pay_lecture',$v['courseid'],json_encode($lecture_data[$k]['pay_lecture'],JSON_UNESCAPED_UNICODE));
+                }else{
+                    $lecture_data[$k]['pay_lecture'] = json_decode($pay_lecture,true);
+                }
+                $reward = $this->redis->hget($hashkey.'reward',$v['courseid']);
+                if(empty($reward)) {
+                    $lecture_data[$k]['reward'] = db('coursepay')->join('live_orders', 'live_coursepay.out_trade_no = live_orders.out_trade_no')
+                        ->field('live_coursepay.id as coursepay_id,live_coursepay.fee,live_coursepay.addtime,live_coursepay.status,live_orders.body')
+                        ->where(['live_coursepay.courseid' => $v['courseid'], 'live_orders.goods_tag' => 'reward', 'live_coursepay.status' => 'finish'])->order('live_coursepay.addtime desc')->select();
+                    $this->redis->hset($hashkey . 'reward', $v['courseid'], json_encode($lecture_data[$k]['reward'], JSON_UNESCAPED_UNICODE));
+                }else{
+                    $lecture_data[$k]['reward'] = json_decode($reward,true);
+                }
             }
         }else{
             $this->return_json(OK,['msg'=>'暂无收益']);
@@ -661,14 +662,14 @@ class User extends Base
     public function withdraw_business(){
         $real_name = input('post.real_name');
         $money = input('post.money');
-
+        $wxcode = input('post.wxcode');
         $result = $this->validate(
             [
                 'money'  => $money,
                 'real_name' => $real_name,
             ],
             [
-                'money'  => 'require|number',
+                'money'  => 'require|float',
                 'real_name'  => 'require|chsAlphaNum',
             ]
         );
