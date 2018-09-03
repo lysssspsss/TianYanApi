@@ -35,14 +35,18 @@ class Wxpay extends Base
         }
     }
 
+    //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_channel&target=294&fee=19900&expire=12&channel_id=415
+
+    //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_channel&target=294&fee=9900&expire=null&channel_id=196  支付专栏
+    //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_lecture&target=294&fee=500&lecture_id=1847  支付单节
     public function jsApiCall()
     {
         //LogController::W_P_Log("进入支付方法!");
         wlog($this->log_path,"jsApiCall 进入支付方法");
-        $lecture_id = $_GET['lecture_id'];
+        $lecture_id = input('post.lecture_id');
         $lecture = db('course')->find($lecture_id);
-        $channel_id = $_GET['channel_id'];
-        $channel_expire = $_GET['expire'];
+        $channel_id =input('post.channel_id');
+        $channel_expire = input('post.expire');
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
         }
@@ -54,10 +58,10 @@ class Wxpay extends Base
         if ($reciterid){
             $reciter = db('reciter')->find($reciterid);
         }
-        $fee = $_GET['fee'];
-        $target = $_GET['target'];
-        $product = $_GET['product']; // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选
-        $member = $_SESSION['CurrenMember'];
+        $fee = input('post.fee');
+        $target = input('post.target');
+        $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选
+        $member = $this->user;
         if($member){
             $openId = $member['openid'];
         }
@@ -128,11 +132,11 @@ class Wxpay extends Base
                 $input->SetAttach($membername."支付了专栏购买赠送活动".$pay_amount."元");
                 break;
             case 'pay_wuhan': //武汉论道
-                $num1 = $_GET['num1'];
-                $num2 = $_GET['num2'];
+                $num1 = input('post.num1');
+                $num2 = input('post.num2');
 
-                $num11 = $_GET['num11'];
-                $num22 = $_GET['num22'];
+                $num11 = input('post.num11');
+                $num22 = input('post.num22');
 
                 $str14 = '；14日：';
                 if ($num11>0){
@@ -153,41 +157,47 @@ class Wxpay extends Base
                 $input->SetAttach($membername."支付了<武汉论道>".$pay_amount."元".$str14.$str15);
                 break;
             default:
-                LogController::W_H_Log($product.":支付类型未定义,支付用户为：".$member['id'].":".$membername);
+                wlog($this->log_path,$product.":支付类型未定义,支付用户为：".$member['id'].":".$membername);
+                //LogController::W_H_Log($product.":支付类型未定义,支付用户为：".$member['id'].":".$membername);
         }
 
-        LogController::W_P_Log("body参数为：".$input->GetBody());
+        //LogController::W_P_Log("body参数为：".$input->GetBody());
+        wlog($this->log_path,"body参数为：".$input->GetBody());
         $input->SetOut_trade_no($out_trade_no);
         $input->SetTotal_fee($fee);
         $input->SetTime_start(date("YmdHis"));
         $input->SetTime_expire(date("YmdHis", time() + 600));
         $input->SetGoods_tag($product);
         $input->SetNotify_url(C('WxPayConf_pub.NOTIFY_URL'));
-        LogController::W_P_Log("支付类型为：".$_SESSION['thirdparty']);
-        if ($_SESSION['thirdparty']==1){
+        wlog($this->log_path,"body参数为：".$input->GetBody());
+        //LogController::W_P_Log("支付类型为：".$_SESSION['thirdparty']);
+        if (!empty($_SESSION['thirdparty'])){
             $input->SetTrade_type("MWEB");
             $res['thirdparty']= 1;
         }else{
             $input->SetTrade_type("JSAPI");
         }
         $input->SetOpenid($openId);
-        if(I("Trade_type") =='NATIVE'){
-            LogController::W_P_Log("调用扫码支付！");
+        if(input('post.Trade_type') =='NATIVE'){
+            wlog($this->log_path,"调用扫码支付");
+            //LogController::W_P_Log("调用扫码支付！");
             $input->SetTrade_type("NATIVE");
             $input->SetProduct_id($input->GetOut_trade_no());
             $notify = new \NativePay();
             $result = $notify->GetPayUrl($input);
             $url = $result["code_url"];
-            LogController::W_P_Log("调用扫码支付！URL为：".$url);
+            wlog($this->log_path,"调用扫码支付!URL为：".$url);
+            //LogController::W_P_Log("调用扫码支付！URL为：".$url);
             $res['url'] = $url;
         }else{
             $order = \WxPayApi::unifiedOrder($input);
             $res['mweb_url'] = $order['mweb_url'];
-            LogController::W_P_Log("中间页为：".$res['mweb_url']);
-            LogController::W_P_Log("统一下单支付单信息");
+            wlog($this->log_path,"中间页为：".$res['mweb_url']);
+            wlog($this->log_path,"统一下单支付单信息");
 //            LogController::W_P_Log("订单号：".$input->getOut_trade_no());
             foreach($order as $key=>$value){
-                LogController::W_P_Log("$key:::$value");
+                //LogController::W_P_Log("$key:::$value");
+                wlog($this->log_path,"$key:::$value");
             }
             $jsApiParameters = $tools->GetJsApiParameters($order);
             $jsApiParameters = json_decode($jsApiParameters);
@@ -197,7 +207,7 @@ class Wxpay extends Base
         $orderData['paymember'] = $member['id'];
         $orderData['getmember'] = $targetmember['id'];
         $orderData['status'] = "wait";
-        db('orders')->add($orderData); //保存订单数据
+        db('orders')->insert($orderData); //保存订单数据
 
         switch ($product){
             case 'reward' :
@@ -215,7 +225,7 @@ class Wxpay extends Base
                 $data['reply'] = null;
                 $data['isshow'] = 'hiden';
                 $data['out_trade_no'] = $input->GetOut_trade_no();
-                $count = M('msg')->add($data); //保存消息数据
+                $count = db('msg')->insertGetId($data); //保存消息数据
                 $data['message_id'] = $count;
                 $res['data'] = $data;
                 break;
@@ -229,10 +239,10 @@ class Wxpay extends Base
                     'addtime'=>date("Y-m-d H:i:s"),
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
-                M('coursepay')->add($paydata);
+                db('coursepay')->insert($paydata);
 
                 //处理是否加入分销推广收益
-                $popular = M("popularize")->where("lecture_id=".$lecture_id." and bpid=".$member['id'])->order("id desc")->find();
+                $popular = db("popularize")->where("lecture_id=".$lecture_id." and bpid=".$member['id'])->order("id desc")->find();
                 if (isset($popular)&&(!empty($popular))){
                     //收益表添加记录
                     $earnsDatas['memberid'] = $popular['pid'];
@@ -244,12 +254,12 @@ class Wxpay extends Base
                     $earnsDatas['status'] = 'wait';
                     $earnsDatas['remarks'] = '分销推广';
                     $earnsDatas['addtime'] = date("Y-m-d H:i:s");
-                    $e = M('earns')->add($earnsDatas);//收益表添加记录
-                    LogController::W_P_Log("加入分销推广记录：".$e);
+                    $e = db('earns')->insertGetId($earnsDatas);//收益表添加记录
+                    //LogController::W_P_Log("加入分销推广记录：".$e);
                     $fee = $lecture['cost']*(100-$lecture['resell_percent'])/100;
                     $pay_amount = $fee;
                 }else{
-                    LogController::W_P_Log("未取到推广记录信息！");
+                    wlog($this->log_path,"未取到推广记录信息");
                 }
 
                 break;
@@ -270,7 +280,7 @@ class Wxpay extends Base
                     'expire' => $expire ? date("Y-m-d H:i:s",strtotime("+$expire day")) : null,
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
-                M('channelpay')->add($channeldata);
+                db('channelpay')->insertGetId($channeldata);
 
                 //处理活动逻辑
                 if ($channel_id == 454){
@@ -285,7 +295,7 @@ class Wxpay extends Base
                             'out_trade_no'=>$orderData['out_trade_no']
                         );
 //                LogController::W_P_Log("数据为 写入:".json_encode($bookdata));
-                        M('onlinebookpay')->add($bookdata);
+                        db('onlinebookpay')->insert($bookdata);
                     }
                 }
 
@@ -301,7 +311,7 @@ class Wxpay extends Base
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
 //                LogController::W_P_Log("数据为 写入:".json_encode($bookdata));
-                M('onlinebookpay')->add($bookdata);
+                db('onlinebookpay')->insert($bookdata);
                 break;
             case 'pay_reciter':
                 $reciterdata = array(
@@ -312,7 +322,7 @@ class Wxpay extends Base
                     'addtime'=>date("Y-m-d H:i:s"),
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
-                M('reciterpay')->add($reciterdata);
+                db('reciterpay')->insert($reciterdata);
                 break;
             case  'pay_zlhd':
                 $channel_arr = [119,155,175,154,19,174,56,80,103,85,131,135,32];
@@ -326,11 +336,12 @@ class Wxpay extends Base
                         'expire' => date("Y-m-d H:i:s",strtotime("+365 day")),
                         'out_trade_no'=>$orderData['out_trade_no']
                     );
-                    M('channelpay')->add($channeldata);
+                    db('channelpay')->insert($channeldata);
                 }
                 break;
             default:
-                LogController::W_H_Log($product.":支付类型未定义,支付用户为：".$member['id'].":".$membername);
+                //LogController::W_H_Log($product.":支付类型未定义,支付用户为：".$member['id'].":".$membername);
+                wlog($this->log_path,$product.":支付类型未定义,支付用户为：".$member['id'].":".$membername);
         }
 
         //收益表添加记录
@@ -369,10 +380,10 @@ class Wxpay extends Base
         $earnsData['out_trade_no'] = $orderData['out_trade_no'];
         $earnsData['status'] = 'wait';
         $earnsData['addtime'] = date("Y-m-d H:i:s");
-        M('earns')->add($earnsData);//收益表添加记录
-        $res['code'] = 0;
-        $this->ajaxReturn($res,'JSON');
-
+        db('earns')->insert($earnsData);//收益表添加记录
+        //$res['code'] = 0;
+        //$this->ajaxReturn($res,'JSON');
+        $this->return_json(OK,$res);
     }
 
 
@@ -445,7 +456,7 @@ class Wxpay extends Base
     }
 
 
-    function  log_result($file,$word)
+    public function  log_result($file,$word)
     {
         $fp = fopen($file,"a");
         flock($fp, LOCK_EX) ;
@@ -454,7 +465,7 @@ class Wxpay extends Base
         fclose($fp);
     }
 
-    function sendgroupredpack(){
+    public function sendgroupredpack(){
         $member = $_SESSION['CurrenMember'];
         $openid = $member['openid'];
         $tdata = date('Y-m-d',time());
