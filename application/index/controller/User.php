@@ -645,10 +645,11 @@ class User extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        //课程购买记录
-        $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("addtime desc")->select();
-        //专栏购买记录
-        $data['channelpay'] = db('channelpay')->alias('p')->join('live_channel c','p.channelid=c.id')->field("c.name,c.cover_url,p.*,p.fee/100 as fee")->where("p.status='finish' and p.memberid=".$this->user['id']." and ((unix_timestamp(p.expire)>unix_timestamp(now())) or ( p.expire is null))")->order("addtime desc")->select();
+        if($type==1){//课程购买记录
+            $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("addtime desc")->select();
+        }else{//专栏购买记录
+            $data['channelpay'] = db('channelpay')->alias('p')->join('live_channel c','p.channelid=c.id')->field("c.name,c.cover_url,p.*,p.fee/100 as fee")->where("p.status='finish' and p.memberid=".$this->user['id']." and ((unix_timestamp(p.expire)>unix_timestamp(now())) or ( p.expire is null))")->order("addtime desc")->select();
+        }
         $data['memberid'] = $this->user['id'];
         $this->return_json(OK,$data);
     }
