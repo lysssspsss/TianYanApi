@@ -550,7 +550,7 @@ class User extends Base
         $hashkey = 'lecture_income_detail:';
         $result = $this->validate(
             ['limit' => $limit, 'type' => $type,],
-            ['limit'  => 'require|number' , 'type'  => 'require|in:1,2']);
+            ['limit'  => 'require|number' , 'type'  => 'in:1,2']);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }

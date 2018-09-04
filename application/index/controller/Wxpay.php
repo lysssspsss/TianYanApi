@@ -50,11 +50,11 @@ class Wxpay extends Base
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
         }
-        $bookid = $_GET['bookid'];
+        $bookid = input('post.bookid');
         if ($bookid){
             $book = db('onlinebooks')->find($bookid);
         }
-        $reciterid = $_GET['reciterid'];
+        $reciterid = input('post.reciterid');
         if ($reciterid){
             $reciter = db('reciter')->find($reciterid);
         }
@@ -388,11 +388,11 @@ class Wxpay extends Base
 
 
     public static function transfers($id){
-        vendor("wxpay.Data");
-        vendor("wxpay.wxPayApi");
+        import('wxpay.Data',EXTEND_PATH,EXT);
+        import('wxpay.wxPayApi',EXTEND_PATH,EXT);
         if ($id){//提现记录id
-            $take_out = M('takeout')->find($id);
-            $member = M('member')->find($take_out['memberid']);
+            $take_out = db('takeout')->find($id);
+            $member = db('member')->find($take_out['memberid']);
             $amount = $take_out['num'];
             if ($amount*100<100){
                 $result['code'] = 1;
@@ -405,7 +405,7 @@ class Wxpay extends Base
                 $data['re_user_name'] = $take_out["name"];
                 $data['transfersdesc'] = "用户提现";
                 $data['addtime'] = date("Y-m-d H:i:s");
-                $tid = M('transfers')->add($data);
+                $tid = db('transfers')->add($data);
                 $input = new \WxPayTransfers();
                 $input->SetAmount($amount*100);
                 $input->SetCheck_name( $data['check_name']);
@@ -428,7 +428,7 @@ class Wxpay extends Base
                 $tdata['payment_time'] = $transfers_result['payment_time'];
                 $tdata['updatetime'] = date("Y-m-d H:i:s");
                 $tdata['id'] = $tid;
-                M("transfers")->save($tdata);
+                db("transfers")->update($tdata);
                 if ($tdata['return_code']=='SUCCESS'&&$tdata['result_code']=='SUCCESS'){
                     $result['code'] = 0;
                     $result['msg'] = "提现处理成功";
@@ -466,32 +466,12 @@ class Wxpay extends Base
     }
 
     public function sendgroupredpack(){
-        $member = $_SESSION['CurrenMember'];
+        $member = $this->user;
         $openid = $member['openid'];
         $tdata = date('Y-m-d',time());
-        $todayisget = M('rpslog')->where("memberid=".$member['id']." and sendtime like '".$tdata."%'")->select();
+        $todayisget = db('rpslog')->where("memberid=".$member['id']." and sendtime like '".$tdata."%'")->select();
         if ((empty($todayisget)||(!isset($todayisget)))) {
-           /* if ($openid) {
-                $input['re_openid'] = $openid;
-                $input['send_name'] = "天雁商学院";
-                $input['total_amount'] = 500;
-                $input['total_num'] = 5;
-                $input['amt_type'] = "ALL_RAND";
-                $input['wishing'] = "天雁商学院祝您事事顺心！";
-                $input['act_name'] = "祝福红包";
-                $input['remark'] = "发送给好友一起领红包";
-                $input['mch_billno'] = C('WxPayConf_pub.MCHID') . date("Ymd") . rand(0000000000, 9999999999);
-                $count = M('rpslog')->where("sendtime like '".$tdata."%'")->count();
-                if ($count <= 200){
-                    $result = \WxPayApi::sendGroupRedPack($input);
-                }
-                $data['memberid'] = $member['id'];
-                $data['sendtime'] = date("Y-m-d H:i:s");
-                $data['num'] = 500;
-                $data['status'] = "success";
-                M('rpslog')->add($data);
-                LogController::W_H_Log("操作发红包接口返回数据为：" . json_decode($result));
-            }*/
+
         }else{
 
         }
