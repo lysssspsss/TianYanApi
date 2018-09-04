@@ -39,7 +39,7 @@ class Wxpay extends Base
 
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_channel&target=294&fee=9900&expire=null&channel_id=196  支付专栏
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_lecture&target=294&fee=500&lecture_id=1847  支付单节
-    public function jsApiCall()
+    public function js_api_call()
     {
         //LogController::W_P_Log("进入支付方法!");
         wlog($this->log_path,"jsApiCall 进入支付方法");
@@ -47,25 +47,46 @@ class Wxpay extends Base
         $lecture = db('course')->find($lecture_id);
         $channel_id =input('post.channel_id');
         $channel_expire = input('post.expire');
+        $fee = input('post.fee');
+        $target = input('post.target');
+        $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选
+        $result = $this->validate(
+            [
+                'lecture_id' => $lecture_id,
+                'channel_id' => $channel_id,
+                'expire' => $channel_expire,
+                'fee' => $fee,
+                'target' => $target,
+                'product' => $product,
+            ],
+            [
+                'lecture_id'  => 'number' ,
+                'channel_id'  => 'number' ,
+                'expire'  => 'number' ,
+                'fee'  => 'require|number' ,
+                'target'  => 'require|number' ,
+                'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter' ,
+            ]);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
         }
         $bookid = input('post.bookid');
-        if ($bookid){
+        if (!empty($bookid)){
             $book = db('onlinebooks')->find($bookid);
         }
         $reciterid = input('post.reciterid');
-        if ($reciterid){
+        if (!empty($reciterid)){
             $reciter = db('reciter')->find($reciterid);
         }
-        $fee = input('post.fee');
-        $target = input('post.target');
-        $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选
+
         $member = $this->user;
         if($member){
             $openId = $member['openid'];
         }
-
         if ($product!='pay_onlinebook'&&$product!='pay_reciter'&&$product!='pay_wuhan'&&$product!='pay_register'&&$product!='pay_zlhd'){
             $targetmember = db('member')->find($target);
         }else{ //当支付类型为pay_onlinebook时，支付的目标用户为系统，则$targetmember['id'] = 0
