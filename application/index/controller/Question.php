@@ -1,7 +1,7 @@
 <?php
 namespace app\index\controller;
 //use think\Input;
-
+use think\Config;
 
 
 class Question extends Base
@@ -78,7 +78,7 @@ class Question extends Base
                 'keyword3' => array('value' => urldecode($describe), 'color' => '#743A3A'),
                 'keyword4' => array('value' => date('Y-m-d H:i:s',time()), 'color' => '#743A3A')
             );
-            $wechat->doSendTempleteMsg($openid, C("template_code.ask_progress"), $url, $data, '#7B68EE');
+            $wechat->doSendTempleteMsg($openid,  Config::get("template_code.ask_progress"), $url, $data, '#7B68EE');
 
         }else{
             //LogController::Error_mediaid_log("模板推送：找不到用户Id为 $teacher_id 的信息");

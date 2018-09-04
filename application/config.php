@@ -273,10 +273,10 @@ return [
         'MCHID' => '1412241902',
         'KEY' => 'zhang123zhang123zhang123zhang123',
         'APPSECRET' => '331cf131b3b025fdc71ac7712de86fdd',
-        'JS_API_CALL_URL' => SERVER_URL.'/index.php/Home/WxJsAPI/jsApiCall',
-        'SSLCERT_PATH' => SERVER_URL.'/ThinkPHP/Library/Vendor/wxpay/cacert/apiclient_cert.pem',
-        'SSLKEY_PATH' => SERVER_URL.'/ThinkPHP/Library/Vendor/wxpay/cacert/apiclient_key.pem',
-        'NOTIFY_URL' =>  SERVER_URL.'/index.php/Home/WxJsAPI/notify',
+        'JS_API_CALL_URL' => SERVER_URL.'/api.php/index/wxpay/js_api_call',
+        'SSLCERT_PATH' => SERVER_URL.'/extend/wxpay/cert/apiclient_cert.pem',
+        'SSLKEY_PATH' => SERVER_URL.'/extend/wxpay/cert/apiclient_key.pem',
+        'NOTIFY_URL' =>  SERVER_URL.'/api.php/index/wxpay/notify',
         'CURL_TIMEOUT' => 30
     ),
 ];

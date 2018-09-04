@@ -75,8 +75,8 @@ class Wxpay extends Base
             $channel = db('channel')->find($channel_id);
         }
         $bookid = input('post.bookid');
-        if (!empty($bookid)){
-            $book = db('onlinebooks')->find($bookid);
+            if (!empty($bookid)){
+                $book = db('onlinebooks')->find($bookid);
         }
         $reciterid = input('post.reciterid');
         if (!empty($reciterid)){
@@ -189,7 +189,7 @@ class Wxpay extends Base
         $input->SetTime_start(date("YmdHis"));
         $input->SetTime_expire(date("YmdHis", time() + 600));
         $input->SetGoods_tag($product);
-        $input->SetNotify_url(C('WxPayConf_pub.NOTIFY_URL'));
+        $input->SetNotify_url(Config::get('WxPayConf_pub.NOTIFY_URL'));
         wlog($this->log_path,"body参数为：".$input->GetBody());
         //LogController::W_P_Log("支付类型为：".$_SESSION['thirdparty']);
         if (!empty($_SESSION['thirdparty'])){
