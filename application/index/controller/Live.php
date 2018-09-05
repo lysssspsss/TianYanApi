@@ -289,17 +289,17 @@ class Live extends Base
         }
         $lecture = db('course')->field('memberid,isonline,name')->find($lecture_id);
         $member = db('member')->field('id,name,headimg,img')->find($js_memberid);
-
+        $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url';
         if ($reverse == 0){
             if (!empty($start_date)){
                 //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
-                $listmsg = db("msg")->where($sql)->limit($desired_count)->select();
+                $listmsg = db('msg')->field($field)->where($sql)->limit($desired_count)->select();
             }else{
                 $listmsg = array();
             }
         }elseif ($reverse==1){
             //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
-            $listmsg = db("msg")->where($sql)->limit($desired_count)->order("add_time desc")->select();
+            $listmsg = db('msg')->field($field)->where($sql)->limit($desired_count)->order("add_time desc")->select();
         }
         /*LogController::W_H_Log("msg 长度：".sizeof($listmsg,0));
         LogController::W_H_Log("sql is:".$sql);*/
@@ -322,7 +322,7 @@ class Live extends Base
                     'length' => 0,
                     'message_type' => "text",
                     'lecture_id' => $lecture_id,
-                    'ppt_id' => null,
+                    //'ppt_id' => null,
                     'ppt_url' => null,
                     'reply' => null,
                     'sender_headimg' => ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
