@@ -38,7 +38,7 @@ class Live extends Base
         if(empty($lecture)){
             $this->return_json(E_OP_FAIL,'课程为空');
         }
-        $channel = [];
+        $channel['lecturer'] = '';
         if(!empty($lecture['channel_id'])){
             $channel = db('channel')->field('lecturer')->find($lecture['channel_id']);
             if(empty($channel['lecturer'])){
@@ -70,7 +70,9 @@ class Live extends Base
         $field = 'id,name,nickname,sex,headimg,img,isauth,company,position,title';
         if($lecture['memberid']!=294){
             $member = db('member')->field($field)->find($lecture['memberid']);
-        }else{
+        }elseif ($lecture['memberid']==294 && empty($channel['lecturer'])){
+            $member = db('member')->field($field)->find(294);
+        } else{
             $member = db('member')->field($field)->find($channel['lecturer']);
         }
 
