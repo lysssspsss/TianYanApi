@@ -333,7 +333,7 @@ class User extends Base
         }
         $member = $this->user;
         //插入直播间数据
-        $liveroom = db("home");
+        $liveroom = db('home');
         $liveroom = $liveroom->where(['memberid'=>$member['id']])->find();
         if(empty($liveroom)){
             $homedata = array(
@@ -344,6 +344,7 @@ class User extends Base
                 'attentionnum'=>0,
                 'listennum'=>0,
                 'liveroom_qrcode_url'=>LIVEROOM_QRCODE_URL,
+                'qrcode_addtime'=>date('Y-m-d H:i:s'),
                 'addtime'=>date('Y-m-d H:i:s'),
                 'showstatus'=>"show"
             );

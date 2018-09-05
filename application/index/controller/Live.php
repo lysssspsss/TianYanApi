@@ -13,50 +13,97 @@ class Live extends Base
     /**
      * 直播间接口
      */
-    public function classroom()
+    public function classroom($lecture_id = '')
     {
-        $lectureid = \input('post.lecture_id');
-        if ($lectureid) {
-            $lecture = db("course")->find($lectureid);
-            $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
-            $lecture['starttimes'] = strtotime($lecture['starttime']);
+        if(empty($lecture_id)){
+            $lecture_id = \input('post.lecture_id');
+        }
+        //数据验证
+        $result1 = $this->validate(
+            [
+                'lecture_id'  => $lecture_id,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+            ]
+        );
+        if($result1 !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
 
-            if ($status != '进行中') {
-                $lecture['current_status'] = $status ? 'ready' : 'closed';
-            } else {
-                $lecture['current_status'] = 'started';
-            }
-            if ($lecture['current_status'] == 'closed') {
-                $lecture['lectureStatus'] = 'closed';
-            } else {
-                $lecture['lectureStatus'] = 'approved';
-            }
-            //LogController::W_H_Log("status 为：".$status."current_status 为：". $lecture['current_status']);
-            $lecture['intro'] = str_replace(PHP_EOL, '', $lecture['intro']);
-            $result['lecture'] = $lecture;
-
-            $member = db('member')->find($lecture['memberid']);
-            $liveroom = db("home")->find($lecture['live_homeid']);
-            $result['livehome'] = $liveroom;
-            if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
-                $vedio = db('video')->where(['lecture_id'=>$lectureid,'isshow'=>'show'])->select();
-                foreach ($vedio as $k=>$v ){
-                    if (eregi_new("mp4$", $v['video'])||eregi_new("m3u8$", $v['video'])){
-                        $d_video['mp4'] = $v['video'];
-                    } elseif(eregi_new("webm$", $v['video'])){
-                        $d_video['webm'] = $v['video'];
-                    }
-                }
-                $d_video['img'] = $vedio[0]['video_cover'];
-                if (!isset($d_video['img'])){
-                    $d_video['img'] = $lecture['coverimg'];
-                }
-                $result['dvideo'] = $d_video;
+        /*
+         * 获取课程信息
+         */
+        $lecture = db('course')->field('id,memberid,live_homeid,name,sub_title,mins,starttime,intro,clicknum,type,pass,cost,mode,coverimg,status,discuss,speak,reward_message,channel_id,is_for_vip,basescrib')->find($lecture_id);
+        if(empty($lecture)){
+            $this->return_json(E_OP_FAIL,'课程为空');
+        }
+        $channel = [];
+        if(!empty($lecture['channel_id'])){
+            $channel = db('channel')->field('lecturer')->find($lecture['channel_id']);
+            if(empty($channel['lecturer'])){
+                $channel['lecturer'] = 294;
             }
         }
+        $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
+        $lecture['starttimes'] = strtotime($lecture['starttime']);
+        $lecture['countdown'] = $lecture['starttimes'] - time();//倒计时
+        if($lecture['countdown'] < 0){
+            $lecture['countdown'] = 0;
+        }
+        if ($status != '进行中') {
+            $lecture['current_status'] = $status ? 'ready' : 'closed';
+        } else {
+            $lecture['current_status'] = 'started';
+        }
+        if ($lecture['current_status'] == 'closed') {
+            $lecture['lectureStatus'] = 'closed';
+        } else {
+            $lecture['lectureStatus'] = 'approved';
+        }
+        $lecture['intro'] = str_replace(PHP_EOL, '', $lecture['intro']);
+        $result['lecture'] = $lecture;
+
+        /*
+         * 获取讲师信息
+         */
+        $field = 'id,name,nickname,sex,headimg,img,isauth,company,position,title';
+        if($lecture['memberid']!=294){
+            $member = db('member')->field($field)->find($lecture['memberid']);
+        }else{
+            $member = db('member')->field($field)->find($channel['lecturer']);
+        }
+
+        $liveroom = db('home')->field('id,memberid')->find($lecture['live_homeid']);
+        $result['livehome'] = $liveroom;
+        $d_video['push_url'] = '';
+        $d_video['push_url'] = '';
+        $d_video['img'] = '';
+        if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
+            $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show'])->select();
+            foreach ($vedio as $k=>$v ){
+                if(strpos($v['video'],'rtmp')){
+                    $d_video['push_url'] = $v['push_url'];
+                    $d_video['pull_url'] = $v['video'];
+                }else{
+                    if (eregi_new("mp4$", $v['video'])||eregi_new("m3u8$", $v['video'])){
+                        $d_video['pull_url'] = $v['video'];
+                    } elseif(eregi_new("webm$", $v['video'])){
+                        $d_video['pull_url'] = $v['video'];
+                    }
+                }
+            }
+            $d_video['img'] = $vedio[0]['video_cover'];
+            if (!isset($d_video['img'])){
+                $d_video['img'] = $lecture['coverimg'];
+            }
+        }elseif($lecture['mode']=='ppt'){//待完善
+
+        }
+        $result['dvideo'] = $d_video;
+
         $result['member'] = $member;
         $currentMember = $this->user;
-        $currentMember = db('member')->find($currentMember['id']);
         $result['cmember'] = $currentMember;
         if ($lecture['channel_id']==217 && $currentMember['remarks']=='武汉峰会签到'){ //武汉峰会 会员进入
             $shareTitle = $currentMember['name']."花980元邀请您1元钱收听".$lecture['name'];
@@ -65,97 +112,116 @@ class Live extends Base
         }
         $result['shareTitle'] = $shareTitle;
         //判断是否已关注直播间
-        $atten = db('attention')->where(['memberid'=>$currentMember['id'],'roomid'=>$liveroom['id']])->find();
-        if ($atten) {
-            $result['isattention'] = 1;
-        } else {
+        if(empty($lecture['channel_id'])){
             $result['isattention'] = 0;
+        }else{
+            $atten = db('attention')->field('id')->where(['memberid'=>$currentMember['id'],'roomid'=>$lecture['channel_id']])->find();
+            if (!empty($atten)) {
+                $result['isattention'] = 1;
+            } else {
+                $result['isattention'] = 0;
+            }
         }
-        $subscrib = db('subscribe')->where(['cid'=>$lectureid,'mid'=>$currentMember['id']])->find();
-        if ($subscrib) {
+
+        $subscrib = db('subscribe')->field('id')->where(['cid'=>$lecture_id,'mid'=>$currentMember['id']])->find();
+        if (!empty($subscrib)) {
             $result['issubscrib'] = 1;
         } else {
             $result['issubscrib'] = 0;
         }
         if (isset($lecture['live_homeid'])&&(!empty($lecture['live_homeid'])) && $lecture['live_homeid']!=0){
-            $manager = db('home_manager')->where('(homeid='.$lecture['live_homeid'].' or homeid='.$lecture['channel_id'].') AND beinviteid='.$currentMember['id'])->find();
+            $manager = db('home_manager')->field('id')->where('(homeid='.$lecture['live_homeid'].' or homeid='.$lecture['channel_id'].') AND beinviteid='.$currentMember['id'])->find();
         }
-        if (($currentMember['id'] == $lecture['memberid']) || $manager) {
+        if (($currentMember['id'] == $lecture['memberid']) || !empty($manager)) {
             $result['isOwner'] = 1;
             $result['isSpeaker'] = 1;
             $result['canSpeak'] = 1;
         } else {
             $result['isOwner'] = 0;
         }
-        $invete = db('invete')->where(['courseid'=>$lectureid,'beinviteid'=>$currentMember['id']])->find();
-        if ($invete || $manager) {
-           /* $this->assign("isSpeaker", 1);
-            $this->assign("canSpeak", 1);*/
+        $invete = db('invete')->field('id')->where(['courseid'=>$lecture_id,'beinviteid'=>$currentMember['id']])->find();
+        if (!empty($invete) || !empty($manager)) {
             $result['isSpeaker'] = 1;
             $result['canSpeak'] = 1;
         } else {
-           /* $this->assign("isSpeaker", 0);
-            $this->assign("canSpeak", 0);*/
             $result['isSpeaker'] = 0;
             $result['canSpeak'] = 0;
         }
 
         //是否禁言
-        //"courseid=" . $lecture['id'] . " and memberid=" . $currentMember['id']
-        $dissenmsg = db('dissenmsg')->where(['courseid'=>$lecture['id'],'memberid'=>$currentMember['id']])->find();
+        $dissenmsg = db('dissenmsg')->field('id')->where(['courseid'=>$lecture['id'],'memberid'=>$currentMember['id']])->find();
         if ($dissenmsg) {
-            //$this->assign("blocked", 1);
             $result['blocked'] = 1;
         } else {
-            //$this->assign("blocked", 0);
             $result['blocked'] = 0;
         }
         //评论数
-        //"lecture_id=" . $lecture['id']
+
         $dis_count = db('discuss')->where(['lecture_id'=>$lecture['id']])->count();
         $result['dis_count'] = $dis_count;
-        //$this->assign("dis_count", $dis_count);
+
         //预约人数
         $sub_count = db('subscribe')->where(["cid"=>$lecture['id']])->count();
         if (isset($lecture['basescrib'])){
             $sub_count += $lecture['basescrib'];
         }
-        //$this->assign("sub_count", $sub_count);
+
         $result['sub_count'] = $sub_count;
         //课程相关人员
        /* $Model = new Model();
-        $arr_invete = $Model->table("live_invete i ,live_member m")->where("i.beinviteid=m.id and i.courseid=" . $lectureid)->field("i.id as iid,m.id as mid,i.invitetype as title,m.headimg,m.intro,m.name,m.nickname")->select();
+        $arr_invete = $Model->table("live_invete i ,live_member m")->where("i.beinviteid=m.id and i.courseid=" . $lecture_id)->field("i.id as iid,m.id as mid,i.invitetype as title,m.headimg,m.intro,m.name,m.nickname")->select();
         $this->assign("invetelist", $arr_invete);*/
 
         //更新人气
-        //$cmember = $_SESSION["CurrenMember"];
         $cmember = $this->user;
         if ($cmember['id'] != $lecture['memberid']) {
             $lecdata = array(
                 'clicknum' => $lecture['clicknum'] + 1,
             );
             db("course")->where(["id"=>$lecture['id']])->update($lecdata);
-            //LogController::W_A_Log($cmember['id']."更新了人气为".$lecdata['clicknum']);
 
             //推送给用户
             //推送消息给用户
-            //$publish_url=C('workerman_publish_url');
-            $data['popular'] = $lecdata['clicknum'];
+            /*$data['popular'] = $lecdata['clicknum'];
             $data['lecture_id'] = $lecture['id'];
-            Tools::publish_msg(0,$lecture['id'],WORKERMAN_PUBLISH_URL,json_encode($data));
+            Tools::publish_msg(0,$lecture['id'],WORKERMAN_PUBLISH_URL,json_encode($data));*/
         }
-
-        //JSSDK 签名
-        /*$this->assign("appid", WECHAT_APPID);
-        $jssdk = new JsApiController(C("wechat.APPID"), C("wechat.APPSECRET"));
-        $signPackage = $jssdk->GetSignPackage();
-        $this->assign("signpack", $signPackage);
-        if (($lecture['mode']=='video' || $lecture['mode']=='vedio')&&(!empty($lecture['audio_content']))){
-            $this->display('classroom_new');
-        }else{
-            $this->display();
-        }*/
         $this->return_json(OK,$result);
+    }
+
+
+    /**
+     * 设置直播间
+     */
+    public function set_classroom()
+    {
+        $discussr = input('post.discuss'); //是否允许讨论
+        $speak = input('post.speak'); //是否自动上墙
+        $reward_message = input('post.reward_message');//是否显示打赏信息
+        $lecture_id = input('post.lecture_id');
+        //数据验证
+        $result = $this->validate(
+            [
+                'lecture_id'  => $lecture_id,
+                'discussr' => $discussr,
+                'speak' => $speak,
+                'reward_message' => $reward_message,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+                'discussr'  => 'require|in:0,1',
+                'speak'  => 'require|in:0,1',
+                'reward_message'  => 'require|in:0,1',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data['discussr'] = $discussr;
+        $data['speak'] = $speak;
+        $data['reward_message'] = $reward_message;
+        db('crouse')->where(['id'=>$lecture_id])->update($data);
+        $this->classroom($lecture_id);
     }
 
 
