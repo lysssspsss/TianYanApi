@@ -264,49 +264,83 @@ class Live extends Base
         $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>1]);
     }
 
-
     /**
-     * 获取初始聊天信息
+     * 撤回消息
      */
-    public function get_messages()
+    public function revoke()
     {
-        //$cmember = $this->user;
-        $lecture_id = input('post.lecture_id'); //课程id
-        $start_date = input('post.start_date'); //开始日期 ，格式2018-08-06 20:00（没有秒），如果不传，则返回全部
-        $desired_count = input('post.desired_count');//返回聊天信息条数
-        $reverse = input('post.reverse');//为1则返回显示开始日期以前的数据
-        $page = input('post.page');//页码
-        if(empty($reverse)){
-            $reverse = 0;
-        }
-        $js_memberid = input('post.js_memberid'); //讲师用户id
-        $type = input('post.type'); //类型：1为讲师的记录，2为其他用户的记录
+        $message_id = input('post.message_id');
         //数据验证
         $result = $this->validate(
             [
-                'lecture_id'  => $lecture_id,
-                'start_date' => $start_date,
-                'desired_count' => $desired_count,
-                'reverse' => $reverse,
-                'js_memberid' => $js_memberid,
-                'type' => $type,
-                'page' => $page,
+                'message_id'  => $message_id,
             ],
             [
-                'lecture_id'  => 'require|number',
-                'start_date'  => 'date',
-                'desired_count'  => 'number',
-                'reverse'  => 'in:0,1',
-                'js_memberid'  => 'require|number',
-                'type'  => 'require|in:1,2',
-                'page'  => 'number',
+                'message_id'  => 'require|number',
             ]
         );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
+        $a = db('msg')->where(['message_id'=>$message_id])->update(['isshow'=>'hiden']);
+        if(empty($a)){
+            $this->return_json(E_OP_FAIL,'撤回失败');
+        }
+        $this->return_json(OK,['cmemberid'=>$this->user['id']]);
+    }
+
+
+    /**
+     * 获取初始聊天信息
+     */
+    public function get_messages($canshu = [])
+    {
+        //$cmember = $this->user;
+        if(empty($canshu)){
+            $lecture_id = input('post.lecture_id'); //课程id
+            $start_date = input('post.start_date'); //开始日期 ，格式2018-08-06 20:00（没有秒），如果不传，则返回全部
+            $desired_count = input('post.desired_count');//返回聊天信息条数
+            $reverse = input('post.reverse');//为1则返回显示开始日期以前的数据
+            $page = input('post.page');//页码
+            if(empty($reverse)){
+                $reverse = 0;
+            }
+            $js_memberid = input('post.js_memberid'); //讲师用户id
+            $type = input('post.type'); //类型：1为讲师的记录，2为其他用户的记录
+            //数据验证
+            $result = $this->validate(
+                [
+                    'lecture_id'  => $lecture_id,
+                    'start_date' => $start_date,
+                    'desired_count' => $desired_count,
+                    'reverse' => $reverse,
+                    'js_memberid' => $js_memberid,
+                    'type' => $type,
+                    'page' => $page,
+                ],
+                [
+                    'lecture_id'  => 'require|number',
+                    'start_date'  => 'date',
+                    'desired_count'  => 'number',
+                    'reverse'  => 'in:0,1',
+                    'js_memberid'  => 'require|number',
+                    'type'  => 'require|in:1,2',
+                    'page'  => 'number',
+                ]
+            );
+            if($result !== true){
+                $this->return_json(E_ARGS,'参数错误');
+            }
+        }else{
+            $lecture_id = $canshu['lecture_id']; //课程id
+            $start_date = $canshu['start_date']; //开始日期 ，格式2018-08-06 20:00（没有秒），如果不传，则返回全部
+            $desired_count = $canshu['desired_count'];//返回聊天信息条数
+            $reverse = $canshu['reverse'];//为1则返回显示开始日期以前的数据
+            $page = $canshu['page'];//页码
+        }
+
         $page = !empty($page) ? $page : 1;
-        $page = !empty($desired_count) ? $desired_count : 200;
+        $desired_count = !empty($desired_count) ? $desired_count : 200;
         $where['id'] = $lecture_id;
         $where['isshow'] = 'show';
 
