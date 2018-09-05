@@ -232,11 +232,36 @@ class Live extends Base
     }
 
     /**
-     * 获取初始聊天信息
+     * 关注专栏
      */
     public function attantion_channel()
     {
-
+        $lecture_id = input('post.lecture_id');
+        //数据验证
+        $result = $this->validate(
+            [
+                'lecture_id'  => $lecture_id,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $l  = db('course')->field('channel_id')->find($lecture_id);
+        if(empty($l['channel_id'])){
+            $l['channel_id'] = 294;
+        }
+        $data['memberid'] = $this->user['id'];
+        $data['roomid'] = $l['channel_id'];
+        $data['create_time'] = date('Y-m-d H:i:s');
+        $data['type'] = 1;
+        $a = db('attention')->insertGetId($data);
+        if(empty($a)){
+           $this->return_json(E_OP_FAIL,'关注失败');
+        }
+        $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>1]);
     }
 
 
