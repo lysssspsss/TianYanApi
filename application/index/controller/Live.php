@@ -298,7 +298,7 @@ class Live extends Base
         }
         $lecture = db('course')->field('memberid,isonline,name')->find($lecture_id);
         $member = db('member')->field('id,name,headimg,img')->find($js_memberid);
-        $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url';
+        $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url,out_trade_no';
         $listmsg = db('msg')->field($field)->where($sql)->limit($page-1,$desired_count)->order("add_time desc")->select();
         /*if ($reverse == 0){
             if (!empty($start_date)){
