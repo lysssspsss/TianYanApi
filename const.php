@@ -11,6 +11,22 @@ const SERVER_URL_BACK = "";// 备用
 const SERVER_PATH = '/data/wwwroot/TianYanApi';
 
 /**
+ * 极光推送
+ */
+const JIGUANG_APPKEY = '390a59bdf6f756dd22a6d4f1';
+const JIGUANG_MASTER_SECRET = 'b28ac12b9cc2eed27738b5f9';
+const JIGUANG_REGISTRATION_ID = '1a1018970a8d274291f';
+
+/**
+ * 微信支付
+ */
+const WECHATPAY_URL = "https://api.mch.weixin.qq.com/pay/unifiedorder";
+const WECHATPAY_APPID = '';
+const WECHATPAY_MCHID = '';
+const WECHATPAY_DEVICE_INFO = 'WEB';
+const WECHATPAY_KEY = '';
+
+/**
  * 阿里云直播相关
  */
 //const LIVE_URL = 'rtmp://video-center-sg.alivecdn.com/';
