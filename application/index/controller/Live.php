@@ -231,8 +231,10 @@ class Live extends Base
         $this->classroom($lecture_id);
     }
 
-
-    public function guanzhu()
+    /**
+     * 获取初始聊天信息
+     */
+    public function attantion_channel()
     {
 
     }
@@ -248,7 +250,10 @@ class Live extends Base
         $start_date = input('post.start_date'); //开始日期 ，格式2018-08-06 20:00（没有秒），如果不传，则返回全部
         $desired_count = input('post.desired_count');//返回聊天信息条数
         $reverse = input('post.reverse');//为1则返回显示开始日期以前的数据
-
+        $page = input('post.page');//页码
+        if(empty($reverse)){
+            $reverse = 0;
+        }
         $js_memberid = input('post.js_memberid'); //讲师用户id
         $type = input('post.type'); //类型：1为讲师的记录，2为其他用户的记录
         //数据验证
@@ -260,19 +265,23 @@ class Live extends Base
                 'reverse' => $reverse,
                 'js_memberid' => $js_memberid,
                 'type' => $type,
+                'page' => $page,
             ],
             [
                 'lecture_id'  => 'require|number',
                 'start_date'  => 'date',
-                'desired_count'  => 'require|number',
-                'reverse'  => 'require|in:0,1',
+                'desired_count'  => 'number',
+                'reverse'  => 'in:0,1',
                 'js_memberid'  => 'require|number',
                 'type'  => 'require|in:1,2',
+                'page'  => 'number',
             ]
         );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
+        $page = !empty($page) ? $page : 1;
+        $page = !empty($desired_count) ? $desired_count : 200;
         $where['id'] = $lecture_id;
         $where['isshow'] = 'show';
 
@@ -290,7 +299,8 @@ class Live extends Base
         $lecture = db('course')->field('memberid,isonline,name')->find($lecture_id);
         $member = db('member')->field('id,name,headimg,img')->find($js_memberid);
         $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url';
-        if ($reverse == 0){
+        $listmsg = db('msg')->field($field)->where($sql)->limit($page-1,$desired_count)->order("add_time desc")->select();
+        /*if ($reverse == 0){
             if (!empty($start_date)){
                 //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
                 $listmsg = db('msg')->field($field)->where($sql)->limit($desired_count)->select();
@@ -300,7 +310,7 @@ class Live extends Base
         }elseif ($reverse==1){
             //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
             $listmsg = db('msg')->field($field)->where($sql)->limit($desired_count)->order("add_time desc")->select();
-        }
+        }*/
         /*LogController::W_H_Log("msg 长度：".sizeof($listmsg,0));
         LogController::W_H_Log("sql is:".$sql);*/
         if (sizeof($listmsg, 0) == 0) {//没有消息时
