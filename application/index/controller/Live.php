@@ -76,6 +76,9 @@ class Live extends Base
             $member = db('member')->field($field)->find($channel['lecturer']);
         }
 
+        if(empty($member['name'])){
+            $member['name'] = $member['nickname'];
+        }
         $liveroom = db('home')->field('id,memberid')->find($lecture['live_homeid']);
         $result['livehome'] = $liveroom;
         $d_video['push_url'] = '';
@@ -83,21 +86,23 @@ class Live extends Base
         $d_video['img'] = '';
         if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
             $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show'])->select();
-            foreach ($vedio as $k=>$v ){
-                if(strpos($v['video'],'rtmp')){
-                    $d_video['push_url'] = $v['push_url'];
-                    $d_video['pull_url'] = $v['video'];
-                }else{
-                    if (eregi_new("mp4$", $v['video'])||eregi_new("m3u8$", $v['video'])){
+            if(!empty($vedio)){
+                foreach ($vedio as $k=>$v ){
+                    if(strpos($v['video'],'rtmp')){
+                        $d_video['push_url'] = $v['push_url'];
                         $d_video['pull_url'] = $v['video'];
-                    } elseif(eregi_new("webm$", $v['video'])){
-                        $d_video['pull_url'] = $v['video'];
+                    }else{
+                        if (eregi_new("mp4$", $v['video'])||eregi_new("m3u8$", $v['video'])){
+                            $d_video['pull_url'] = $v['video'];
+                        } elseif(eregi_new("webm$", $v['video'])){
+                            $d_video['pull_url'] = $v['video'];
+                        }
                     }
                 }
-            }
-            $d_video['img'] = $vedio[0]['video_cover'];
-            if (!isset($d_video['img'])){
-                $d_video['img'] = $lecture['coverimg'];
+                $d_video['img'] = $vedio[0]['video_cover'];
+                if (!isset($d_video['img'])){
+                    $d_video['img'] = $lecture['coverimg'];
+                }
             }
         }elseif($lecture['mode']=='ppt'){//待完善
 
@@ -117,7 +122,7 @@ class Live extends Base
         if(empty($lecture['channel_id'])){
             $result['isattention'] = 0;
         }else{
-            $atten = db('attention')->field('id')->where(['memberid'=>$currentMember['id'],'roomid'=>$lecture['channel_id']])->find();
+            $atten = db('attention')->field('id')->where(['memberid'=>$currentMember['id'],'roomid'=>$lecture['channel_id'],'type'=>1])->find();
             if (!empty($atten)) {
                 $result['isattention'] = 1;
             } else {
@@ -227,6 +232,12 @@ class Live extends Base
     }
 
 
+    public function guanzhu()
+    {
+
+    }
+
+
     /**
      * 获取初始聊天信息
      */
@@ -237,6 +248,9 @@ class Live extends Base
         $start_date = input('post.start_date'); //开始日期 ，格式2018-08-06 20:00（没有秒），如果不传，则返回全部
         $desired_count = input('post.desired_count');//返回聊天信息条数
         $reverse = input('post.reverse');//为1则返回显示开始日期以前的数据
+
+        $js_memberid = input('post.js_memberid'); //讲师用户id
+        $type = input('post.type'); //类型：1为讲师的记录，2为其他用户的记录
         //数据验证
         $result = $this->validate(
             [
@@ -244,12 +258,16 @@ class Live extends Base
                 'start_date' => $start_date,
                 'desired_count' => $desired_count,
                 'reverse' => $reverse,
+                'js_memberid' => $js_memberid,
+                'type' => $type,
             ],
             [
                 'lecture_id'  => 'require|number',
                 'start_date'  => 'date',
                 'desired_count'  => 'require|number',
                 'reverse'  => 'require|in:0,1',
+                'js_memberid'  => 'require|number',
+                'type'  => 'require|in:1,2',
             ]
         );
         if($result !== true){
@@ -264,8 +282,13 @@ class Live extends Base
         }elseif (!empty($start_date) && $reverse==1){
             $sql .= " and add_time<='$start_date'";
         }
+        if($type == 1){
+            $sql .= " and sender_id='$js_memberid'";
+        }else{
+            $sql .= " and sender_id!='$js_memberid'";
+        }
         $lecture = db('course')->field('memberid,isonline,name')->find($lecture_id);
-        $member = db('member')->field('id,name,headimg,img')->find($lecture['memberid']);
+        $member = db('member')->field('id,name,headimg,img')->find($js_memberid);
 
         if ($reverse == 0){
             if (!empty($start_date)){
@@ -289,6 +312,9 @@ class Live extends Base
 
             //$t = MemcacheToolController::Mem_Data_process($tcsql,'get',null);
             $t = db("msg")->where(['content'=>$one_content,'lecture_id'=>$lecture_id])->find();
+            /*if(!strpos($member['headimg'],'http')){
+                $member['headimg'] = $member['img'];
+            }*/
             if (!$t) {
                 $data = array(
                     'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
@@ -370,6 +396,9 @@ class Live extends Base
             $message_type = "reply_text";
         }
         wlog(APP_PATH.'log/text_message.log','message is:'.$message);
+        /*if(!strpos($member['headimg'],'http')){
+            $member['headimg'] = $member['img'];
+        }*/
         $data = array(
             'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
             'content' => $message,
@@ -379,7 +408,7 @@ class Live extends Base
             'ppt_url' => null,
             'reply' => $reply,
             'homeid' => $liveroom['id'],
-            'sender_headimg' => ($member['headimg'] == $member['headimg']) ? $member['headimg'] : $member['img'],
+            'sender_headimg' => ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
             'sender_id' => $member['id'],
             'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
             'sender_title' => $title,
@@ -465,6 +494,9 @@ class Live extends Base
         if (empty($length)){
             $length = 45;
         }
+       /* if(!strpos($member['headimg'],'http')){
+            $member['headimg'] = $member['img'];
+        }*/
         $data = array(
             'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
             //'content' => C('OSS.remotepath').$content,
@@ -580,6 +612,9 @@ class Live extends Base
         if (empty($length)){
             $length = 45;
         }
+       /* if(!strpos($member['headimg'],'http')){
+            $member['headimg'] = $member['img'];
+        }*/
         $data = array(
             'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
             //'content' => C('OSS.remotepath').$content,
@@ -593,7 +628,7 @@ class Live extends Base
             'ppt_url' => null,
             'reply' => $reply,
             'homeid' => $liveroom['id'],
-            'sender_headimg' => ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
+            'sender_headimg' =>  ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
             'sender_id' => $member['id'],
             'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
             'sender_title' => $title,
@@ -669,6 +704,9 @@ class Live extends Base
             $size = filesize("." . $content);
             LogController::W_A_Log("图片大小为$size");
             UploadRemoteController::uploadFile(substr($content, 1), "." . $content);*/
+            /*if(!strpos($member['headimg'],'http')){
+                $member['headimg'] = $member['img'];
+            }*/
             $data = array(
                 'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
                 'content' => $path,
@@ -679,7 +717,7 @@ class Live extends Base
                 'ppt_url' => null,
                 'reply' => null,
                 'homeid' => $liveroom['id'],
-                'sender_headimg' => ($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
+                'sender_headimg' =>($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
                 'sender_id' => $member['id'],
                 'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
                 'sender_title' => $title,
@@ -763,6 +801,9 @@ class Live extends Base
             $title = "听众";
         }
         $message_type = ($m['type']=='audio')?'music':'video';
+        /*if(!strpos($member['headimg'],'http')){
+            $member['headimg'] = $member['img'];
+        }*/
         $data = array(
             'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
             'content' => json_encode($c),
@@ -773,7 +814,7 @@ class Live extends Base
             'ppt_url' => null,
             'reply' => null,
             'homeid' => null,
-            'sender_headimg' => ($member['headimg'] == $member['headimg']) ? $member['headimg'] : $member['img'],
+            'sender_headimg' =>($member['headimg'] == $member['img']) ? $member['headimg'] : $member['img'],
             'sender_id' => $member['id'],
             'sender_nickname' => $member['name'] ? $member['name'] : $member['nickname'],
             'sender_title' => $title,
