@@ -271,6 +271,7 @@ class Base extends Controller
                     $this->return_json(E_OP_FAIL, '视频转码失败');
                 }
                 $path_local_file = $path_local_file.'.mp4';
+                $path = $path.'.mp4';
             }
             Tools::getVideoCover($path_local_file,3,$cover);//获取截图
             $is1 = Tools::UploadFile_OSS($cover_path,$cover);//上传截图到oss
@@ -296,7 +297,7 @@ class Base extends Controller
                 wlog($log_path,'文件上传到oss失败1');
                 $this->return_json(E_OP_FAIL, '文件上传到oss失败1');
             }
-        }elseif($houzui == '.amr'){
+        }elseif($houzui == '.amr' || $houzui == '.wav'){
             $path_local = FILE_PATH."audio/";//本地保存路径
             $path_local_file = $path_local .$filename;//包含文件名的本地保存路径
             $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path_local_file);//视频保存到本地
@@ -314,6 +315,7 @@ class Base extends Controller
                 wlog($log_path,'文件上传到oss失败mp3');
                 $this->return_json(E_OP_FAIL, '文件上传到oss失败 mp3');
             }
+            $path = $path.'.mp3';
         }else{
             $path = 'Public/Uploads/Chat/app/'.$filename;
             $is = Tools::UploadFile_OSS($path,$_FILES["file"]["tmp_name"]);
