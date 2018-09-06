@@ -1,6 +1,7 @@
 <?php
 namespace app\index\controller;
 use app\tools\controller\Tools;
+use think\Db;
 
 
 class Live extends Base
@@ -109,7 +110,7 @@ class Live extends Base
         }
         $result['dvideo'] = $d_video;
 
-        $result['member'] = $member;
+        $result['js_member'] = $member;
         $currentMember = $this->user;
         $result['cmember'] = $currentMember;
         if ($lecture['channel_id']==217 && $currentMember['remarks']=='武汉峰会签到'){ //武汉峰会 会员进入
@@ -265,11 +266,114 @@ class Live extends Base
     }
 
     /**
-     * 签到
+     * 主播创建签到
      */
-    public function signin()
-    {
+    public function create_check_in(){
+        $lecture_id = input('post.lecture_id');
+        //数据验证
+        $result = $this->validate(
+            [
+                'lecture_id'  => $lecture_id,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
 
+        $data = array(
+            'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
+            'content' => "老师喊你来签到啦！",
+            'length' => 0,
+            'message_type' => "check_in",
+            'lecture_id' => $lecture_id,
+            'ppt_url' => null,
+            'reply' => null,
+            'sender_headimg' => ($this->user['headimg'] == $this->user['img']) ? $this->user['headimg'] : $this->user['img'],
+            'sender_id' => $this->user['id'],
+            'sender_nickname' => $this->user['name'],
+            'sender_title' => "讲师",
+            'server_id' => null,
+        );
+        Db::startTrans();
+        $count = db('msg')->insertGetId($data);
+        if(empty($count)){
+            Db::rollback();
+            wlog(APP_PATH.'log/text_message.log','插入消息数据失败1');
+            $this->return_json(E_OP_FAIL,'消息发送失败1');
+        }
+        $check_in = db('checkin')->where('lecture_id='.$lecture_id.' AND mid is null')->find();
+        if(empty($check_in)){
+            $cdata = array(
+                'lecture_id' => $lecture_id,
+                'addtime' => date("Y-m-d H:i:s") . "." . rand(000000, 999999)
+            );
+            $check_count = db('checkin')->insertGetId($cdata);
+            if($check_count){
+                $msg = db('msg')->where('message_id='.$count)->setField('remarks',$check_count);
+            }else{
+                Db::rollback();
+                wlog(APP_PATH.'log/text_message.log','插入消息数据失败2');
+                $this->return_json(E_OP_FAIL,'消息发送失败2');
+            }
+        }else{
+            $msg = db('msg')->where('message_id='.$count)->setField('remarks',$check_in['id']);
+        }
+
+        if (!empty($msg)) {
+            Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
+            $this->return_json(OK,$data);
+        }else{
+            Db::rollback();
+            wlog(APP_PATH.'log/text_message.log','插入消息数据失败3');
+            $this->return_json(E_OP_FAIL,'消息发送失败3');
+        }
+    }
+
+    function api_check_in(){
+        $check_in_id = $_REQUEST['check_in_id'];
+        $checkin = M('checkin');
+        $lecture_id = $checkin->where('id='.$check_in_id)->getField('lecture_id');
+        $member = $_SESSION['CurrenMember'];
+        $mid = $checkin->where('check_in_id='.$check_in_id.' AND mid='.$member['id'])->find();
+        if(!$mid){
+            $data = array(
+                'check_in_id' => $check_in_id,
+                'lecture_id' => $lecture_id,
+                'mid' => $member['id'],
+                'addtime' => date("Y-m-d H:i:s") . "." . rand(000000, 999999)
+            );
+            $checkin->add($data);
+        }
+        $check = $checkin->where('check_in_id='.$check_in_id)->select();
+        for($i=0;$i<count($check);$i++){
+            if($check[$i]['mid']==$member['id']){
+                $check_in['rank'] = $i+1;
+            }
+        }
+        $check_in['check_in_count'] = count($check);
+
+        $res['code'] = 0;
+        $res['check_in'] = $check_in;
+        $res['msg'] = '签到成功';
+        $this->ajaxReturn($res,'JSON');
+    }
+    function api_view_check_in(){
+        $check_in_id = $_REQUEST['check_in_id'];
+        $limit = $_REQUEST['limit'];
+        $members = M('checkin')->field('mid')->where('check_in_id='.$check_in_id)->limit($limit)->select();
+        foreach($members as $key=>$val){
+            $member_info = M('member')->where('id='.$val['mid'])->field('id,name,nickname,headimg')->find();
+            $data[$key]['account_id'] = $member_info['id'];
+            $data[$key]['nickname'] = $member_info['name'] ? $member_info['name'] : $member_info['nickname'];
+            $data[$key]['headimgurl'] = $member_info['headimg'];
+        }
+        $res['code'] = 0;
+        $res['records'] = $data;
+        $res['next_offset'] = null;
+        $this->ajaxReturn($res,'JSON');
     }
 
     /**
