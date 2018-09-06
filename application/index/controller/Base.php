@@ -240,8 +240,8 @@ class Base extends Controller
             $error = get_file_error_info();
             $this->return_json(E_OP_FAIL, '操作失败:'. $error[$_FILES['file']['error']]);
         }
-        $houzui = strrchr($_FILES["file"]["name"], '.');//后缀名
-        if(!in_array(strtolower($houzui),$houzui_array)){
+        $houzui = strtolower(strrchr($_FILES["file"]["name"], '.'));//后缀名
+        if(!in_array($houzui,$houzui_array)){
             $this->return_json(E_OP_FAIL, '该文件类型不支持');
         }
         $config['max_size'] = '1073741824';
@@ -254,10 +254,10 @@ class Base extends Controller
         $name = time().mt_rand(100,999);//文件名
         $filename = $name.$houzui;//带后缀的文件名
         $path = 'Public/Uploads/Chat/app/'.$filename; //上传到oss的路径
-        if($houzui == '.mp4'){//视频先上传到本地
+        if($houzui == '.mp4' || $houzui == '.m3u8' || $houzui == '.mov'){//视频先上传到本地
             $path_local = FILE_PATH."video/";//本地保存路径
             $path_local_file = $path_local .$filename;//包含文件名的本地保存路径
-            $cover = str_replace("mp4","jpg",$path_local_file);//本地视频截图保存路径
+            $cover = str_replace($houzui,".jpg",$path_local_file);//本地视频截图保存路径
             $cover_path = 'Public/Uploads/Chat/app/'.$name.'.jpg';//oss视频截图保存路径
             $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path_local_file);//视频保存到本地
             if(empty($is)){
