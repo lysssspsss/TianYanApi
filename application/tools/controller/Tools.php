@@ -181,6 +181,22 @@ class Tools extends Controller
         $result = system($str);
     }
 
+    public static function  get_mp3($p_amr,$p_mp3) {
+        $log_path = APP_PATH.'log/get_mp3.log';
+        //使用ffmpeg 将amr转成mp3
+        $command = "ffmpeg -i  $p_amr -ac 2 -ar 48000 -ab 128 -vol 300 $p_mp3";
+        try{
+            $res = system($command,$error);
+        }catch (Exception $e){
+            wlog($log_path,"音频格式转换失败！filename is:".$p_amr.' || '.$e->getMessage());
+            return false;
+        }
+        return true;
+    }
+
+
+
+
 }
 
 

@@ -288,6 +288,23 @@ class Base extends Controller
                 wlog($log_path,'文件上传到oss失败1');
                 $this->return_json(E_OP_FAIL, '操作失败2');
             }
+        }elseif($houzui == '.amr'){
+            //使用ffmpeg 将amr转成mp3
+           /* $p_amr = "/data/wwwroot.new/livehome/Public/audio/".$filename;
+            $p_mp3 = $p_amr.".mp3";*/
+            $path_local = FILE_PATH."audio/";//本地保存路径
+            $path_local_file = $path_local .$filename;//包含文件名的本地保存路径
+            $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path_local_file);//视频保存到本地
+            if(empty($is)){
+                wlog($log_path,'文件保存本地失败4');
+                $this->return_json(E_OP_FAIL, '操作失败4');
+            }
+            Tools::get_mp3($path_local_file,$path_local_file.'.mp3');//转成mp3
+            $is2 = Tools::UploadFile_OSS($path.'.mp3',$path_local_file.'.mp3');//上传到oss
+            if($is2){
+                wlog($log_path,'文件上传到oss失败mp3');
+                $this->return_json(E_OP_FAIL, '操作失败5');
+            }
         }else{
             $path = 'Public/Uploads/Chat/app/'.$filename;
             $is = Tools::UploadFile_OSS($path,$_FILES["file"]["tmp_name"]);

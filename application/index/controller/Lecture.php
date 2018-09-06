@@ -550,7 +550,7 @@ class Lecture extends Base
         }
         $this->get_user_redis($this->user['id'],true);
         $lecture = db('course')->alias('a')->join('channel b','a.channel_id = b.id')
-            ->field('a.id as lecture_id,a.memberid as lecture_memberid,a.coverimg,a.name as title,a.starttime,a.channel_id,a.intro,a.mins,a.qrcode_addtime,a.qrcode,a.live_homeid,a.clicknum,a.cost,a.is_for_vip,a.basescrib,b.lecturer,b.is_pay_only_channel,b.name as zhuanlan,b.memberid as channel_memberid,b.roomid')
+            ->field('a.id as lecture_id,a.memberid as lecture_memberid,a.coverimg,a.name as title,a.starttime,a.channel_id,a.intro,a.mins,a.qrcode_addtime,a.qrcode,a.live_homeid,a.clicknum,a.cost,a.is_for_vip,a.mode,a.basescrib,b.lecturer,b.is_pay_only_channel,b.name as zhuanlan,b.memberid as channel_memberid,b.roomid')
             ->where(['a.id'=>$lecture_id,'a.isshow'=>'show'])->find();
         /*$lecture = db('course')
             ->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,basescrib')
