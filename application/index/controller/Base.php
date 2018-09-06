@@ -231,8 +231,8 @@ class Base extends Controller
         $houzui_array = ['.jpg','.bmp','.png','.mp4','.m3u8','.mp3','.amr','.ppt','.mov','.wav'];
         $log_path = APP_PATH.'log/uploadFile.log';
         wlog($log_path,'接收参数file：'.json_encode($_FILES,JSON_UNESCAPED_UNICODE));
-        wlog($log_path,'接收参数post：'.json_encode($_POST,JSON_UNESCAPED_UNICODE));
-        wlog($log_path,'接收参数input：'.json_encode(file_get_contents('php://input')));
+       /* wlog($log_path,'接收参数post：'.json_encode($_POST,JSON_UNESCAPED_UNICODE));
+        wlog($log_path,'接收参数input：'.json_encode(file_get_contents('php://input')));*/
         if(empty($_FILES)){
             $this->return_json(E_OP_FAIL, '文件为空！');
         }
@@ -241,7 +241,7 @@ class Base extends Controller
             $this->return_json(E_OP_FAIL, '操作失败:'. $error[$_FILES['file']['error']]);
         }
         $houzui = strrchr($_FILES["file"]["name"], '.');//后缀名
-        if(!in_array($houzui,$houzui_array)){
+        if(!in_array(strtolower($houzui),$houzui_array)){
             $this->return_json(E_OP_FAIL, '该文件类型不支持');
         }
         $config['max_size'] = '1073741824';
