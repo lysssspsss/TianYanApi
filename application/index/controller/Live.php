@@ -451,26 +451,43 @@ class Live extends Base
             $page = $canshu['page'];//页码
         }
 
+
         $page = !empty($page) ? $page : 1;
         $desired_count = !empty($desired_count) ? $desired_count : 200;
         $where['id'] = $lecture_id;
         $where['isshow'] = 'show';
 
-        $sql = "lecture_id=" . $lecture_id . " and isshow='show'";
+        $sql = "lecture_id=" . $lecture_id . " and isshow='show' and message_type != 'set_option' and message_type != 'iframe'";
         if (!empty($start_date) && $reverse==0) {
             $sql .= " and add_time>='$start_date'";
         }elseif (!empty($start_date) && $reverse==1){
             $sql .= " and add_time<='$start_date'";
         }
-        if($type == 1){
+
+        //$lecture = db('course')->alias('a')->join('channel_id')->field('memberid,isonline,name')->find($lecture_id);
+        /*if($type == 1){
             $sql .= " and sender_id='$js_memberid'";
         }else{
             $sql .= " and sender_id!='$js_memberid'";
-        }
-        $lecture = db('course')->field('memberid,isonline,name')->find($lecture_id);
+        }*/
+        $lecture = db('course')->field('memberid,isonline,name,channel_id')->find($lecture_id);
         $member = db('member')->field('id,name,headimg,img')->find($js_memberid);
         $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url,out_trade_no';
         $listmsg = db('msg')->field($field)->where($sql)->limit($page-1,$desired_count)->order("add_time desc")->select();
+        $mstarr = ['text','reply_text'];
+        if($type == 1){ //筛选内容。type为1时显示主讲页，为2时显示互动页内容
+            foreach($listmsg as $key=> $value){
+                if(!(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid)){
+                    unset($listmsg[$key]);
+                }
+            }
+        }else{
+            foreach($listmsg as $key=> $value){
+                if(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid){
+                    unset($listmsg[$key]);
+                }
+            }
+        }
         /*if ($reverse == 0){
             if (!empty($start_date)){
                 //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
@@ -618,7 +635,7 @@ class Live extends Base
 
 
     //发送文件相关的消息：包括语音，图片，视频
-    function send_file_message()
+    public function send_file_message()
     {
         $member = $this->user;
         $liveroommemberid = input('post.aid');
@@ -711,7 +728,7 @@ class Live extends Base
     /**
      * 发送语音消息
      */
-    function send_voice_message()
+    public function send_voice_message()
     {
         $member = $this->user;
         $liveroommemberid = input('post.aid');
@@ -844,7 +861,7 @@ class Live extends Base
     /**
      * 发送图片
      */
-    function send_picture_message()
+    public function send_picture_message()
     {
         $lecture_id = input('post.lecture_id');
         $path = input('post.path');

@@ -397,6 +397,11 @@ class Base extends Controller
         return true;
     }
 
+    protected function check_js_member_id($js_memberid)
+    {
+
+    }
+
 
     /**
      * 生成用户token
