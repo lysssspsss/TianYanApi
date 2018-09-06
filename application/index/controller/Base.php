@@ -228,7 +228,7 @@ class Base extends Controller
     {
         //header("Content-type:application/octet-stream");        //这句告诉以流的形式来接收数据；
         header('Content-type: text/json; charset=UTF-8' );
-        $houzui_array = ['.jpg','.bmp','.png','.mp4','.m3u8','.mp3','.amr','.ppt'];
+        $houzui_array = ['.jpg','.bmp','.png','.mp4','.m3u8','.mp3','.amr','.ppt','.mov'];
         $log_path = APP_PATH.'log/uploadFile.log';
         wlog($log_path,'接收参数file：'.json_encode($_FILES,JSON_UNESCAPED_UNICODE));
         wlog($log_path,'接收参数post：'.json_encode($_POST,JSON_UNESCAPED_UNICODE));
