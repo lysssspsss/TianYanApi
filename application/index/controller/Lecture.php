@@ -570,7 +570,7 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
         $where['id'] = $lecture['lecture_memberid'];
-        if($lecture['channel_memberid']== 294 && $lecture['roomid']==24) {
+        if($lecture['channel_memberid']== 294 && $lecture['roomid']==24 && !empty($lecture['lecturer'])) {
             $where['id'] = $lecture['lecturer'];
         }
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息
@@ -659,7 +659,7 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'找不到对应专栏');
         }
         $where['id'] = $channel['channel_memberid'];
-        if($channel['channel_memberid']== 294 && $channel['roomid']==24) {
+        if($channel['channel_memberid']== 294 && $channel['roomid']==24 && $channel['lecturer']) {
             $where['id'] = $channel['lecturer'];
         }
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息
