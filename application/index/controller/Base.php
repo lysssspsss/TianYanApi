@@ -301,7 +301,7 @@ class Base extends Controller
             }
             Tools::get_mp3($path_local_file,$path_local_file.'.mp3');//转成mp3
             $is2 = Tools::UploadFile_OSS($path.'.mp3',$path_local_file.'.mp3');//上传到oss
-            if($is2){
+            if(empty($is2)){
                 wlog($log_path,'文件上传到oss失败mp3');
                 $this->return_json(E_OP_FAIL, '操作失败5');
             }

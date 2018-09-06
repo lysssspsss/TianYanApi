@@ -321,18 +321,20 @@ class Live extends Base
         }else{
             $msg = db('msg')->where('message_id='.$count)->setField('remarks',$check_in['id']);
         }
-
-        if (!empty($msg)) {
-            Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
-            $this->return_json(OK,$data);
-        }else{
+        if (empty($msg)) {
             Db::rollback();
             wlog(APP_PATH.'log/text_message.log','插入消息数据失败3');
             $this->return_json(E_OP_FAIL,'消息发送失败3');
         }
+        Db::commit();
+        Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
+        $this->return_json(OK,$data);
     }
 
-    function api_check_in(){
+    /**
+     * 听众签到
+     */
+    public function check_in(){
         $check_in_id = $_REQUEST['check_in_id'];
         $checkin = M('checkin');
         $lecture_id = $checkin->where('id='.$check_in_id)->getField('lecture_id');
@@ -360,12 +362,17 @@ class Live extends Base
         $res['msg'] = '签到成功';
         $this->ajaxReturn($res,'JSON');
     }
-    function api_view_check_in(){
+
+
+    /**
+     * 显示签到人员列表
+     */
+    public function show_check_in(){
         $check_in_id = $_REQUEST['check_in_id'];
         $limit = $_REQUEST['limit'];
-        $members = M('checkin')->field('mid')->where('check_in_id='.$check_in_id)->limit($limit)->select();
+        $members = db('checkin')->field('mid')->where('check_in_id='.$check_in_id)->limit($limit)->select();
         foreach($members as $key=>$val){
-            $member_info = M('member')->where('id='.$val['mid'])->field('id,name,nickname,headimg')->find();
+            $member_info = db('member')->where('id='.$val['mid'])->field('id,name,nickname,headimg')->find();
             $data[$key]['account_id'] = $member_info['id'];
             $data[$key]['nickname'] = $member_info['name'] ? $member_info['name'] : $member_info['nickname'];
             $data[$key]['headimgurl'] = $member_info['headimg'];
@@ -465,14 +472,14 @@ class Live extends Base
         }
 
         //$lecture = db('course')->alias('a')->join('channel_id')->field('memberid,isonline,name')->find($lecture_id);
-        if($type == 1){
+        /*if($type == 1){
             $sql .= " and sender_id='$js_memberid'";
         }else{
             $sql .= " and sender_id!='$js_memberid'";
-        }
+        }*/
         $lecture = db('course')->field('memberid,isonline,name,channel_id')->find($lecture_id);
         $member = db('member')->field('id,name,headimg,img')->find($js_memberid);
-        $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url,out_trade_no';
+        $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url,out_trade_no,remarks';
         $listmsg = db('msg')->field($field)->where($sql)->limit($page-1,$desired_count)->order("add_time desc")->select();
 
         /*if ($reverse == 0){
@@ -524,21 +531,24 @@ class Live extends Base
                 $listmsg[0] = $data;
             }
         }else{
-            /*$mstarr = ['text','reply_text'];
+            $mstarr = ['text','reply_text'];
+            //$mstarr2 = ['text','reply_text','audio','check_in','music','picture','reply_audi','reply_text','reward','video'];
+            $listmsg_bak = [];
             if($type == 1){ //筛选内容。type为1时显示主讲页，为2时显示互动页内容
                 foreach($listmsg as $key=> $value){
-                    if(!(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid)){
+                    if(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid){
                         unset($listmsg[$key]);
                     }
                 }
             }else{
                 foreach($listmsg as $key=> $value){
                     if(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid){
-                        unset($listmsg[$key]);
+                        $listmsg_bak[$key] = $listmsg[$key];
                     }
                 }
+                $listmsg = $listmsg_bak;
             }
-            $listmsg = array_values($listmsg);*/
+            $listmsg = array_values($listmsg);
         }
 
         $res['data'] = $listmsg;
