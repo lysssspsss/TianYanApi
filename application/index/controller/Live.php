@@ -488,6 +488,7 @@ class Live extends Base
                 }
             }
         }
+        $listmsg = array_values($listmsg);
         /*if ($reverse == 0){
             if (!empty($start_date)){
                 //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
