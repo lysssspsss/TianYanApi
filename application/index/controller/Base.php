@@ -288,10 +288,7 @@ class Base extends Controller
                 wlog($log_path,'文件上传到oss失败1');
                 $this->return_json(E_OP_FAIL, '操作失败2');
             }
-        }elseif($houzui == '.amr'){
-            //使用ffmpeg 将amr转成mp3
-           /* $p_amr = "/data/wwwroot.new/livehome/Public/audio/".$filename;
-            $p_mp3 = $p_amr.".mp3";*/
+        }/*elseif($houzui == '.amr'){
             $path_local = FILE_PATH."audio/";//本地保存路径
             $path_local_file = $path_local .$filename;//包含文件名的本地保存路径
             $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path_local_file);//视频保存到本地
@@ -305,7 +302,7 @@ class Base extends Controller
                 wlog($log_path,'文件上传到oss失败mp3');
                 $this->return_json(E_OP_FAIL, '操作失败5');
             }
-        }else{
+        }*/else{
             $path = 'Public/Uploads/Chat/app/'.$filename;
             $is = Tools::UploadFile_OSS($path,$_FILES["file"]["tmp_name"]);
         }
