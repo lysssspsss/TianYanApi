@@ -465,30 +465,16 @@ class Live extends Base
         }
 
         //$lecture = db('course')->alias('a')->join('channel_id')->field('memberid,isonline,name')->find($lecture_id);
-        /*if($type == 1){
+        if($type == 1){
             $sql .= " and sender_id='$js_memberid'";
         }else{
             $sql .= " and sender_id!='$js_memberid'";
-        }*/
+        }
         $lecture = db('course')->field('memberid,isonline,name,channel_id')->find($lecture_id);
         $member = db('member')->field('id,name,headimg,img')->find($js_memberid);
         $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url,out_trade_no';
         $listmsg = db('msg')->field($field)->where($sql)->limit($page-1,$desired_count)->order("add_time desc")->select();
-        $mstarr = ['text','reply_text'];
-        if($type == 1){ //筛选内容。type为1时显示主讲页，为2时显示互动页内容
-            foreach($listmsg as $key=> $value){
-                if(!(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid)){
-                    unset($listmsg[$key]);
-                }
-            }
-        }else{
-            foreach($listmsg as $key=> $value){
-                if(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid){
-                    unset($listmsg[$key]);
-                }
-            }
-        }
-        $listmsg = array_values($listmsg);
+
         /*if ($reverse == 0){
             if (!empty($start_date)){
                 //$listmsg = MemcacheToolController::Mem_Data_process($tmsql,'course_msg',$lecture_id);
@@ -502,7 +488,7 @@ class Live extends Base
         }*/
         /*LogController::W_H_Log("msg 长度：".sizeof($listmsg,0));
         LogController::W_H_Log("sql is:".$sql);*/
-        if (sizeof($listmsg, 0) == 0) {//没有消息时
+        if (empty($listmsg)) { //没有消息时
             if ($lecture['isonline']=='no'){
                 $one_content = '大家可以点击左下角的“关注直播间”，后续有新的课堂会收到通知。也可以在课堂的主页点击右上角，分享到朋友圈或者微信群让更多的人听到老师的分享。';
             }else{
@@ -537,7 +523,24 @@ class Live extends Base
                 $data['message_id'] = $count;
                 $listmsg[0] = $data;
             }
+        }else{
+            /*$mstarr = ['text','reply_text'];
+            if($type == 1){ //筛选内容。type为1时显示主讲页，为2时显示互动页内容
+                foreach($listmsg as $key=> $value){
+                    if(!(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid)){
+                        unset($listmsg[$key]);
+                    }
+                }
+            }else{
+                foreach($listmsg as $key=> $value){
+                    if(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid){
+                        unset($listmsg[$key]);
+                    }
+                }
+            }
+            $listmsg = array_values($listmsg);*/
         }
+
         $res['data'] = $listmsg;
         $res['mark'] = $start_date;
         $this->return_json(OK,$res);

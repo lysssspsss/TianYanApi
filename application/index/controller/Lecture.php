@@ -730,7 +730,7 @@ class Lecture extends Base
      * 验证是否已购买会员
      */
     public function verifyMember($tunionid=false){
-        $unionid = $_REQUEST['unionid'];
+        $unionid = input('post.unionid');
         $data['code'] = 0;
         if ($unionid || $tunionid){
             $unionid = $tunionid?$tunionid:$unionid;
