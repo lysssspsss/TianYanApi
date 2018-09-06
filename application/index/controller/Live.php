@@ -327,6 +327,7 @@ class Live extends Base
             $this->return_json(E_OP_FAIL,'消息发送失败3');
         }
         Db::commit();
+        $data['remarks'] = $check_in['id'];
         Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
         $this->return_json(OK,$data);
     }
@@ -335,32 +336,44 @@ class Live extends Base
      * 听众签到
      */
     public function check_in(){
-        $check_in_id = $_REQUEST['check_in_id'];
-        $checkin = M('checkin');
-        $lecture_id = $checkin->where('id='.$check_in_id)->getField('lecture_id');
-        $member = $_SESSION['CurrenMember'];
-        $mid = $checkin->where('check_in_id='.$check_in_id.' AND mid='.$member['id'])->find();
+        $check_in_id = input('post.check_in_id');
+        //数据验证
+        $result = $this->validate(
+            [
+                'check_in_id'  => $check_in_id,
+            ],
+            [
+                'check_in_id'  => 'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+        $checkin = db('checkin');
+        $lecture_id = $checkin->where('id='.$check_in_id)->value('lecture_id');
+        //$member = $this->user;
+        $mid = $checkin->where('check_in_id='.$check_in_id.' AND mid='.$this->user['id'])->find();
         if(!$mid){
             $data = array(
                 'check_in_id' => $check_in_id,
                 'lecture_id' => $lecture_id,
-                'mid' => $member['id'],
+                'mid' => $this->user['id'],
                 'addtime' => date("Y-m-d H:i:s") . "." . rand(000000, 999999)
             );
-            $checkin->add($data);
+            $checkin->insertGetId($data);
         }
         $check = $checkin->where('check_in_id='.$check_in_id)->select();
         for($i=0;$i<count($check);$i++){
-            if($check[$i]['mid']==$member['id']){
+            if($check[$i]['mid']==$this->user['id']){
                 $check_in['rank'] = $i+1;
             }
         }
         $check_in['check_in_count'] = count($check);
 
-        $res['code'] = 0;
         $res['check_in'] = $check_in;
         $res['msg'] = '签到成功';
-        $this->ajaxReturn($res,'JSON');
+        $this->return_json(OK,$res);
     }
 
 
@@ -368,7 +381,21 @@ class Live extends Base
      * 显示签到人员列表
      */
     public function show_check_in(){
-        $check_in_id = $_REQUEST['check_in_id'];
+        $check_in_id = input('post.check_in_id');
+        $limit = input('post.limit');
+        //数据验证
+        $result = $this->validate(
+            [
+                'check_in_id'  => $check_in_id,
+            ],
+            [
+                'check_in_id'  => 'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        //$check_in_id = $_REQUEST['check_in_id'];
         $limit = $_REQUEST['limit'];
         $members = db('checkin')->field('mid')->where('check_in_id='.$check_in_id)->limit($limit)->select();
         foreach($members as $key=>$val){

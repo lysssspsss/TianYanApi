@@ -262,7 +262,15 @@ class Base extends Controller
             $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path_local_file);//视频保存到本地
             if(empty($is)){
                 wlog($log_path,'文件保存本地失败');
-                $this->return_json(E_OP_FAIL, '操作失败0');
+                $this->return_json(E_OP_FAIL, '文件保存本地失败');
+            }
+            if($houzui == '.m3u8' || $houzui == '.mov'){
+                $pd = Tools::get_mp4($path_local_file,$path_local_file.'.mp4');
+                if(!$pd){
+                    wlog($log_path,'视频转码失败'.$path_local_file);
+                    $this->return_json(E_OP_FAIL, '视频转码失败');
+                }
+                $path_local_file = $path_local_file.'.mp4';
             }
             Tools::getVideoCover($path_local_file,3,$cover);//获取截图
             $is1 = Tools::UploadFile_OSS($cover_path,$cover);//上传截图到oss
@@ -281,28 +289,32 @@ class Base extends Controller
                 $count = db('material')->insertGetId($data);//数据库插入一条信息
                 if(empty($count)){
                     wlog($log_path,'文件信息插入material表失败1');
-                    $this->return_json(E_OP_FAIL, '操作失败1');
+                    $this->return_json(E_OP_FAIL, '文件信息插入material表失败1');
                 }
                 $result['video_id'] = $count;
             } else {
                 wlog($log_path,'文件上传到oss失败1');
-                $this->return_json(E_OP_FAIL, '操作失败2');
+                $this->return_json(E_OP_FAIL, '文件上传到oss失败1');
             }
-        }/*elseif($houzui == '.amr'){
+        }elseif($houzui == '.amr'){
             $path_local = FILE_PATH."audio/";//本地保存路径
             $path_local_file = $path_local .$filename;//包含文件名的本地保存路径
             $is = move_uploaded_file($_FILES["file"]["tmp_name"],$path_local_file);//视频保存到本地
             if(empty($is)){
                 wlog($log_path,'文件保存本地失败4');
-                $this->return_json(E_OP_FAIL, '操作失败4');
+                $this->return_json(E_OP_FAIL, '文件保存本地失败4');
             }
-            Tools::get_mp3($path_local_file,$path_local_file.'.mp3');//转成mp3
+            $pd = Tools::get_mp3($path_local_file,$path_local_file.'.mp3');//转成mp3
+            if(empty($pd)){
+                wlog($log_path,'音频转码失败'.$path_local_file);
+                $this->return_json(E_OP_FAIL, '音频转码失败');
+            }
             $is2 = Tools::UploadFile_OSS($path.'.mp3',$path_local_file.'.mp3');//上传到oss
             if(empty($is2)){
                 wlog($log_path,'文件上传到oss失败mp3');
-                $this->return_json(E_OP_FAIL, '操作失败5');
+                $this->return_json(E_OP_FAIL, '文件上传到oss失败 mp3');
             }
-        }*/else{
+        }else{
             $path = 'Public/Uploads/Chat/app/'.$filename;
             $is = Tools::UploadFile_OSS($path,$_FILES["file"]["tmp_name"]);
         }
@@ -311,7 +323,7 @@ class Base extends Controller
             $this->return_json(OK, $result);
         } else {
             wlog($log_path,'文件上传到oss失败2');
-            $this->return_json(E_OP_FAIL, '操作失败3');
+            $this->return_json(E_OP_FAIL, '文件上传到oss失败2');
         }
     }
 
