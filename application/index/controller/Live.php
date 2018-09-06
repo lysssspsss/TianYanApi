@@ -265,6 +265,14 @@ class Live extends Base
     }
 
     /**
+     * 签到
+     */
+    public function signin()
+    {
+
+    }
+
+    /**
      * 撤回消息
      */
     public function revoke()

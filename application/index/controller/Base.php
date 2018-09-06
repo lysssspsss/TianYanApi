@@ -378,6 +378,25 @@ class Base extends Controller
         return json_decode($user,true);
     }
 
+    /**
+     * 删除用户redis
+     * @param $uid
+     * @return bool|string
+     */
+    protected function del_user_redis($memberid = '')
+    {
+        //dump($token);exit;
+        if(empty($memberid)){
+            return false;
+        }
+        $tokentokey = $this->usertoken_rediskey.'_id:'.$memberid;
+        $user = $this->redis->del($tokentokey);
+        if(empty($user)){
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * 生成用户token

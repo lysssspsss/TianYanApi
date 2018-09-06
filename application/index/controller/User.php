@@ -268,7 +268,21 @@ class User extends Base
     }
 
     /**
-     *修改用户信息
+     * 退出登录
+     */
+    public function logout()
+    {
+        $type = input('get.type');
+        $result = $this->validate(['type' => $type,],['type'  => 'require|in:1',]);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $a = $this->del_user_redis($this->user['id']);
+        $this->return_json(OK,['msg'=>"$a"]);
+    }
+
+    /**
+     * 修改用户信息
      */
     public function user_update(){
         //$today = date("Y-m-d");
