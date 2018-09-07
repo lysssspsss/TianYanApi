@@ -69,7 +69,6 @@ class Index extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-
         $leng = 20;
         $course = db('course');
         $course->field('id,name,sub_title,coverimg,mode,type,cost,clicknum,starttime');
@@ -84,9 +83,10 @@ class Index extends Base
         if(empty($data)) {
             $this->return_json(E_OP_FAIL,'查询失败请重试');
         }
-        $data['limit'] = $limit;
-        $data['count'] = $count;
-        $this->return_json(OK,$data);
+        $res['limit'] = $limit;
+        $res['count'] = $count;
+        $res['data'] = $data;
+        $this->return_json(OK,$res);
     }
 
     /**

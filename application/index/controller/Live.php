@@ -383,32 +383,41 @@ class Live extends Base
      */
     public function show_check_in(){
         $check_in_id = input('post.check_in_id');
-        $limit = input('post.limit');
+        $limit = input('post.limit');//页码
+        $leng = input('post.leng');//每页数量
         //数据验证
         $result = $this->validate(
             [
                 'check_in_id'  => $check_in_id,
+                'limit'  => $limit,
+                'leng'  => $leng,
             ],
             [
                 'check_in_id'  => 'require|number',
+                'limit'  => 'require|number|min:1',
+                'leng'  => 'require|number|min:1',
             ]
         );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
         //$check_in_id = $_REQUEST['check_in_id'];
-        $limit = $_REQUEST['limit'];
-        $members = db('checkin')->field('mid')->where('check_in_id='.$check_in_id)->limit($limit)->select();
+        //$limit = $_REQUEST['limit'];
+        $checkin = db('checkin');
+        $checkin->field('mid')->where('check_in_id='.$check_in_id);
+        $count = $checkin->count();
+        $members = $checkin->limit($limit,$leng)->select();
+        $data = [];
         foreach($members as $key=>$val){
             $member_info = db('member')->where('id='.$val['mid'])->field('id,name,nickname,headimg')->find();
             $data[$key]['account_id'] = $member_info['id'];
             $data[$key]['nickname'] = $member_info['name'] ? $member_info['name'] : $member_info['nickname'];
             $data[$key]['headimgurl'] = $member_info['headimg'];
         }
-        $res['code'] = 0;
-        $res['records'] = $data;
-        $res['next_offset'] = null;
-        $this->ajaxReturn($res,'JSON');
+        $res['data'] = $data;
+        $res['count'] = $count;
+        $res['limit'] = $limit;
+        $this->return_json(OK,$data);
     }
 
     /**
