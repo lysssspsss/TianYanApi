@@ -328,7 +328,7 @@ class Live extends Base
             $this->return_json(E_OP_FAIL,'消息发送失败3');
         }
         Db::commit();
-        $data['remarks'] = $check_in['id'];
+        $data['remarks'] = empty($check_in['id'])?$check_count:$check_in['id'];
         Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
         $this->return_json(OK,$data);
     }
@@ -365,14 +365,13 @@ class Live extends Base
             $checkin->insertGetId($data);
         }
         $check = $checkin->where('check_in_id='.$check_in_id)->select();
+        $res = [];
         for($i=0;$i<count($check);$i++){
             if($check[$i]['mid']==$this->user['id']){
-                $check_in['rank'] = $i+1;
+                $res['rank'] = $i+1;
             }
         }
-        $check_in['check_in_count'] = count($check);
-
-        $res['check_in'] = $check_in;
+        $res['check_in_count'] = count($check);
         $res['msg'] = '签到成功';
         $this->return_json(OK,$res);
     }
@@ -405,12 +404,12 @@ class Live extends Base
         //$limit = $_REQUEST['limit'];
         $checkin = db('checkin');
         $checkin->field('mid')->where('check_in_id='.$check_in_id);
-        $count = $checkin->count();
-        $members = $checkin->limit($limit,$leng)->select();
+        $members = $checkin->limit($limit-1,$leng)->select();
+        $count = $checkin->where('check_in_id='.$check_in_id)->count();
         $data = [];
         foreach($members as $key=>$val){
             $member_info = db('member')->where('id='.$val['mid'])->field('id,name,nickname,headimg')->find();
-            $data[$key]['account_id'] = $member_info['id'];
+            $data[$key]['memberid'] = $member_info['id'];
             $data[$key]['nickname'] = $member_info['name'] ? $member_info['name'] : $member_info['nickname'];
             $data[$key]['headimgurl'] = $member_info['headimg'];
         }
