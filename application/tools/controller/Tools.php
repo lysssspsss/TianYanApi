@@ -196,8 +196,7 @@ class Tools extends Controller
 
     public static function  get_mp4($p_amr,$p_mp4) {
         $log_path = APP_PATH.'log/ffmpeg.log';
-        //使用ffmpeg 将amr转成mp3
-        $command = "ffmpeg -i  $p_amr $p_mp4";
+        $command = "ffmpeg -i $p_amr -codec copy $p_mp4";
         try{
             $res = system($command,$error);
         }catch (Exception $e){

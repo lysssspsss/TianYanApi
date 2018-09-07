@@ -108,6 +108,7 @@ class Live extends Base
         }elseif($lecture['mode']=='ppt'){//待完善
 
         }
+        //$d_video['pull_url'] = urlencode($d_video['pull_url']);
         $result['dvideo'] = $d_video;
 
         $result['js_member'] = $member;

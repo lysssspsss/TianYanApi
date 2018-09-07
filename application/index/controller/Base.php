@@ -428,9 +428,18 @@ class Base extends Controller
         return true;
     }
 
-    protected function check_js_member_id($js_memberid)
+    protected function check_js_member_id($data)
     {
-
+        foreach($data as $k1 =>$v1){
+            $data[$k1]['js_memberid'] = $v1['memberid'];
+            if($v1['memberid']==294 && !empty($v1['channel_id'])){
+                $a = db('channel')->where(['id'=>$v1['channel_id']])->value('lecturer');
+                if(!empty($a)){
+                    $data[$k1]['js_memberid'] = $a;
+                }
+            }
+        }
+        return $data;
     }
 
 

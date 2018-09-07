@@ -33,11 +33,13 @@ class Index extends Base
         $name = empty($this->user['name'])?$this->user['nickname']:$this->user['name'];
         $data['title'] = '早上好,'.$name;
         $data['lunbo'] = db('banner')->field('id,image,url,orderby')->where(['isShow'=>1,'type'=>4])->order('orderby')->select();
-        $data['jingxuan'] = db('course')->field('id,name,clicknum,coverimg,mode,type')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit(4)->select();
-        $data['todaylive'] = db('course')->field('id,name,sub_title,coverimg,mode,type,starttime')
+        $data['jingxuan'] = db('course')->field('id,name,clicknum,coverimg,mode,type,memberid,channel_id')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit(4)->select();
+        $data['jingxuan'] = $this->check_js_member_id($data['jingxuan']);
+        $data['todaylive'] = db('course')->field('id,name,sub_title,coverimg,mode,type,starttime,memberid,channel_id')
             ->where(['isshow'=>'show','show_on_page'=>1])
             ->where('UNIX_TIMESTAMP(starttime)'>strtotime(date('Ymd')))
             ->order('starttime','desc')->limit(4)->select();
+        $data['todaylive'] = $this->check_js_member_id($data['todaylive']);
         /*$ranksql = "select * from live_teacherrank t inner join live_member m on t.memberid=m.id and  t.isshow=1 order by t.rank limit 8";
         $ranklist =  db()->query($ranksql);*/
         $data['daka'] = $this->get_main_daka();
@@ -70,17 +72,20 @@ class Index extends Base
 
         $leng = 20;
         $course = db('course');
-        $course->field('id,name,sub_title,coverimg,mode,type,cost,clicknum');
+        $course->field('id,name,sub_title,coverimg,mode,type,cost,clicknum,starttime');
         $course->where(['isshow'=>'show','show_on_page'=>1]);
         if($type=='open_lecture'){
             $course->where('type!="pay_lecture"');
         }else{
             $course->where('type="pay_lecture"');
         }
+        $count = $course->count();
         $data = $course->order('clicknum','desc')->limit($limit-1,$leng)->select();
         if(empty($data)) {
             $this->return_json(E_OP_FAIL,'查询失败请重试');
         }
+        $data['limit'] = $limit;
+        $data['count'] = $count;
         $this->return_json(OK,$data);
     }
 
