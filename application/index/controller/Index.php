@@ -71,15 +71,19 @@ class Index extends Base
         }
         $leng = 20;
         $course = db('course');
+        $course2 = db('course');
         $course->field('id,name,sub_title,coverimg,mode,type,cost,clicknum,starttime');
         $course->where(['isshow'=>'show','show_on_page'=>1]);
+        $course2->where(['isshow'=>'show','show_on_page'=>1]);
         if($type=='open_lecture'){
             $course->where('type!="pay_lecture"');
+            $course2->where('type!="pay_lecture"');
         }else{
             $course->where('type="pay_lecture"');
+            $course2->where('type="pay_lecture"');
         }
-        $count = $course->count();
         $data = $course->order('clicknum','desc')->limit($limit-1,$leng)->select();
+        $count = $course2->count();
         if(empty($data)) {
             $this->return_json(E_OP_FAIL,'查询失败请重试');
         }
