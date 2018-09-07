@@ -272,6 +272,7 @@ class Base extends Controller
                 }
                 $path_local_file = $path_local_file.'.mp4';
                 $path = $path.'.mp4';
+                $filename = $filename.'.mp4';
             }
             Tools::getVideoCover($path_local_file,3,$cover);//获取截图
             $is1 = Tools::UploadFile_OSS($cover_path,$cover);//上传截图到oss
@@ -294,8 +295,8 @@ class Base extends Controller
                 }
                 $result['video_id'] = $count;
             } else {
-                wlog($log_path,'文件上传到oss失败1');
-                $this->return_json(E_OP_FAIL, '文件上传到oss失败1');
+                wlog($log_path,'文件上传到oss失败 video');
+                $this->return_json(E_OP_FAIL, '文件上传到oss失败video');
             }
         }elseif($houzui == '.amr' || $houzui == '.wav'){
             $path_local = FILE_PATH."audio/";//本地保存路径
