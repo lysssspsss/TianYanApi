@@ -235,6 +235,7 @@ class User extends Base
                 wlog($log_name,json_encode($data,JSON_UNESCAPED_UNICODE)."\n");
                 db("member")->where(['openid'=>$list['openid']])->update($data);
             }
+            $this->user['memberid'] = $this->user['id'];
             $this->return_json(OK,$this->user);
         }else {
             $get_user_info_url = WECHAT_USER_URL.'?access_token=' . $access_token . '&openid=' . $list['openid'] . '&lang=zh_CN';
@@ -263,6 +264,7 @@ class User extends Base
                 wlog($log_name,"未执行插入操作：".$data['openid']."\n");
             }
             wlog($log_name,"获得返回数据：".$res."\n");
+            $this->user['memberid'] = $this->user['id'];
             $this->return_json(OK,$this->user);
         }
     }
