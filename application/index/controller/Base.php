@@ -42,8 +42,9 @@ class Base extends Controller
         //$url = $request->controller().$request->action();
         $header = get_auth_headers();
         $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
-        if(input('request.bujiami')!=1 || $this->source!='ANDROID'){
-            $this->check_sign();/* 签名校验 */
+        // || empty(input('request.bujiami')
+        if($this->source!='IOS'){
+            $this->check_sign();/*签名校验*/
         }
         $this->is_repeat(); /* 重放检测 */
         $this_class = strtolower($request->controller());
