@@ -239,31 +239,41 @@ class Live extends Base
     public function attantion_channel()
     {
         $lecture_id = input('post.lecture_id');
+        $type = input('post.type');
+        if(empty($type)){
+            $type = 1;
+        }
         //数据验证
         $result = $this->validate(
             [
                 'lecture_id'  => $lecture_id,
+                'type'  => $type,
             ],
             [
                 'lecture_id'  => 'require|number',
+                'type'  => 'number|in:1,2',
             ]
         );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
+
         $l  = db('course')->field('channel_id')->find($lecture_id);
         if(empty($l['channel_id'])){
             $l['channel_id'] = 294;
         }
-        $data['memberid'] = $this->user['id'];
-        $data['roomid'] = $l['channel_id'];
-        $data['create_time'] = date('Y-m-d H:i:s');
-        $data['type'] = 1;
-        $a = db('attention')->insertGetId($data);
-        if(empty($a)){
-           $this->return_json(E_OP_FAIL,'关注失败');
+        if($type==1){
+            $data['memberid'] = $this->user['id'];
+            $data['roomid'] = $l['channel_id'];
+            $data['create_time'] = date('Y-m-d H:i:s');
+            $data['type'] = 1;
+            $a = db('attention')->insertGetId($data);
+            if(empty($a)){
+                $this->return_json(E_OP_FAIL,'关注失败');
+            }
+            $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>1]);
         }
-        $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>1]);
+
     }
 
     /**
