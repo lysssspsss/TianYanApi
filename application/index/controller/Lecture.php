@@ -544,7 +544,7 @@ class Lecture extends Base
     public function get_kecheng()
     {
         $lecture_id = input('get.lecture_id');
-        $result = $this->validate(['lecture_id' => $lecture_id,],['lecture_id'  => 'require|number',]);
+        $result = $this->validate(['lecture_id' => $lecture_id,],['lecture_id'  => 'require|number']);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
