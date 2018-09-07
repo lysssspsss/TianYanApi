@@ -83,7 +83,7 @@ class Live extends Base
         $liveroom = db('home')->field('id,memberid')->find($lecture['live_homeid']);
         $result['livehome'] = $liveroom;
         $d_video['push_url'] = '';
-        $d_video['push_url'] = '';
+        $d_video['pull_url'] = '';
         $d_video['img'] = '';
         if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
             $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show'])->select();
