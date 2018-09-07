@@ -414,7 +414,7 @@ class Live extends Base
             $data[$key]['nickname'] = $member_info['name'] ? $member_info['name'] : $member_info['nickname'];
             $data[$key]['headimgurl'] = $member_info['headimg'];
         }
-        $res['data'] = $data;
+        $res['list'] = $data;
         $res['count'] = $count;
         $res['limit'] = $limit;
         $this->return_json(OK,$data);

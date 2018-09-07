@@ -85,7 +85,7 @@ class Index extends Base
         }
         $res['limit'] = $limit;
         $res['count'] = $count;
-        $res['data'] = $data;
+        $res['list'] = $data;
         $this->return_json(OK,$res);
     }
 
