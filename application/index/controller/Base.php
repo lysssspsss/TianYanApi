@@ -40,11 +40,12 @@ class Base extends Controller
 
         $request = Request::instance();
         //$url = $request->controller().$request->action();
-
-        $this->check_sign();/* 签名校验 */
-        $this->is_repeat(); /* 重放检测 */
         $header = get_auth_headers();
         $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
+        if(input('request.bujiami')!=1 || $this->source!='ANDROID'){
+            $this->check_sign();/* 签名校验 */
+        }
+        $this->is_repeat(); /* 重放检测 */
         $this_class = strtolower($request->controller());
         $this_method = strtolower($request->action());
         if (isset($pass[$this_class]) && in_array($this_method, $pass[$this_class])) {
