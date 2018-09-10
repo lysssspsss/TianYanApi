@@ -531,7 +531,7 @@ class Lecture extends Base
         }else{
             $jiangshi['cover_url'] = $cover['cover_url'];
         }
-        $jiangshi['lecture'] = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title')
+        $jiangshi['lecture'] = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type')
             ->where(['isshow'=>'show','channel_id'=>$cover['id']])
             //->where('name','like', '%'.$jiangshi['name'].'%')
             ->select();
