@@ -781,6 +781,16 @@ class User extends Base
     }
 
     /**
+     * 我的客服
+     */
+    public function my_kefu()
+    {
+        $data['qrcode'] = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/ty_kf.png';
+        $data['phone'] = '13925227539';
+        $this->return_json(OK,$data);
+    }
+
+    /**
      * floor向下取整
      * @param $num
      * @return float|int
