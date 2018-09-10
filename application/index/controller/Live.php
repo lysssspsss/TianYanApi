@@ -236,7 +236,7 @@ class Live extends Base
     /**
      * 关注专栏
      */
-    public function attantion_channel()
+    public function attention_channel()
     {
         $lecture_id = input('post.lecture_id');
         $type = input('post.type');
@@ -262,16 +262,26 @@ class Live extends Base
         if(empty($l['channel_id'])){
             $l['channel_id'] = 294;
         }
+        $data['memberid'] = $this->user['id'];
+        $data['roomid'] = $l['channel_id'];
+        $data['type'] = 1;
         if($type==1){
-            $data['memberid'] = $this->user['id'];
-            $data['roomid'] = $l['channel_id'];
+            $y = db('attention')->where($data)->find();
+            if(!empty($y)){
+                $this->return_json(E_OP_FAIL,'请不要重复关注');
+            }
             $data['create_time'] = date('Y-m-d H:i:s');
-            $data['type'] = 1;
             $a = db('attention')->insertGetId($data);
             if(empty($a)){
                 $this->return_json(E_OP_FAIL,'关注失败');
             }
-            $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>1]);
+            $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>1,'msg'=>'关注成功']);
+        }else{
+            $a = db('attention')->where($data)->delete();
+            if(empty($a)){
+                $this->return_json(E_OP_FAIL,'取消关注失败');
+            }
+            $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>0,'msg'=>'取消关注成功']);
         }
 
     }
