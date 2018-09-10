@@ -37,7 +37,7 @@ class Index extends Base
         $data['jingxuan'] = $this->check_js_member_id($data['jingxuan']);
         $data['todaylive'] = db('course')->field('id,name,sub_title,coverimg,mode,type,starttime,memberid,channel_id')
             ->where(['isshow'=>'show','show_on_page'=>1])
-            ->where('UNIX_TIMESTAMP(starttime)'>strtotime(date('Ymd')))
+            ->where('UNIX_TIMESTAMP(starttime) > '.strtotime(date('Ymd')))
             ->order('starttime','desc')->limit(4)->select();
         $data['todaylive'] = $this->check_js_member_id($data['todaylive']);
         /*$ranksql = "select * from live_teacherrank t inner join live_member m on t.memberid=m.id and  t.isshow=1 order by t.rank limit 8";
