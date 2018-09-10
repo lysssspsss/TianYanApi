@@ -98,6 +98,11 @@ const WECHAT_USER_URL = 'https://api.weixin.qq.com/sns/userinfo';
 const WECHAT_OAUTH_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token';
 
 /**
+ * 课程分享公众号链接
+ */
+const FENXIANG_URL = 'https://tianyan199.com/index.php/Home/Lecture/index?id=';
+
+/**
  * 七牛云 相关
  */
 const QINIU_ACCESS_KEY = 'WdoTQvcgbolHkm-W_EfXM4I0wTBrHWhbYfuNu3ZLC';

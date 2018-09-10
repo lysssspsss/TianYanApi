@@ -725,6 +725,26 @@ class Lecture extends Base
         $this->return_json(OK,$data);
     }
 
+
+    /**
+     * 分享课程（天雁公众号）
+     */
+    public function share()
+    {
+        $lecture_id = input('get.lecture_id');
+        $result = $this->validate(['lecture_id' => $lecture_id,],['lecture_id'  => 'require|number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data = db('course')->field('id,name,sub_title,starttime,intro,coverimg')->where('id='.$lecture_id)->find();
+        if(!empty($data)){
+            $data['url'] = FENXIANG_URL.$lecture_id;
+        }else{
+            $this->return_json(E_OP_FAIL,'找不到该课程!');
+        }
+        $this->return_json(OK,$data);
+    }
+
     /**
      * @return string
      * 验证是否已购买会员
