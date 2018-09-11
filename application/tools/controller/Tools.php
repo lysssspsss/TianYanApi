@@ -179,7 +179,7 @@ class Tools extends Controller
         $log_path = APP_PATH.'log/ffmpeg.log';
         if(empty($time))$time = '1';//默认截取第一秒第一帧
         //$str = "ffmpeg -i ".$file." -y -f mjpeg -ss 3 -t ".$time." -s 320x240 ".$name;
-        $str = "ffmpeg -i ".$file." -y -f mjpeg -ss 1 -t ".$time." -s 320x240 ".$name;
+        $str = "ffmpeg -i ".$file." -y -f mjpeg -ss ".$time." -t 1 ".$name;
         try{
             $result = system($str);
         }catch (Exception $e){
