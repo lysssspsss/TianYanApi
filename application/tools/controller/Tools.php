@@ -178,11 +178,12 @@ class Tools extends Controller
     public static function  getVideoCover($file,$time,$name) {
         $log_path = APP_PATH.'log/ffmpeg.log';
         if(empty($time))$time = '1';//默认截取第一秒第一帧
-        $str = "ffmpeg -i ".$file." -y -f mjpeg -ss 3 -t ".$time." -s 320x240 ".$name;
+        //$str = "ffmpeg -i ".$file." -y -f mjpeg -ss 3 -t ".$time." -s 320x240 ".$name;
+        $str = "ffmpeg -i ".$file." -y -f mjpeg -ss 3 -t ".$time." ".$name;
         try{
             $result = system($str);
         }catch (Exception $e){
-            wlog($log_path,"视频格式转换失败！filename is:".$file.' || '.$e->getMessage());
+            wlog($log_path,"视频截图失败！filename is:".$file.' || '.$e->getMessage());
             return false;
         }
         return true;

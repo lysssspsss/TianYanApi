@@ -276,7 +276,8 @@ class Base extends Controller
                 $path = $path.'.mp4';
                 $filename = $filename.'.mp4';
             }
-            Tools::getVideoCover($path_local_file,3,$cover);//获取截图
+            var_dump($path_local_file,$cover);exit;
+            Tools::getVideoCover($path_local_file,1,$cover);//获取截图
             $is1 = Tools::UploadFile_OSS($cover_path,$cover);//上传截图到oss
             $is2 = Tools::UploadFile_OSS($path,$path_local_file);//上传视频到oss
             if ($is1 && $is2) {
