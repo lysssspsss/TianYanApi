@@ -32,7 +32,40 @@ class Index extends Base
     {
         $name = empty($this->user['name'])?$this->user['nickname']:$this->user['name'];
         $data['title'] = '早上好,'.$name;
-        $data['lunbo'] = db('banner')->field('id,image,url,orderby')->where(['isShow'=>1,'type'=>4])->order('orderby')->select();
+        $lunbo = db('banner')->field('id,image,url,orderby')->where(['isShow'=>1,'type'=>1])->order('orderby')->select();
+        $data['lunbo'] = [];
+        if(!empty($lunbo)){
+            foreach($lunbo as $key => $value){
+                if(strpos($value['url'],'channel_detail')){
+                    $urlarr = parse_url($value['url']);
+                    $urlarr = $this->convertUrlQuery($urlarr['query']);
+                    $lunbo[$key]['type'] = 'channel';
+                    $lunbo[$key]['id'] = $urlarr['channel_id'];
+                    $lunbo[$key]['url'] = '';
+                    $lunbo[$key]['remark'] = '根据id跳转到对应专栏';
+                }elseif (strpos($value['url'],'Lecture/index') || strpos($value['url'],'lecture/index')){
+                    $urlarr = parse_url($value['url']);
+                    $urlarr = $this->convertUrlQuery($urlarr['query']);
+                    $id = strpos($urlarr['id'],'P')?explode('P',$urlarr['id'])[0]:$urlarr['id'];
+                    $lunbo[$key]['type'] = 'lecture';
+                    $lunbo[$key]['id'] = $id;
+                    $lunbo[$key]['url'] = '';
+                    $lunbo[$key]['remark'] = '根据id跳转到对应课程';
+                }elseif(strpos($value['url'],'eqxiu.com')){
+                    $lunbo[$key]['type'] = 'url';
+                    $lunbo[$key]['id'] = $value['url'];
+                    $lunbo[$key]['remark'] = '跳转到一个网页地址';
+                }elseif(strpos($value['url'],'morningRegister')){
+                    $lunbo[$key]['type'] = 'reg';
+                    $lunbo[$key]['id'] = '0';
+                    $lunbo[$key]['remark'] = '跳转到注册界面';
+                }else{
+                    unset($lunbo[$key]);
+                }
+            }
+            $data['lunbo'] = $lunbo;
+        }
+        dump($data['lunbo']);exit;
         $data['jingxuan'] = db('course')->field('id,name,clicknum,coverimg,mode,type,memberid,channel_id')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit(4)->select();
         $data['jingxuan'] = $this->check_js_member_id($data['jingxuan']);
         $data['todaylive'] = db('course')->field('id,name,sub_title,coverimg,mode,type,starttime,memberid,channel_id')
@@ -46,6 +79,22 @@ class Index extends Base
         $data['mingshi'] = $this->get_mingshi();
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
         $this->return_json(OK,$data);
+    }
+
+    /**
+     * 拆分URL后面的参数
+     * @param $query
+     * @return array
+     */
+    public function convertUrlQuery($query)
+    {
+        $queryParts = explode('&', $query);
+        $params = array();
+        foreach ($queryParts as $param) {
+            $item = explode('=', $param);
+            $params[$item[0]] = $item[1];
+        }
+        return $params;
     }
 
     /**
