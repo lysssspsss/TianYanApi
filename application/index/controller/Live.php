@@ -464,6 +464,59 @@ class Live extends Base
         $this->return_json(OK,['cmemberid'=>$this->user['id']]);
     }
 
+    /**
+     * 上墙
+     */
+    public function upwall()
+    {
+        $message_id = input('post.message_id');
+        //数据验证
+        $result = $this->validate(
+            [
+                'message_id'  => $message_id,
+            ],
+            [
+                'message_id'  => 'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $msg = db('msg')->where(['message_id'=>$message_id,'isshow'=>'show'])->update(['message_type'=>'publish']);
+        if(empty($msg)){
+            $this->return_json(E_OP_FAIL,'上墙失败,找不到该消息或重复上墙');
+        }
+        $message = db('msg')->field('lecture_id')->where(['message_id'=>$message_id])->find();
+        $this->get_upwall_list($message['lecture_id']);
+        //$this->return_json(OK,$msg);
+    }
+
+    /**
+     * 获取上墙历史记录
+     */
+    public function get_upwall_list($lecture_id = '')
+    {
+        if(empty($lecture_id)){
+            $lecture_id = input('post.lecture_id');
+        }
+        //数据验证
+        $result = $this->validate(
+            [
+                'lecture_id'  => $lecture_id,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url,out_trade_no,remarks';
+        $msg = db('msg')->field($field)->where(['lecture_id'=>$lecture_id,'message_type'=>'publish','isshow'=>'show'])->select();
+        $this->return_json(OK,(array)$msg);
+    }
+
+
 
     /**
      * 获取初始聊天信息
