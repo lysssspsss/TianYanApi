@@ -571,7 +571,13 @@ class Lecture extends Base
         }*/
         //dump($lecture);exit;
         if(empty($lecture)){
-            $this->return_json(E_OP_FAIL,'找不到对应课程');
+            $lecture = db('course')->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,mode,basescrib')
+                ->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
+            if(empty($lecture)){
+                $this->return_json(E_OP_FAIL,'找不到对应课程');
+            }
+            $channel = db('channel')->field('lecturer,is_pay_only_channel,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>294])->find();
+            $lecture = array_merge($lecture,$channel);
         }
         $where['id'] = $lecture['lecture_memberid'];
         if($lecture['channel_memberid']== 294 && $lecture['roomid']==24 && !empty($lecture['lecturer'])) {
