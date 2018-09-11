@@ -500,10 +500,13 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'没有找到对应课程');
         }
         $data['memberid_bak'] = 0;
-        if($data['memberid']==294 && !empty($data['channel_id'])){
-            $mbid = db('channel')->field('lecturer')->where(['id'=>$data['channel_id']])->find();
-            $data['memberid'] = $mbid['lecturer'];
-            $data['memberid_bak'] = 294;
+        if(!empty($data['channel_id'])){
+            $mbid = db('channel')->field('lecturer,name')->where(['id'=>$data['channel_id']])->find();
+            $data['channel_name'] = $mbid['name'];
+            if($data['memberid']==294){
+                $data['memberid'] = $mbid['lecturer'];
+                $data['memberid_bak'] = 294;
+            }
         }
         $this->return_json(OK,$data);
     }
