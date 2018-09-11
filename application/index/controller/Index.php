@@ -53,7 +53,7 @@ class Index extends Base
                     $lunbo[$key]['remark'] = '根据id跳转到对应课程';
                 }elseif(strpos($value['url'],'eqxiu.com')){
                     $lunbo[$key]['type'] = 'url';
-                    $lunbo[$key]['id'] = $value['url'];
+                    $lunbo[$key]['id'] = '0';
                     $lunbo[$key]['remark'] = '跳转到一个网页地址';
                 }elseif(strpos($value['url'],'morningRegister')){
                     $lunbo[$key]['type'] = 'reg';

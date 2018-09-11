@@ -683,6 +683,7 @@ class Live extends Base
             'server_id' => null,
         );
         $count = db('msg')->insertGetId($data);//测试时注释
+
         //$count = 1;
         //失效缓存
         //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
@@ -693,6 +694,7 @@ class Live extends Base
             $qestionC->reply_content($reply_msg['message_id'],1,$message);
         }*/
         if ($count) {
+            $data['message_id'] = $count;
             Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
             $this->return_json(OK,$data);
         }else{
@@ -903,6 +905,7 @@ class Live extends Base
             'server_id' => $server_id,
         );
         $count = db('msg')->insertGetId($data);
+
             //失效缓存
             //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
 
@@ -910,6 +913,7 @@ class Live extends Base
             LogController::W_A_Log($e->getMessage());
             LogController::W_A_Log($e->getTraceAsString());*/
         if ($count) {
+            $data['message_id'] = $count;
             Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
             $this->return_json(OK,$data);
         }else{
@@ -992,8 +996,8 @@ class Live extends Base
                 //'server_id' => $media_id,
             );
             $count = db('msg')->insertGetId($data);
-
             if ($count) {
+                $data['message_id'] = $count;
                 Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
                 $this->return_json(OK,$data);
             }else{
@@ -1092,6 +1096,7 @@ class Live extends Base
         //失效缓存
         //MemcacheToolController::Mem_Data_process("live_course_msg_".$lecture_id,'put',null);
         if ($mid) {
+            $data['message_id'] = $mid;
             Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
             $this->return_json(OK,$data);
         }else{
