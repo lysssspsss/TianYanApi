@@ -464,7 +464,7 @@ class Lecture extends Base
             'pass' => $pass,
             'cost' => $cost ? $cost : 0,
             'coverimg' => $coverimg,
-            'intro' => $intro,
+            'intro' => empty($intro)?' ':$intro,
             'priority' => $priority,
             'channel_id' => $channel_id,
         );
