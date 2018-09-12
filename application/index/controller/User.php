@@ -393,16 +393,16 @@ class User extends Base
             }
         }else{
             $homedata = array(
-                'name'=>$member['name']?$member['name']:$member['nickname'],
+                'name'=>$name,
                 'description'=>$member['intro'],
                 'avatar_url'=>($member['headimg']==$member['img'])?$member['headimg']:$member['img'],
             );
             $mcount = db('home')->where(['id'=>$liveroom['id']])->update($homedata);
-            if(empty($mcount)){
+           /* if(empty($mcount)){
                 Db::rollback();
-                wlog($this->log_path,'user_update 插入场景数据失败:'.$this->user['id']);
+                wlog($this->log_path,'user_update 插入场景数据失败:'.$liveroom['id']);
                 $this->return_json(E_OP_FAIL,'更新home数据失败');
-            }
+            }*/
         }
         Db::commit();
         $this->return_json(OK,$this->user);
