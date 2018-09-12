@@ -272,7 +272,7 @@ class Lecture extends Base
             'pass' => $pass,
             'cost' => $cost ? $cost : 0,
             'channel_id' => $channel_id,
-            'coverimg' => OSS_REMOTE_PATH. "/public/images/cover1.jpg",
+            'coverimg' => SERVER_URL. "/public/images/cover1.jpg",
             'reseller_enabled' => empty($reseller_enabled)?0:$reseller_enabled,
             'resell_percent' => empty($resell_percent)?0:$resell_percent,
             'tag' => $tag,

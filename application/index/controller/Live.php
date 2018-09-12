@@ -239,6 +239,7 @@ class Live extends Base
     public function attention_channel()
     {
         $lecture_id = input('post.lecture_id');
+        $js_memberid = input('post.js_memberid');
         $type = input('post.type');
         if(empty($type)){
             $type = 1;
@@ -247,43 +248,58 @@ class Live extends Base
         $result = $this->validate(
             [
                 'lecture_id'  => $lecture_id,
+                'js_memberid'  => $js_memberid,
                 'type'  => $type,
             ],
             [
                 'lecture_id'  => 'require|number',
+                'js_memberid'  => 'number',
                 'type'  => 'number|in:1,2',
             ]
         );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-
-        $l  = db('course')->field('channel_id')->find($lecture_id);
-        if(empty($l['channel_id'])){
-            $l['channel_id'] = 294;
-        }
-        $data['memberid'] = $this->user['id'];
-        $data['roomid'] = $l['channel_id'];
-        $data['type'] = 1;
-        if($type==1){
-            $y = db('attention')->where($data)->find();
-            if(!empty($y)){
-                $this->return_json(E_OP_FAIL,'请不要重复关注');
-            }
-            $data['create_time'] = date('Y-m-d H:i:s');
-            $a = db('attention')->insertGetId($data);
-            if(empty($a)){
-                $this->return_json(E_OP_FAIL,'关注失败');
-            }
-            $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>1,'msg'=>'关注成功']);
+        if(!empty($js_memberid)){
+            $cidarr = db('channel')->field('id')->where('memberid='.$js_memberid.' or lecturer='.$js_memberid)->select();
+            //var_dump($cidarr);exit;
+            $cidarr  = array_column($cidarr,'id');
         }else{
-            $a = db('attention')->where($data)->delete();
-            if(empty($a)){
+            $l  = db('course')->field('channel_id')->find($lecture_id);
+            if(empty($l['channel_id'])){
+                $cidarr[0] = 294;
+            }else{
+                $cidarr[0] = $l['channel_id'];
+            }
+        }
+        $a = $b = [];
+        foreach($cidarr as $key => $channel_id){
+            $data['memberid'] = $this->user['id'];
+            $data['roomid'] = $channel_id;
+            $data['type'] = 1;
+            if($type==1){
+                $y = db('attention')->where($data)->find();
+                $a[$key] = 1;
+                if(empty($y)){
+                    //$this->return_json(E_OP_FAIL,'请不要重复关注');
+                    $data['create_time'] = date('Y-m-d H:i:s');
+                    $a[$key] = db('attention')->insertGetId($data);
+                }
+            }else{
+                $b[$key] = db('attention')->where($data)->delete();
+            }
+        }
+        if($type==1) {
+            if (in_array(0,$a)) {
+                $this->return_json(E_OP_FAIL, '关注失败');
+            }
+            $this->return_json(OK, ['cmemberid' => $this->user['id'], 'isattention' => 1, 'msg' => '关注成功']);
+        }else{
+            if(in_array(0,$b)){
                 $this->return_json(E_OP_FAIL,'取消关注失败');
             }
             $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>0,'msg'=>'取消关注成功']);
         }
-
     }
 
     /**
@@ -303,7 +319,10 @@ class Live extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-
+        $is = $this->redis->hget('check_in',$lecture_id);
+        if(!empty($is)){
+            $this->return_json(E_OP_FAIL,'已发起签到');
+        }
         $data = array(
             'add_time' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
             'content' => "老师喊你来签到啦！",
@@ -349,6 +368,7 @@ class Live extends Base
         }
         Db::commit();
         $data['remarks'] = empty($check_in['id'])?$check_count:$check_in['id'];
+        $this->redis->hset('check_in',$lecture_id,$data['remarks']);
         Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
         $this->return_json(OK,$data);
     }
