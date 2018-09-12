@@ -556,9 +556,9 @@ class Lecture extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         $this->get_user_redis($this->user['id'],true);
-        $lecture = db('course')->alias('a')->join('channel b','a.channel_id = b.id')
+        /*$lecture = db('course')->alias('a')->join('channel b','a.channel_id = b.id')
             ->field('a.id as lecture_id,a.memberid as lecture_memberid,a.coverimg,a.name as title,a.starttime,a.channel_id,a.intro,a.mins,a.qrcode_addtime,a.qrcode,a.live_homeid,a.clicknum,a.cost,a.is_for_vip,a.mode,a.basescrib,b.lecturer,b.is_pay_only_channel,b.name as zhuanlan,b.memberid as channel_memberid,b.roomid')
-            ->where(['a.id'=>$lecture_id,'a.isshow'=>'show'])->find();
+            ->where(['a.id'=>$lecture_id,'a.isshow'=>'show'])->find();*/
         /*$lecture = db('course')
             ->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,basescrib')
             ->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
@@ -573,17 +573,20 @@ class Lecture extends Base
             $lecture['lecturer'] = '';
         }*/
         //dump($lecture);exit;
+        //if(empty($lecture)){
+        $lecture = db('course')->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,mode,basescrib')
+            ->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
         if(empty($lecture)){
-            $lecture = db('course')->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,mode,basescrib')
-                ->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
-            if(empty($lecture)){
-                $this->return_json(E_OP_FAIL,'找不到对应课程');
-            }
-            $channel = db('channel')->field('lecturer,is_pay_only_channel,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>294])->find();
-            $lecture = array_merge($lecture,$channel);
+            $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
+        if(empty($lecture['channel_id'])){
+            $lecture['channel_id'] = 294;
+        }
+        $channel = db('channel')->field('lecturer,is_pay_only_channel,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>$lecture['channel_id']])->find();
+        $lecture = array_merge($lecture,$channel);
+        //}
         $where['id'] = $lecture['lecture_memberid'];
-        if($lecture['channel_memberid']== 294 && $lecture['roomid']==24 && !empty($lecture['lecturer'])) {
+        if(!empty($lecture['lecturer'])){
             $where['id'] = $lecture['lecturer'];
         }
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息
