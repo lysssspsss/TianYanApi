@@ -224,7 +224,7 @@ class Lecture extends Base
                 'pass' =>  'alphaNum',
                 'cost' =>  'float',
                 'mode' =>  'require|in:picture,vedio,ppt',
-                'channel_id' =>  'require|number',
+                'channel_id' =>  'number',
             ]
         );
         if($result !== true){
@@ -240,7 +240,9 @@ class Lecture extends Base
             }
             $cost = round($cost,1);
         }
-
+        if(empty($channel_id)){
+            $channel_id = 294;
+        }
         $livehome = db('home')->field('id')->where(['memberid'=>$this->user['id']])->find();
 
         if(empty($livehome)){
