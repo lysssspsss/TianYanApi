@@ -61,7 +61,8 @@ class Lecture extends Base
         }*/
         $data = db('channel')->field('id as channel_id,name')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
         if(empty($data)){
-            $this->return_json(OK,[]);
+            $data[0]['channel_id'] = '294';
+            $data[0]['name'] = '天雁商学院';
         }
         $this->return_json(OK,$data);
     }
