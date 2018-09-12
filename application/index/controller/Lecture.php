@@ -532,16 +532,17 @@ class Lecture extends Base
         if(empty($jiangshi['name'])){
             $jiangshi['name'] = $jiangshi['nickname'];
         }
-        $cover = db('channel')->field('id,cover_url')->where('memberid='.$js_memberid.' or '.'lecturer='.$js_memberid)->find();
-        if(empty($cover['cover_url'])){
+        $cover = db('channel')->field('id,cover_url')->where('memberid='.$js_memberid.' or '.'lecturer='.$js_memberid)->select();
+        if(empty($cover[0]['cover_url'])){
             $jiangshi['cover_url'] = OSS_REMOTE_PATH. "/public/images/cover14.jpg";
+            $jiangshi['lecture'] = [];
         }else{
-            $jiangshi['cover_url'] = $cover['cover_url'];
-        }
-        $jiangshi['lecture'] = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type')
-            ->where(['isshow'=>'show','channel_id'=>$cover['id']])
+            $jiangshi['cover_url'] = $cover[0]['cover_url'];
+            $cidlist = implode(',',array_column($cover,'id'));
+            $jiangshi['lecture'] = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type')
+                ->where(['isshow'=>'show'])->where('channel_id in ('.$cidlist.')')->order('clicknum','desc')->select();
             //->where('name','like', '%'.$jiangshi['name'].'%')
-            ->select();
+        }
         $this->return_json(OK,$jiangshi);
     }
 
