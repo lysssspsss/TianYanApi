@@ -533,7 +533,7 @@ class Lecture extends Base
             $jiangshi['name'] = $jiangshi['nickname'];
         }
         $cover = db('channel')->field('id,cover_url')->where('memberid='.$js_memberid.' or '.'lecturer='.$js_memberid)->select();
-        if(empty($cover[0]['cover_url'])){
+        if(empty($cover)){
             $jiangshi['cover_url'] = OSS_REMOTE_PATH. "/public/images/cover14.jpg";
             $jiangshi['lecture'] = [];
         }else{
