@@ -401,7 +401,7 @@ class Lecture extends Base
         $js_img = input('post.js_img');//课程介绍的图片
         $priority = (int)input('post.priority');//课程优先级
         $mode = input('post.mode');//课程模式：picture图文模式，vedio视频模式，ppt模式
-        $channel_id = input('post.channel');//课程所属专栏ID
+        $channel_id = !empty(input('post.channel'))?input('post.channel'):input('post.channel_id');//课程所属专栏ID
         $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
         $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
         $tag = input('post.tag');
