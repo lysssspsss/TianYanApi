@@ -571,44 +571,7 @@ class Index extends Base
 
     private function get_main_daka()
     {
-       /* $data = [
-            array(
-                'memberid'=>294,
-                'channel_id'=>135,
-                'name'=>'天雁CEO聂家艳',
-                'nick'=>'玫瑰有约栏目创始人',
-                'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_njy.jpg',
-            ),
-            array(
-                'memberid'=>22069,
-                'channel_id'=>173,
-                'name'=>'赖素免',
-                'nick'=>'DLT保险创价系统创始人',
-                'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_lst.jpg',
-            ),
-            array(
-                'memberid'=>294,
-                'channel_id'=>85,
-                'name'=>'游森然',
-                'nick'=>'金诚同达律师事务所律师',
-                'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_ysr.jpg',
-            ),
-            array(
-                'memberid'=>294,
-                'channel_id'=>439,
-                'name'=>'蒲明玉',
-                'nick'=>'中国平安“钻石铁人”',
-                'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_pmy.jpg',
-            ),
-        ];*/
-        $data = db('famous')->field('memberid,channel_id,name,intro as nick,img,js_memberid')->where(['is_main'=>1])->where('dk_order <> 0')->order('dk_order')->select();
-        return $data;
-    }
-
-
-    private function get_mingshi()
-    {
-        $data = array(
+        /*$data = array(
             array(
                 'channel_id'=>155,
                 'name'=>'安建平专栏',
@@ -679,7 +642,47 @@ class Index extends Base
                 'intro2'=>'《如何招募培养高绩效人才？》',
                 'clicknum'=>'7263人关注'
             )
-        );
+        );*/
+
+        $data = db('famous')->field('memberid,channel_id,name,intro as nick,img,js_memberid')->where(['is_main'=>1])->where('dk_order <> 0')->order('dk_order')->select();
         return $data;
+    }
+
+
+    private function get_mingshi()
+    {
+        $data = db('famous')->field('memberid,channel_id,name,intro as nick,img,js_memberid')->where('ms_order <> 0 and is_main <> 0')->order('is_main','desc')->select();
+        return $data;
+        /* $data = [
+          array(
+              'memberid'=>294,
+              'channel_id'=>135,
+              'name'=>'天雁CEO聂家艳',
+              'nick'=>'玫瑰有约栏目创始人',
+              'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_njy.jpg',
+          ),
+          array(
+              'memberid'=>22069,
+              'channel_id'=>173,
+              'name'=>'赖素免',
+              'nick'=>'DLT保险创价系统创始人',
+              'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_lst.jpg',
+          ),
+          array(
+              'memberid'=>294,
+              'channel_id'=>85,
+              'name'=>'游森然',
+              'nick'=>'金诚同达律师事务所律师',
+              'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_ysr.jpg',
+          ),
+          array(
+              'memberid'=>294,
+              'channel_id'=>439,
+              'name'=>'蒲明玉',
+              'nick'=>'中国平安“钻石铁人”',
+              'img'=>'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/e_pmy.jpg',
+          ),
+      ];*/
+
     }
 }

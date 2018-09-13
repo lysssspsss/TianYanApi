@@ -157,7 +157,7 @@ class User extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        $this->check_code($phone,'4',$code);
+        $this->check_code((string)$phone,'4',$code);
         /*$redis_code = $this->redis->hGet(REDIS_YZM_KEY,$phone.'_4');
         if($code != $redis_code){
             //$this->return_json(E_ARGS,'验证码错误');//测试时暂时注释

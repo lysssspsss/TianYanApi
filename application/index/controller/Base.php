@@ -344,11 +344,11 @@ class Base extends Controller
     protected function check_code($tel,$num='2',$code)
     {
         $key = $tel.'_'.$num;
-        $redis_code = $this->redis->hGet(REDIS_YZM_KEY,$key);
+        $redis_code = $this->redis->get(REDIS_YZM_KEY.':'.$key);
         if($code != $redis_code){
             $this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
         }
-        $this->redis->hdel(REDIS_YZM_KEY,$key);
+        $this->redis->del(REDIS_YZM_KEY.':'.$key);
         return true;
     }
 

@@ -385,6 +385,8 @@ class Lecture extends Base
         $this->return_json(OK,$data);
     }
 
+
+
     /**
      * 编辑课程
      */
@@ -740,6 +742,30 @@ class Lecture extends Base
         $data['lectures'] = $course;
         $data['channel_lecture_count'] = count($course);
         $this->return_json(OK,$data);
+    }
+
+    /**
+     * 分享课程（上传PPT接口）
+     */
+    public function ppt_add()
+    {
+        $ppt_photo_url = input('post.ppt_photo_url');
+        $lecture_id = input('post.lecture_id');
+        $result = $this->validate(
+            [
+                'ppt_photo_url' => $ppt_photo_url,
+                'lecture_id' => $lecture_id,
+            ],
+            [
+                'ppt_photo_url'  => 'require',
+                'lecture_id'  => 'require|number'
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $pptarr = explode(',',$ppt_photo_url);
+
     }
 
 
