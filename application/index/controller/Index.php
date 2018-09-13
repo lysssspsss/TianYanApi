@@ -644,7 +644,7 @@ class Index extends Base
             )
         );*/
 
-        $data = db('famous')->field('memberid,channel_id,name,intro,img,js_memberid')->where(['is_main'=>1])->where('dk_order <> 0')->order('dk_order')->select();
+        $data = db('famous')->field('memberid,channel_id,name,intro as nick,img,js_memberid')->where('dk_order <> 0 and is_main <> 0')->order('is_main','desc')->select();
         return $data;
     }
 
