@@ -651,7 +651,7 @@ class Index extends Base
 
     private function get_mingshi()
     {
-        $data = db('famous')->field('memberid,channel_id,name,intro as nick,img,js_memberid')->where('ms_order <> 0 and is_main <> 0')->order('is_main','desc')->select();
+        $data = db('famous')->field('memberid,channel_id,name,intro,intro1,intro2,img,js_memberid,fake_clicknum as clicknum')->where('ms_order <> 0 and is_main <> 0')->order('is_main','desc')->select();
         return $data;
         /* $data = [
           array(
