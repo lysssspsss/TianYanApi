@@ -42,9 +42,9 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'没有找到对应专栏');
         }
         $data['memberid_bak'] = 0;
-        if($data['memberid']==294){
+        if($data['memberid'] == BANZHUREN){
             $data['memberid'] = $data['lecturer'];
-            $data['memberid_bak'] = 294;
+            $data['memberid_bak'] = BANZHUREN;
         }
         $this->return_json(OK,$data);
     }
@@ -61,7 +61,7 @@ class Lecture extends Base
         }*/
         $data = db('channel')->field('id as channel_id,name')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
         if(empty($data)){
-            $data[0]['channel_id'] = '294';
+            $data[0]['channel_id'] = BANZHUREN;
             $data[0]['name'] = '天雁商学院';
         }
         $this->return_json(OK,$data);
@@ -242,7 +242,7 @@ class Lecture extends Base
             $cost = round($cost,1);
         }
         if(empty($channel_id)){
-            $channel_id = 294;
+            $channel_id = BANZHUREN;
         }
         $livehome = db('home')->field('id')->where(['memberid'=>$this->user['id']])->find();
 
@@ -330,9 +330,9 @@ class Lecture extends Base
                     wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的讲师信息失败");
                     $this->return_json(E_OP_FAIL, '插入课程的讲师信息失败');
                 }
-                if ($this->user['id'] != 294) {
+                if ($this->user['id'] != BANZHUREN) {
                     $invite['inviteid'] = $this->user['id'];
-                    $invite['beinviteid'] = 294;
+                    $invite['beinviteid'] = BANZHUREN;
                     $invite['invitetype'] = "主持人";
                     $invite['courseid'] = $cid;
                     $invite['addtime'] = date("Y-m-d H:i:s");
@@ -509,9 +509,9 @@ class Lecture extends Base
         if(!empty($data['channel_id'])){
             $mbid = db('channel')->field('lecturer,name')->where(['id'=>$data['channel_id']])->find();
             $data['channel_name'] = $mbid['name'];
-            if($data['memberid']==294){
+            if($data['memberid']==BANZHUREN){
                 $data['memberid'] = $mbid['lecturer'];
-                $data['memberid_bak'] = 294;
+                $data['memberid_bak'] = BANZHUREN;
             }
         }
         $this->return_json(OK,$data);
@@ -583,7 +583,7 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
         if(empty($lecture['channel_id'])){
-            $lecture['channel_id'] = 294;
+            $lecture['channel_id'] = BANZHUREN;
         }
         $channel = db('channel')->field('lecturer,is_pay_only_channel,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>$lecture['channel_id']])->find();
         $lecture = array_merge($lecture,$channel);
@@ -678,7 +678,7 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'找不到对应专栏');
         }
         $where['id'] = $channel['channel_memberid'];
-        if($channel['channel_memberid']== 294 && $channel['roomid']==24 && $channel['lecturer']) {
+        if($channel['channel_memberid']== BANZHUREN && $channel['roomid']==24 && $channel['lecturer']) {
             $where['id'] = $channel['lecturer'];
         }
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息

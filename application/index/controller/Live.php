@@ -43,7 +43,7 @@ class Live extends Base
         if(!empty($lecture['channel_id'])){
             $channel = db('channel')->field('lecturer')->find($lecture['channel_id']);
             if(empty($channel['lecturer'])){
-                $channel['lecturer'] = 294;
+                $channel['lecturer'] = BANZHUREN;
             }
         }
         $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
@@ -69,10 +69,10 @@ class Live extends Base
          * 获取讲师信息
          */
         $field = 'id,name,nickname,sex,headimg,img,isauth,company,position,title';
-        if($lecture['memberid']!=294){
+        if($lecture['memberid']!=BANZHUREN){
             $member = db('member')->field($field)->find($lecture['memberid']);
-        }elseif ($lecture['memberid']==294 && empty($channel['lecturer'])){
-            $member = db('member')->field($field)->find(294);
+        }elseif ($lecture['memberid']==BANZHUREN && empty($channel['lecturer'])){
+            $member = db('member')->field($field)->find(BANZHUREN);
         } else{
             $member = db('member')->field($field)->find($channel['lecturer']);
         }
@@ -176,11 +176,11 @@ class Live extends Base
         }
 
         $result['sub_count'] = $sub_count;
-        //课程相关人员
-       /* $Model = new Model();
-        $arr_invete = $Model->table("live_invete i ,live_member m")->where("i.beinviteid=m.id and i.courseid=" . $lecture_id)->field("i.id as iid,m.id as mid,i.invitetype as title,m.headimg,m.intro,m.name,m.nickname")->select();
-        $this->assign("invetelist", $arr_invete);*/
-
+        //课程相关人员(拥有讲师的权限)
+        //$Model = new Model();
+        $arr_invete = db()->table("live_invete i ,live_member m")->where("i.beinviteid=m.id and i.courseid=" . $lecture_id)->field("i.id as invete_id,m.id as js_memberid,i.invitetype as title,m.headimg,m.intro,m.name,m.nickname")->select();
+        //$this->assign("invetelist", $arr_invete);
+        $result['invetelist'] = $arr_invete;
         //更新人气
         $cmember = $this->user;
         if ($cmember['id'] != $lecture['memberid']) {
@@ -267,7 +267,7 @@ class Live extends Base
         }else{
             $l  = db('course')->field('channel_id')->find($lecture_id);
             if(empty($l['channel_id'])){
-                $cidarr[0] = 294;
+                $cidarr[0] = BANZHUREN;
             }else{
                 $cidarr[0] = $l['channel_id'];
             }
@@ -589,7 +589,7 @@ class Live extends Base
 
 
         $page = !empty($page) ? $page : 1;
-        $desired_count = !empty($desired_count) ? $desired_count : 200;
+        $desired_count = !empty($desired_count) ? $desired_count : 1000;
         $where['id'] = $lecture_id;
         $where['isshow'] = 'show';
 
@@ -606,7 +606,7 @@ class Live extends Base
         }else{
             $sql .= " and sender_id!='$js_memberid'";
         }*/
-        $lecture = db('course')->field('memberid,isonline,name,channel_id')->find($lecture_id);
+        $lecture = db('course')->field('memberid,isonline,name,channel_id,live_homeid')->find($lecture_id);
         $member = db('member')->field('id,name,headimg,img')->find($js_memberid);
         $field = 'message_id,sender_id,sender_nickname,sender_headimg,sender_title,lecture_id,message_type,add_time,content,isvipshow,isshow,reply,ppt_url,out_trade_no,remarks';
         $listmsg = db('msg')->field($field)->where($sql)->limit($page-1,$desired_count)->order("add_time desc")->select();
@@ -661,17 +661,32 @@ class Live extends Base
             }
         }else{
             $mstarr = ['text','reply_text'];
+            $js_arr = [$js_memberid,BANZHUREN];
+
             //$mstarr2 = ['text','reply_text','audio','check_in','music','picture','reply_audi','reply_text','reward','video'];
-            $listmsg_bak = [];
+            $listmsg_bak = $arr_invete = [];
+            $arr_invete = db()->table("live_invete i ,live_member m")->field("m.id as js_memberid")->where("i.beinviteid=m.id and i.courseid=" . $lecture_id)->select();
+            if (!empty($arr_invete)){
+                $arr_invete = array_column($arr_invete,'js_memberid');
+            }
+            $manager = [];
+            if (!empty($lecture['live_homeid'])){
+                $manager = db('home_manager')->field('beinviteid')->where('homeid='.$lecture['live_homeid'])->select();
+                if(!empty($manager)){
+                    $manager = array_column($manager,'beinviteid');
+                }
+            }
+            $js_arr = array_unique(array_merge($js_arr,$manager,$arr_invete));
+            //var_dump($js_arr);exit;
             if($type == 1){ //筛选内容。type为1时显示主讲页，为2时显示互动页内容
                 foreach($listmsg as $key=> $value){
-                    if(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid){
+                    if(in_array($value['message_type'],$mstarr) && in_array($value['sender_id'],$js_arr)){
                         unset($listmsg[$key]);
                     }
                 }
             }else{
                 foreach($listmsg as $key=> $value){
-                    if(in_array($value['message_type'],$mstarr) && $value['sender_id']!=$js_memberid){
+                    if(in_array($value['message_type'],$mstarr) && in_array($value['sender_id'],$js_arr)){
                         $listmsg_bak[$key] = $listmsg[$key];
                     }
                 }

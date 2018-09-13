@@ -346,7 +346,7 @@ class Base extends Controller
         $key = $tel.'_'.$num;
         $redis_code = $this->redis->get(REDIS_YZM_KEY.':'.$key);
         if($code != $redis_code){
-            $this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
+            //$this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
         }
         $this->redis->del(REDIS_YZM_KEY.':'.$key);
         return true;
@@ -433,7 +433,7 @@ class Base extends Controller
     {
         foreach($data as $k1 =>$v1){
             $data[$k1]['js_memberid'] = $v1['memberid'];
-            if($v1['memberid']==294 && !empty($v1['channel_id'])){
+            if($v1['memberid']==BANZHUREN && !empty($v1['channel_id'])){
                 $a = db('channel')->where(['id'=>$v1['channel_id']])->value('lecturer');
                 if(!empty($a)){
                     $data[$k1]['js_memberid'] = $a;

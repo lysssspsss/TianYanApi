@@ -60,7 +60,7 @@ class Question extends Base
                 $describe = "快进谈论组解答吧！";
             } else{
                 $_info = $memberD
-                    ->where('id = 294')
+                    ->where('id = '.BANZHUREN)
                     ->field('nickname,name,openid')
                     ->find();
 

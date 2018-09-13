@@ -462,7 +462,7 @@ class Index extends Base
                 'intro1'=>'《找准性格卖保险》',
                 'intro2'=>'《理财方程式》',
                 'clicknum'=>'8695 '
-            )
+            )+
 
         );*/
         $data = db('famous')->field('channel_id,memberid,room_id,name,img,cost,intro,intro1,intro2,js_memberid')->where('ms_order <> 0')->order('ms_order','desc')->select();

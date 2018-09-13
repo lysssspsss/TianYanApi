@@ -496,7 +496,7 @@ class User extends Base
             $this->return_json(OK,[]);
         }
         foreach($list as $key => $value){
-            if($value['memberid']=='294'){
+            if($value['memberid']==BANZHUREN){
                 $where['id'] =  $value['lecturer'];
             }else{
                 $where['id'] =  $value['memberid'];
