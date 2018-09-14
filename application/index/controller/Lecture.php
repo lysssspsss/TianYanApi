@@ -254,7 +254,10 @@ class Lecture extends Base
         }
         //$member = $this->user;
         //$livehome = db('home')->field('id')->where(['memberid' => $this->user['id']])->find();
-        $channel = db("channel")->field("id,category")->where("id=".$channel_id)->find();
+        $channel = db("channel")->field("id,category,is_pay_only_channel")->where("id=".$channel_id)->find();
+        if($channel['is_pay_only_channel']==1 && $type=='pay_lecture'){
+            $this->return_json(E_OP_FAIL,'该课程所属专栏设置了仅付费专栏，因此无法添加付费课程。');
+        }
         $show_on_page = 1;
         if($channel['category'] == 'businesscollege' || $channel['category'] == 'air'){
             $show_on_page = 0;
@@ -461,6 +464,10 @@ class Lecture extends Base
             $intro = $content.'<p>'.$intro.'</p>';*/
             $intro = $this->zcontent($js_img,$intro);
         }
+        $channel = db('channel')->field('is_pay_only_channel')->where('id='.$channel_id)->find();
+        if($channel['is_pay_only_channel']==1 && $type=='pay_lecture'){
+            $this->return_json(E_OP_FAIL,'该课程所属专栏设置了仅付费专栏，因此无法修改为付费课程。');
+        }
         $data = array(
             'name' => $name,
             'starttime' => date('Y-m-d H:i', strtotime($starttime)),
@@ -637,15 +644,18 @@ class Lecture extends Base
         }
         !empty($is_vip)?$result['is_vip'] = 'true':$result['is_vip'] = 'false';
 
+
         //是否已付费
         if(!empty($lecture['channel_id'])){
             if($lecture['is_pay_only_channel']){
                 $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
+                //var_dump($ispay,1);exit;
             }else{
                 $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
                 if(!$ispay){
                     $ispay = db('coursepay')->field('id')->where("memberid=" . $this->user['id'] . " and courseid=" . $lecture['lecture_id'] . " and status='finish'")->find();
                 }
+               // var_dump($ispay,1);exit;
             }
         }else{
             $ispay = db('coursepay')->field('id')->where("memberid=" . $this->user['id'] . " and courseid=" . $lecture['lecture_id'] . " and status='finish'")->find();
