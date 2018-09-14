@@ -36,7 +36,7 @@ class Base extends Controller
 
 
         /* 不需要登陆权限的控制器和方法[小写] */
-        $pass = ['user' => ['reg', 'sms', 'login','wechat_login'],'index'=>['index']];
+        $pass = ['user' => ['reg', 'sms', 'login','wechat_login'],'index'=>['index'],'live'=>['save_video_url']];
 
         $request = Request::instance();
         //$url = $request->controller().$request->action();

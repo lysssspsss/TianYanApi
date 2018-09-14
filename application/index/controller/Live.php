@@ -1,5 +1,6 @@
 <?php
 namespace app\index\controller;
+use app\tools\controller\Signature;
 use app\tools\controller\Tools;
 use think\Db;
 
@@ -1195,6 +1196,71 @@ class Live extends Base
     }
 
 
+    /**
+     * 直播完成获取保存视频url
+     */
+    public function save_video_url($lecture_id = '',$starttime='',$endtime='')
+    {
+
+        if(empty($lecture_id)){
+            $lecture_id = input('post.lecture_id');
+        }
+        if(empty($starttime)){
+            $starttime = input('post.starttime');
+        }
+        if(empty($endtime)){
+            $endtime = empty(input('post.endtime'))?date('Y-m-d H:i:s'):input('post.endtime');
+        }
+        //数据验证
+        $result = $this->validate(
+            [
+                'lecture_id' => $lecture_id,
+                'starttime' => $starttime,
+                'endtime' => $endtime,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+                'starttime' =>  'require|date',
+                'endtime' =>  'date',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id])->find();
+        if(empty($video['video'])){
+            $this->return_json(E_OP_FAIL,'找不到播放地址');
+        }
+        if(!strstr($video['video'],'rtmp')){
+            $this->return_json(E_OP_FAIL,'该播放地址不是rtmp地址');
+        }
+        $rtmp_arr = parse_url($video['video']);
+        $stearm = explode('/',$rtmp_arr['path']);
+        $stearmname = end($stearm);
+        $starttime = strtotime($starttime);
+        $starttime = date('Y-m-d',$starttime).'T'.date('H:i:s',$starttime).'Z';
+        $endtime = strtotime($endtime);
+        $endtime = date('Y-m-d',$endtime).'T'.date('H:i:s',$endtime).'Z';
+
+        $arr = [
+            'Action'=>'DescribeLiveStreamRecordContent',
+            'DomainName'=>LIVE_VHOST,
+            'AppName'=>LIVE_APPNAME,
+            'StreamName'=>$stearmname,
+            'StartTime'=>$starttime,
+            'EndTime'=>$endtime,
+        ];
+        $url = "https://live.aliyuncs.com/?";
+        $obj = new Signature($arr,$url);
+        $result = $obj->callInterface();
+        var_dump($result);exit;
+
+        //var_dump($stearmname);exit;
+        /*$url = 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName='.LIVE_VHOST.'&AppName='.LIVE_APPNAME.'&StreamName='
+            .$stearmname.'&StartTime='.$starttime.'&EndTime='.$endtime.'&Format=json&Version=2016-11-01'
+            .'&SignatureMethod=HMAC-SHA1&SignatureNonce='.time().mt_rand(100,999).'&SignatureVersion=1.0&AccessKeyId='.ALIYUN_ACCESS_KEY_ID.'&Timestamp='.date('Y-m-d').'T'.date('H:i:s').'Z';*/
+        // 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName=live.aliyunlive.com&AppName=aliyuntest&StreamName=xxx&StartTime=xxx&EndTime=xxx&<公共请求参数>';
+    }
 
 
     /**

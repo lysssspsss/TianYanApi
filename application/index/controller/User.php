@@ -201,7 +201,7 @@ class User extends Base
      */
     public function  wechat_login(){
         $log_name = APP_PATH.'log/wechat_login.log';
-        $error_log_name = APP_PATH.'log/wechat_login_error.log';
+        //$error_log_name = APP_PATH.'log/wechat_login_error.log';
         wlog($log_name,'进入微信登录方法'."\n");
         $appid = WECHAT_APPID;
         $secret = WECHAT_APPSECRET;

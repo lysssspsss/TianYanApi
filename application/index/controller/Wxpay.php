@@ -85,7 +85,6 @@ class Wxpay extends Base
         $out_trade_no = $product.date("YmdHis").rand(000000,999999);//订单号
 
 
-
         $json = array();
         //生成预支付交易单的必选参数:
         $newPara = array();
@@ -117,6 +116,8 @@ class Wxpay extends Base
         //把数组转化成xml格式
         $xmlData = $this->arrayToXml($newPara);
         $get_data = $this->sendPrePayCurl($xmlData);
+        /*$get_data['return_code'] = "SUCCESS";
+        $get_data['result_code'] = "SUCCESS";*/
         //返回的结果进行判断。
         if($get_data['return_code'] == "SUCCESS" && $get_data['result_code'] == "SUCCESS"){
             //根据微信支付返回的结果进行二次签名
