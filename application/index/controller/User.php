@@ -413,6 +413,7 @@ class User extends Base
      */
     public function get_user_info()
     {
+        $this->get_user_redis($this->user['id'],true);
         $this->return_json(OK,$this->user);
     }
 

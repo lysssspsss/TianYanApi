@@ -459,11 +459,12 @@ class Wxpayjiu extends Base
             $data['status'] = "finish";
             //更新订单状态
             db('orders')->where("out_trade_no='".$out_trade_no."'")->update($data);
+            $data['total_fee'] = $total_fee/100.00;
             //更新用户收益
             $order = db("orders")->where("out_trade_no='".$out_trade_no."'")->find();
             if ($order['getmember']!=0){
                 $getmember = db("member")->find($order['getmember']);
-                $mdata['sumearn'] = $getmember['sumearn'] + $data['total_fee']/100.00;
+                $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
                 db('member')->where("id=".$getmember['id'])->setField("sumearn",$mdata['sumearn']);
             }
 
@@ -476,7 +477,7 @@ class Wxpayjiu extends Base
             $type = $earns['type'];
             if ($earns['lectureid']){
                 $lecture = db('course')->find($earns['lectureid']);
-                $sum = $lecture['sumearns'] + $data['total_fee']/100.00;
+                $sum = $lecture['sumearns'] + ($data['total_fee']);
                 $lecdata['sumearns'] = $sum;
                 db('course')->where("id=".$earns['lectureid'])->update($lecdata);
 
@@ -488,7 +489,7 @@ class Wxpayjiu extends Base
                 //\Common\Controller\LogController::W_P_Log("earns type is：".$type);
                 wlog($this->log_path,"earns type is：". $type);
                 if($type == 'play'){
-                    $num = $lecture['playearns']+$data['total_fee']/100.00;
+                    $num = $lecture['playearns']+$data['total_fee'];
                     $lecdata['playearns'] = $num;
                     db('course')->where("id=".$earns['lectureid'])->update($lecdata);
                 }else if ($type=='pay'){
@@ -497,7 +498,7 @@ class Wxpayjiu extends Base
                     $paycount = db('coursepay')->where("out_trade_no='".$out_trade_no."'")->setField("status",'finish');
                     //\Common\Controller\LogController::W_P_Log("更新课程支付表：".$paycount);
                     wlog($this->log_path,"更新课程支付表：".$paycount);
-                    $num = $lecture['payearns']+$data['total_fee']/100.00;
+                    $num = $lecture['payearns']+$data['total_fee'];
                     $lecdata['payearns'] = $num;
                     db('course')->where("id=".$earns['lectureid'])->update($lecdata);
                     $lecturer = db("earns")->where("out_trade_no='".$out_trade_no."' and remarks is null")->find();
@@ -559,7 +560,7 @@ class Wxpayjiu extends Base
                     //更新频道支付表
                     $paychannel = db('channelpay')->where("out_trade_no='".$out_trade_no."'")->setField("status",'finish');
                     //更新频道收益
-                    $channel_earns = $channel['earns'] + $data['total_fee']/100.00;
+                    $channel_earns = $channel['earns'] + $data['total_fee'];
                     $chadata['earns'] = $channel_earns;
                     //\Common\Controller\LogController::W_P_Log("支付频道收益：".$chadata['earns']);
                     wlog($this->log_path,"支付频道收益：".$chadata['earns']);
