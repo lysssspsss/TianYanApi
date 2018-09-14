@@ -231,6 +231,9 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
+        if(strtotime($starttime) <= (time()+86400)){
+            $this->return_json(E_ARGS,'开课时间至少要在24小时之后');
+        }
         if($type == 'password_lecture'){
             if(empty($pass)){
                 $this->return_json(E_ARGS,'密码为空');
