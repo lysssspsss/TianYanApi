@@ -585,6 +585,12 @@ class Lecture extends Base
         if(empty($lecture)){
             $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
+        if($lecture['mode'] == 'video' || $lecture['mode'] == 'vedio'){
+            $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id])->find();
+            if(strstr($video['video'],'rtmp')){
+                $lecture['mode'] = 'live';//直播类型
+            }
+        }
         if(empty($lecture['channel_id'])){
             $lecture['channel_id'] = BANZHUREN;
         }
