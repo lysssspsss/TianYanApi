@@ -348,7 +348,7 @@ class Lecture extends Base
                         $this->return_json(E_OP_FAIL, '插入课程的主持人信息失败');
                     }
                 }
-                if($mode == 'video'){//视频类型的课程
+                if($mode == 'video' || $mode == 'vedio'){//视频类型的课程
                     $zhibo_url = $this->get_stream_url($data['starttime'],$cid);
                     $videoinfo = [
                         'addtime' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
