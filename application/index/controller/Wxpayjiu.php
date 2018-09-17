@@ -44,7 +44,6 @@ class Wxpayjiu extends Base
         //LogController::W_P_Log("进入支付方法!");
         wlog($this->log_path,"jsApiCall 进入支付方法");
         $lecture_id = input('post.lecture_id');
-        $lecture = db('course')->find($lecture_id);
         $channel_id =input('post.channel_id');
         $channel_expire = input('post.expire');
         $fee = input('post.fee');
@@ -74,6 +73,20 @@ class Wxpayjiu extends Base
 
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
+            $is = db('channelpay')->field('expire,status')->where(['memberid'=>$target,'channelid'=>$channel_id])->find();
+            if(!empty($is)){
+                if($is['status']=='finish' && time()<strtotime($is['expire']))
+                $this->return_json(E_OP_FAIL,'专栏已购买，无需重复购买');
+            }
+        }
+        if (!empty($lecture_id)){
+            $lecture = db('course')->find($lecture_id);
+            $is = db('coursepay')->field('id,status')->where(['memberid'=>$target,'courseid'=>$lecture_id])->find();
+            if(!empty($is)){
+                if($is['status']=='finish'){
+                    $this->return_json(E_OP_FAIL,'课程已购买，无需重复购买');
+                }
+            }
         }
         $bookid = input('post.bookid');
             if (!empty($bookid)){
