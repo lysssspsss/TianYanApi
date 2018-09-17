@@ -50,6 +50,7 @@ class Wxpayjiu extends Base
         $fee = input('post.fee');
         $target = input('post.js_memberid');
         $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选
+        wlog($this->log_path,"接收参数:课程id：$lecture_id, 专栏id：$channel_id,expire:$channel_expire,用户id:$target, 内容：$product");
         $result = $this->validate(
             [
                 'lecture_id' => $lecture_id,
