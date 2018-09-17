@@ -36,7 +36,7 @@ class Wxpayjiu extends Base
     }
 
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_channel&target=294&fee=19900&expire=12&channel_id=415
-
+    //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=reward&target=294&fee=200&lecture_id=1862
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_channel&target=294&fee=9900&expire=null&channel_id=196  支付专栏
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_lecture&target=294&fee=500&lecture_id=1847  支付单节
     public function js_api_call()
@@ -50,7 +50,7 @@ class Wxpayjiu extends Base
         $fee = input('post.fee');
         $target = input('post.js_memberid');
         $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选
-        wlog($this->log_path,"接收参数:课程id：$lecture_id, 专栏id：$channel_id,expire:$channel_expire,用户id:$target, 内容：$product");
+        wlog($this->log_path,"接收参数:课程id：$lecture_id, 专栏id：$channel_id,fee:$fee,expire:$channel_expire,用户id:$target, 内容：$product");
         $result = $this->validate(
             [
                 'lecture_id' => $lecture_id,
@@ -254,14 +254,14 @@ class Wxpayjiu extends Base
             case 'reward' :
                 $data['sender_id'] = $member['id'];
                 $data['lecture_id'] = $lecture_id;
-                $data['pay_amount'] = $pay_amount;
+                //$data['pay_amount'] = $pay_amount;
                 $data['sender_headimg'] = $member['headimg'];
                 $data['message_type'] = $product;
                 $data['sender_nickname'] = $member['nickname'];
                 $data['add_time'] = $add_time;
                 $data['content'] = ($membername)."打赏了 " . ($tmembername). " ".$pay_amount . "元红包";
                 $data['length'] = 0;
-                $data['ppt_id'] = null;
+                //$data['ppt_id'] = null;
                 $data['ppt_url'] = null;
                 $data['reply'] = null;
                 $data['isshow'] = 'hiden';
@@ -303,7 +303,6 @@ class Wxpayjiu extends Base
                 }else{
                     wlog($this->log_path,"未取到推广记录信息");
                 }
-
                 break;
             case 'pay_channel':
                 if(strchr($channel_expire,"w")){

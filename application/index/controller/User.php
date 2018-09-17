@@ -206,6 +206,18 @@ class User extends Base
         $appid = WECHAT_APPID;
         $secret = WECHAT_APPSECRET;
         $code = input('post.code');
+        //数据验证
+        $result = $this->validate(
+            [
+                'code' => $code,
+            ],
+            [
+                'code'  => 'require',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
         $get_token_url = WECHAT_OAUTH_URL.'?appid='.$appid.'&secret='.$secret.'&code='.$code.'&grant_type=authorization_code';
         $res = esay_curl($get_token_url);
         wlog($log_name,"get_token_url 为：".$get_token_url."\n");
