@@ -256,7 +256,7 @@ class Lecture extends Base
         //$livehome = db('home')->field('id')->where(['memberid' => $this->user['id']])->find();
         $channel = db("channel")->field("id,category,is_pay_only_channel")->where("id=".$channel_id)->find();
         if($channel['is_pay_only_channel']==1 && $type=='pay_lecture'){
-            $this->return_json(E_OP_FAIL,'该课程所属专栏设置了仅付费专栏，因此无法添加付费课程。');
+            $this->return_json(E_OP_FAIL,'该课程所属专栏设置了固定收费(仅付费专栏)，因此无法添加付费课程。');
         }
         $show_on_page = 1;
         if($channel['category'] == 'businesscollege' || $channel['category'] == 'air'){
@@ -741,7 +741,7 @@ class Lecture extends Base
     /**
      * 获取专栏/课程支付信息
      */
-    public function get_channel_pay_info(){
+    public function get_pay_info(){
         $channel_id = input('get.channel_id');
         $result = $this->validate(['channel_id' => $channel_id,],['channel_id'  => 'require|number']);
         if($result !== true){
