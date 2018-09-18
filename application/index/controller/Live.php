@@ -596,6 +596,7 @@ class Live extends Base
         $where['isshow'] = 'show';
 
         $sql = "lecture_id=" . $lecture_id . " and isshow='show' and message_type != 'set_option' and message_type != 'iframe'";
+        $allcount = db('msg')->where($sql)->count();
         if (!empty($start_date) && $reverse==0) {
             $sql .= " and add_time>='$start_date'";
         }elseif (!empty($start_date) && $reverse==1){
@@ -699,6 +700,7 @@ class Live extends Base
 
         $res['data'] = $listmsg;
         $res['mark'] = $start_date;
+        $res['count'] = $allcount;
         $this->return_json(OK,$res);
     }
 
