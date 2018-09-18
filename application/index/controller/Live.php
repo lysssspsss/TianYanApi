@@ -333,6 +333,7 @@ class Live extends Base
             'lecture_id' => $lecture_id,
             'ppt_url' => null,
             'reply' => null,
+            'homeid' => null,
             'sender_headimg' => ($this->user['headimg'] == $this->user['img']) ? $this->user['headimg'] : $this->user['img'],
             'sender_id' => $this->user['id'],
             'sender_nickname' => $this->user['name'],
@@ -370,6 +371,7 @@ class Live extends Base
         }
         Db::commit();
         $data['remarks'] = empty($check_in['id'])?$check_count:$check_in['id'];
+        $data['message_id'] = $count;
         $this->redis->hset('check_in',$lecture_id,$data['remarks']);
         Tools::publish_msg(0,$lecture_id,WORKERMAN_PUBLISH_URL,$this->tranfer($data));
         $this->return_json(OK,$data);
@@ -1203,7 +1205,8 @@ class Live extends Base
      */
     public function save_video_url($lecture_id = '',$starttime='',$endtime='')
     {
-
+        /*$signature = base64_encode(hash_hmac('sha1', 'GET%201537264809%20%2Ftianyanzhibo%2Ftianyansxy%2Frecord%2Ftianyansxy%2Fty_stream1846292%2F2018-09-18-10-58-46_2018-09-18-11-03-26.mp4', ALIYUN_ACCESS_KEY_SECRET . '&', true));
+        var_dump($signature);exit;*/
         if(empty($lecture_id)){
             $lecture_id = input('post.lecture_id');
         }
@@ -1245,7 +1248,7 @@ class Live extends Base
         $endtime = date('Y-m-d',$endtime).'T'.date('H:i:s',$endtime).'Z';
 
         $arr = [
-            'Action'=>'DescribeLiveStreamRecordContent',
+            'Action'=>'DescribeLiveStreamRecordIndexFiles',
             'DomainName'=>LIVE_VHOST,
             'AppName'=>LIVE_APPNAME,
             'StreamName'=>$stearmname,
@@ -1256,7 +1259,7 @@ class Live extends Base
         $obj = new Signature($arr,$url);
         $result = $obj->callInterface();
         var_dump($result);exit;
-
+        //$this->return_json(OK,$result);
         //var_dump($stearmname);exit;
         /*$url = 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName='.LIVE_VHOST.'&AppName='.LIVE_APPNAME.'&StreamName='
             .$stearmname.'&StartTime='.$starttime.'&EndTime='.$endtime.'&Format=json&Version=2016-11-01'

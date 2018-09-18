@@ -11,8 +11,8 @@ use Think\Exception;
 class Signature
 {
     public $data;
-    public $accessKeyId = "";
-    public $accessKeySecret = "";
+   /* public $accessKeyId = "";
+    public $accessKeySecret = "";*/
     public $url;
 
     public function __construct($actionArray,$url){
@@ -26,8 +26,8 @@ class Signature
             'AccessKeyId' => ALIYUN_ACCESS_KEY_ID,
             'SignatureVersion' => '1.0',
             'SignatureMethod' => 'HMAC-SHA1',
-            'SignatureNonce'=> uniqid(),
-            'TimeStamp' => date('Y-m-d\TH:i:s\Z'),
+            'SignatureNonce'=> time().mt_rand(100,999),
+            'Timestamp' => date('Y-m-d\TH:i:s\Z'),
         );
         //判断输入的参数是否为数组
         if(is_array($actionArray)){
@@ -58,15 +58,27 @@ class Signature
         }
         // 生成用于计算签名的字符串 stringToSign
         $stringToSign = 'GET&%2F&' . $this->percentencode(substr($canonicalizedQueryString, 1));
+        //var_dump($stringToSign);
         // 计算签名，注意accessKeySecret后面要加上字符'&'
         $signature = base64_encode(hash_hmac('sha1', $stringToSign, $accessKeySecret . '&', true));
         return $signature;
     }
 
+    public function get_url($url,$data)
+    {
+        foreach($data as $key => $value){
+            $url .= $key.'='.$value.'&';
+        }
+        $url = rtrim($url,'&');
+        return $url;
+    }
+
     public function callInterface(){
         // 计算签名并把签名结果加入请求参数
-        $this->data['Signature'] = $this->computeSignature($this->data, $this->accessKeySecret);
-        //dump($this->url . http_build_query($this->data));exit;
+        $this->data['Signature'] = $this->computeSignature($this->data, ALIYUN_ACCESS_KEY_SECRET);
+        //$url = $this->get_url($this->url,$this->data);
+       // var_dump($url);
+        dump($this->url . http_build_query($this->data));
         try {
             // 发送请求
             $ch = curl_init();
