@@ -718,6 +718,29 @@ class User extends Base
         $this->return_json(OK,$data);
     }
 
+    /**
+     * 我的专栏和我的课程
+     */
+    public function my_channel_and_lecture(){
+        $type = input('get.type');
+        $result = $this->validate(['type' => $type,],['type'  => 'number']);
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $channel = db('channel')->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
+        if($type==1){//课程
+            //$channel = db('channel')->field('id')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
+            $cidlist = implode(',',array_column($channel,'channel_id'));
+            $data = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type,starttime,cost')
+                ->where(['isshow'=>'show'])->where('channel_id in ('.$cidlist.')')->order('clicknum','desc')->select();
+                //->where('name','like', '%'.$jiangshi['name'].'%')
+        }else{//专栏
+            $data = $channel;
+        }
+        //$data['memberid'] = $this->user['id'];
+        $this->return_json(OK,$data);
+    }
+
 
     /**
      * 处理申请提现

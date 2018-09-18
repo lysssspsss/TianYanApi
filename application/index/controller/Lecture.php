@@ -167,6 +167,7 @@ class Lecture extends Base
             'lecturer' => $member['id'],//专栏关联讲师
             'reseller_enabled' => $reseller_enabled,//是否开启分销
             'resell_percent' => $resell_percent,//分销比例
+            'category' => 'air',
         );
 
         if(!empty($channel_id)){
@@ -231,8 +232,8 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        if(strtotime($starttime) <= (time()+86400)){
-            $this->return_json(E_ARGS,'开课时间至少要在24小时之后');
+        if(strtotime($starttime) <= (time()+300)){
+            $this->return_json(E_ARGS,'开课时间至少要在5分钟之后');
         }
         if($type == 'password_lecture'){
             if(empty($pass)){
@@ -561,10 +562,22 @@ class Lecture extends Base
     /**
      * 获取课程 new
      */
-    public function get_kecheng()
+    public function get_kecheng($lecture_id='',$type='')
     {
-        $lecture_id = input('get.lecture_id');
-        $result = $this->validate(['lecture_id' => $lecture_id,],['lecture_id'  => 'require|number']);
+        if(empty($lecture_id)){
+            $lecture_id = input('get.lecture_id');
+        }
+        //$type = input('get.type');
+        $result = $this->validate(
+            [
+                'lecture_id' => $lecture_id,
+                //'type' => $type,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+                //'type'  => 'in:free'
+            ]
+        );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
@@ -647,8 +660,11 @@ class Lecture extends Base
 
         //是否已付费
         if(!empty($lecture['channel_id'])){
-            if($lecture['is_pay_only_channel']){
+            if($lecture['is_pay_only_channel']){//是否仅付费专栏
                 $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
+                if(!$ispay){//数据库数据有些混乱。暂时加上这个判断，以后要注释
+                    $ispay = db('coursepay')->field('id')->where("memberid=" . $this->user['id'] . " and courseid=" . $lecture['lecture_id'] . " and status='finish'")->find();
+                }
                 //var_dump($ispay,1);exit;
             }else{
                 $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
@@ -668,6 +684,9 @@ class Lecture extends Base
                 $result['is_pay'] = 'true';
             }
         }
+        if(!empty($type)){
+            $result['is_pay'] = 'true';
+        }
         if ($lecture['channel_id']==217 && $this->user['remarks']=='武汉峰会签到'){ //武汉峰会 会员进入
             $shareTitle = $this->user['name']."花980元邀请您1元钱收听".$lecture['title'];
         }else{
@@ -677,6 +696,32 @@ class Lecture extends Base
         $this->return_json(OK,$result);
     }
 
+    /**
+     * 免费试听
+     */
+    public function get_free()
+    {
+        $channel_id = input('get.channel_id');
+        $result = $this->validate(
+            [
+                'channel_id' => $channel_id,
+            ],
+            [
+                'channel_id'  => 'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $where = ['isshow'=>'show','channel_id'=>$channel_id,'type'=>'open_lecture'];
+        $lecture = db('course')->field('id as lecture_id')
+            ->where($where)->order('priority desc,clicknum desc')->find();
+        if(empty($lecture)){
+            $this->return_json(E_OP_FAIL,'暂无免费试听课程');
+        }
+        $this->get_kecheng($lecture['lecture_id'],1);
+    }
+
 
     /**
      * 获取专栏
@@ -684,7 +729,17 @@ class Lecture extends Base
     public function get_zhuanlan()
     {
         $channel_id = input('get.channel_id');
-        $result = $this->validate(['channel_id' => $channel_id,],['channel_id'  => 'require|number',]);
+        //$type = input('get.type');
+        $result = $this->validate(
+            [
+                'channel_id' => $channel_id,
+              //  'type' => $type,
+            ],
+            [
+                'channel_id'  => 'require|number',
+              //  'type'  => 'in:free',
+            ]
+        );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
@@ -701,10 +756,23 @@ class Lecture extends Base
             $where['id'] = $channel['lecturer'];
         }
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息
-        $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
-        ->where(['isshow'=>'show','channel_id'=>$channel['channel_id']])
-            ->order('priority desc,clicknum desc')
-            ->select();
+
+        //对应专栏相关课程列表
+       /* if($type=='free'){
+            $where = ['isshow'=>'show','channel_id'=>$channel['channel_id'],'type'=>'open_lecture'];
+            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')
+                ->where($where)
+                ->order('priority desc,clicknum desc')->limit(2)->select();
+        }else{*/
+            $where = ['isshow'=>'show','channel_id'=>$channel['channel_id']];
+            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')
+                ->where($where)
+                ->order('priority desc,clicknum desc')->select();
+        //}
+
+      /*  $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')
+            ->where($where)
+            ->order('priority desc,clicknum desc')->select();*/
         $channel['name'] = $jiangshi['name'];
         if (!empty($channel['roomid'])) {
             $manager = db('home_manager')->field('id')->where('homeid=' . $channel['roomid'] . ' AND beinviteid=' . $this->user['id'])->find();
