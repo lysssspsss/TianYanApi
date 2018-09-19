@@ -667,10 +667,9 @@ class Live extends Base
                 $listmsg[0] = $data;
             }
         }else{
-            $mstarr = ['text','reply_text'];
+            $mstarr = ['text','reply_text','reply_audi'];//互动页显示的消息类型
             $js_arr = [$js_memberid,BANZHUREN];
-
-            //$mstarr2 = ['text','reply_text','audio','check_in','music','picture','reply_audi','reply_text','reward','video'];
+            $mstarr2 = ['text','audio','reply_text','reply_audi','check_in','music','picture','reward','video'];//主讲页显示的消息类型
             $listmsg_bak = $arr_invete = [];
             $arr_invete = db()->table("live_invete i ,live_member m")->field("m.id as js_memberid")->where("i.beinviteid=m.id and i.courseid=" . $lecture_id)->select();
             if (!empty($arr_invete)){
@@ -684,20 +683,29 @@ class Live extends Base
                 }
             }
             $js_arr = array_unique(array_merge($js_arr,$manager,$arr_invete));
-            //var_dump($js_arr);exit;
+            //echo '<pre>';var_dump($js_arr);exit;
+
             if($type == 1){ //筛选内容。type为1时显示主讲页，为2时显示互动页内容
                 foreach($listmsg as $key=> $value){
-                    if(in_array($value['message_type'],$mstarr) && in_array($value['sender_id'],$js_arr)){
-                        unset($listmsg[$key]);
-                    }
-                }
-            }else{
-                foreach($listmsg as $key=> $value){
-                    if(in_array($value['message_type'],$mstarr) && in_array($value['sender_id'],$js_arr)){
+                    if(in_array($value['message_type'],$mstarr2) && in_array($value['sender_id'],$js_arr)){
+                        /*var_dump($listmsg[$key],$i);
+                        $i++;*/
                         $listmsg_bak[$key] = $listmsg[$key];
                     }
                 }
+                $message_arr = array_column($listmsg_bak,'content');
+                foreach($listmsg_bak as $key2 => $value2){
+                    if(!empty($value2['reply']) && !in_array($value2['reply'],$message_arr)){
+                        unset($listmsg_bak[$key2]);
+                    }
+                }
                 $listmsg = $listmsg_bak;
+            }else{
+                foreach($listmsg as $key=> $value){
+                    if(in_array($value['message_type'],$mstarr2) && in_array($value['sender_id'],$js_arr)){
+                        unset($listmsg[$key]);
+                    }
+                }
             }
             $listmsg = array_values($listmsg);
         }
