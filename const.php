@@ -66,9 +66,12 @@ const ALIYUN_PRODUCT = '456';
  */
 const OSS_ACCESS_KEY_ID = 'UCguBiEKTCTelyZp';
 const OSS_ACCESS_KEY_SECRET = 'TbNwocSPammIWDfTzV0Pd61xtHu3t5';
-const OSS_END_POINT = 'http://oss-cn-shenzhen.aliyuncs.com';
+const OSS_END_POINT_SZ = 'http://oss-cn-shenzhen.aliyuncs.com';
+const OSS_END_POINT_SH = 'http://oss-cn-shanghai.aliyuncs.com';//用于直播录制存储
 const OSS_BUCKET = 'livehomefile';
+const OSS_ZHIBO_BUCKET = 'tianyanzhibo';
 const OSS_REMOTE_PATH = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com';
+const OSS_LUZHI_TIMEOUT = 315360000;//生成的录制视频url过期时间：10年
 
 /**
  * Redis

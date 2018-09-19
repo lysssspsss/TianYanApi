@@ -78,7 +78,7 @@ class Signature
         $this->data['Signature'] = $this->computeSignature($this->data, ALIYUN_ACCESS_KEY_SECRET);
         //$url = $this->get_url($this->url,$this->data);
        // var_dump($url);
-        dump($this->url . http_build_query($this->data));
+        //dump($this->url . http_build_query($this->data));
         try {
             // 发送请求
             $ch = curl_init();

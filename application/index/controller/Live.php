@@ -12,6 +12,8 @@ class Live extends Base
         parent::__construct();
     }
 
+    private $log_path = APP_PATH.'log/Live.log';//日志路径;
+
     /**
      * 直播间接口
      */
@@ -1201,32 +1203,29 @@ class Live extends Base
 
 
     /**
-     * 直播完成获取保存视频url
+     * 直播完成，更新直播间拉流地址为录制的视频地址
      */
-    public function save_video_url($lecture_id = '',$starttime='',$endtime='')
+    public function save_video_url()
     {
-        /*$signature = base64_encode(hash_hmac('sha1', 'GET%201537264809%20%2Ftianyanzhibo%2Ftianyansxy%2Frecord%2Ftianyansxy%2Fty_stream1846292%2F2018-09-18-10-58-46_2018-09-18-11-03-26.mp4', ALIYUN_ACCESS_KEY_SECRET . '&', true));
-        var_dump($signature);exit;*/
-        if(empty($lecture_id)){
+        $lecture_id = input('get.lecture_id');
+        //$str = 'tianyansxy/record/tianyansxy/ty_stream1846292/2018-09-18-10-58-46_2018-09-18-11-03-26.mp4';
+        /*if(empty($lecture_id)){
             $lecture_id = input('post.lecture_id');
-        }
-        if(empty($starttime)){
-            $starttime = input('post.starttime');
-        }
-        if(empty($endtime)){
-            $endtime = empty(input('post.endtime'))?date('Y-m-d H:i:s'):input('post.endtime');
-        }
+        }*/
+        /*if(empty($endtime)){
+            $endtime = date('Y-m-d H:i:s');
+        }*/
         //数据验证
         $result = $this->validate(
             [
                 'lecture_id' => $lecture_id,
-                'starttime' => $starttime,
-                'endtime' => $endtime,
+                /*'starttime' => $starttime,
+                'endtime' => $endtime,*/
             ],
             [
                 'lecture_id'  => 'require|number',
-                'starttime' =>  'require|date',
-                'endtime' =>  'date',
+               /* 'starttime' =>  'require|date',
+                'endtime' =>  'date',*/
             ]
         );
         if($result !== true){
@@ -1239,14 +1238,19 @@ class Live extends Base
         if(!strstr($video['video'],'rtmp')){
             $this->return_json(E_OP_FAIL,'该播放地址不是rtmp地址');
         }
+        $lecture = db('course')->field('id,starttime')->where(['id'=>$lecture_id])->find();
+        if(empty($lecture)){
+            $this->return_json(E_OP_FAIL,'找不到对应课程');
+        }
+        $starttime = strtotime($lecture['starttime']);//暂时用addtime,上线后用starttime
+        $endtime = $starttime+86400;
         $rtmp_arr = parse_url($video['video']);
         $stearm = explode('/',$rtmp_arr['path']);
         $stearmname = end($stearm);
-        $starttime = strtotime($starttime);
-        $starttime = date('Y-m-d',$starttime).'T'.date('H:i:s',$starttime).'Z';
-        $endtime = strtotime($endtime);
+        //$starttime = strtotime($starttime);
+        $starttime = date('Y-m-d',$starttime-86400).'T'.date('H:i:s',$starttime).'Z';
+        //$endtime = strtotime($endtime);
         $endtime = date('Y-m-d',$endtime).'T'.date('H:i:s',$endtime).'Z';
-
         $arr = [
             'Action'=>'DescribeLiveStreamRecordIndexFiles',
             'DomainName'=>LIVE_VHOST,
@@ -1257,9 +1261,28 @@ class Live extends Base
         ];
         $url = "https://live.aliyuncs.com/?";
         $obj = new Signature($arr,$url);
-        $result = $obj->callInterface();
-        var_dump($result);exit;
-        //$this->return_json(OK,$result);
+        $res = $obj->callInterface();
+        $str = '';
+        if(empty($res['status'])){
+            $this->return_json(E_OP_FAIL,$res['msg']);
+        }
+        $oss_arr = json_decode($res['msg'],true);
+
+        if(empty($oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'])){
+            $this->return_json(E_OP_FAIL, '没有找到录制的视频');
+        }
+        $oss_obj = $oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'];
+        $video_url = Tools::get_oss_url_sign($oss_obj,OSS_LUZHI_TIMEOUT);
+        $videoinfo = ['video' => $video_url];
+        $vid = db('video')->where(['lecture_id'=>$lecture_id])->update($videoinfo);
+        if ($vid) {
+            wlog($this->log_path, "save_video_url 修改课程id为：" . $lecture_id . "的video字段信息成功");
+        } else {
+            wlog($this->log_path, "save_video_url 修改课程id为：" . $lecture_id . "的video字段信息失败");
+            $this->return_json(E_OP_FAIL, '修改视频信息失败');
+        }
+
+        $this->return_json(OK,['pull_url'=>$video_url]);
         //var_dump($stearmname);exit;
         /*$url = 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName='.LIVE_VHOST.'&AppName='.LIVE_APPNAME.'&StreamName='
             .$stearmname.'&StartTime='.$starttime.'&EndTime='.$endtime.'&Format=json&Version=2016-11-01'

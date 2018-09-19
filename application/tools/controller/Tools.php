@@ -36,6 +36,13 @@ class Tools extends Controller
     }
 
 
+    /**
+     * POST请求
+     * @param $url
+     * @param $header
+     * @param $data
+     * @return array
+     */
     public static function curlPost($url,$header,$data){
         try{
             $ch = curl_init();
@@ -149,7 +156,7 @@ class Tools extends Controller
     public static function UploadFile_OSS($object,$content){
         $accessKeyId = OSS_ACCESS_KEY_ID;
         $accessKeySecret = OSS_ACCESS_KEY_SECRET;
-        $endpoint = OSS_END_POINT;
+        $endpoint = OSS_END_POINT_SZ;
         $bucket = OSS_BUCKET;
         $log_path = APP_PATH.'log/uploadFile.log';
         if (!isset($object)){
@@ -175,6 +182,25 @@ class Tools extends Controller
         }
     }
 
+    /**
+     * 获取oss api请求签名
+     * @param $obj
+     * @param $time_out
+     * @return string
+     */
+    public static function get_oss_url_sign($obj,$time_out)
+    {
+        $ossClient = new OssClient(OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_END_POINT_SH);
+        return $ossClient->signUrl(OSS_ZHIBO_BUCKET,$obj,$time_out);
+    }
+
+    /**
+     * 获取视频截图
+     * @param $file
+     * @param int $time
+     * @param $name
+     * @return bool
+     */
     public static function  getVideoCover($file,$time=1,$name) {
         $log_path = APP_PATH.'log/ffmpeg.log';
         if(empty($time))$time = '1';//默认截取第一秒第一帧
@@ -189,6 +215,12 @@ class Tools extends Controller
         return true;
     }
 
+    /**
+     * 音频转码成MP3
+     * @param $p_amr
+     * @param $p_mp3
+     * @return bool
+     */
     public static function  get_mp3($p_amr,$p_mp3) {
         $log_path = APP_PATH.'log/ffmpeg.log';
         //使用ffmpeg 将amr转成mp3
@@ -202,6 +234,12 @@ class Tools extends Controller
         return true;
     }
 
+    /**
+     * 视频转码成MP4
+     * @param $p_amr
+     * @param $p_mp4
+     * @return bool
+     */
     public static function  get_mp4($p_amr,$p_mp4) {
         $log_path = APP_PATH.'log/ffmpeg.log';
         $command = "ffmpeg -i $p_amr -codec copy $p_mp4";
