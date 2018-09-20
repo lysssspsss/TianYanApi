@@ -692,15 +692,8 @@ class Live extends Base
             if($type == 1){ //筛选内容。type为1时显示主讲页，为2时显示互动页内容
                 foreach($listmsg as $key=> $value){
                     if(in_array($value['sender_id'],$js_arr)){
-                        //$lecture_listmsg[$key] = $listmsg[$key];
                         $listmsg_bak[$key] = $listmsg[$key];
-                        /*if(in_array($value['message_type'],$mstarr2)) {
-                            $listmsg_bak[$key] = $listmsg[$key];
-                        }*/
                     }
-                    /*if(in_array($value['message_type'],$mstarr2) && in_array($value['sender_id'],$js_arr)){
-                        $listmsg_bak[$key] = $listmsg[$key];
-                    }*/
                     if ($value['message_type'] == 'reward'){
                         $listmsg_bak[$key] = $listmsg[$key];
                     }
@@ -711,31 +704,8 @@ class Live extends Base
                         }
                     }
                 }
-                //$zj_sendname_arr = array_unique(array_column($listmsg_sendname_list,'sender_nickname'));
-                //var_dump($zj_sendname_arr);exit;
-                /*foreach($lecture_listmsg as $key2 => $value2) {
-                    if ($value2['message_type'] == 'reply_text' || $value2['message_type'] == 'reply_audi') {
-                        if (!empty($value2['reply'])) {
-                            $replyarr = explode(':', $value2['reply']);
-                            if (!in_array($replyarr[0], $zj_sendname_arr)) {
-                                $lecture_listmsg_bak[$key2] = $lecture_listmsg[$key2];
-                            }
-                        }
-                    }
-                }*/
-                //$message_arr = array_column($listmsg_bak,'content');
-                /*foreach($listmsg_bak as $key2 => $value2){
-                    if(!empty($value2['reply']) && !in_array($value2['reply'],$message_arr)){
-                        unset($listmsg_bak[$key2]);
-                    }
-                }*/
-                $listmsg = $listmsg_bak;
+                $listmsg = array_values($listmsg_bak);
             }else{
-                /*foreach($listmsg as $key=> $value){
-                    if(in_array($value['message_type'],$mstarr2) && in_array($value['sender_id'],$js_arr)){
-                        unset($listmsg[$key]);
-                    }
-                }*/
                 foreach($listmsg as $key=> $value){
                     if(in_array($value['sender_id'],$js_arr)){
                         unset($listmsg[$key]);
@@ -753,7 +723,6 @@ class Live extends Base
             }
             $listmsg = array_values($listmsg);
         }
-        //dump($listmsg);exit;
         $res['data'] = $listmsg;
         $res['mark'] = $start_date;
         $res['count'] = $allcount;
