@@ -74,6 +74,15 @@ const OSS_REMOTE_PATH = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com';
 const OSS_LUZHI_TIMEOUT = 315360000;//生成的录制视频url过期时间：10年
 
 /**
+ * 短信宝
+ */
+
+const DXB_ACCOUNT = 'bx5000';//短信宝账户
+const DXB_PASSWORD = '19891125';//密码
+const DXB_SENDSMSURL = "http://api.smsbao.com/sms";
+const DXB_QUERYURL = "http://api.smsbao.com/query";
+
+/**
  * Redis
  */
 const REDIS_HOST = '111.230.238.183';

@@ -1,5 +1,6 @@
 <?php
 namespace app\index\controller;
+use app\tools\controller\Smsbao;
 use think\Db;
 use app\tools\controller\Message;
 use Think\Exception;
@@ -14,7 +15,7 @@ class User extends Base
     private $log_path = APP_PATH.'log/User.log';
 
     /**
-     * 注册发送短信接口
+     * 发送短信接口
      */
     public function sms()
     {
@@ -31,14 +32,28 @@ class User extends Base
         $code = mt_rand(10000,99999);
         //$date = date('Ymd');
         //var_dump(ALIYUN_TEMP_CODE.$type);exit;
-        $send = Message::sendSms($phone,$code,ALIYUN_TEMP_CODE.$type,'890',ALIYUN_SIGN_TEST);
-        if(empty($send)){
+        //$send = Message::sendSms($phone,$code,ALIYUN_TEMP_CODE.$type,'890',ALIYUN_SIGN_TEST);
+        $mb = '';
+        switch ($type){
+            case 0:$mb = '【天雁商学院】会员信息变更,您的验证码为:'.$code;break;
+            case 1:$mb = '【天雁商学院】会员修改密码,您的验证码为:'.$code;break;
+            case 2:$mb = '【天雁商学院】会员正在注册,您的验证码为:'.$code;break;
+            case 3:$mb = '【天雁商学院】会员登录异常,您的验证码为:'.$code;break;
+            case 4:$mb = '【天雁商学院】会员正在登录,您的验证码为:'.$code;break;
+            case 5:$mb = '【天雁商学院】会员身份验证,您的验证码为:'.$code;break;
+        }
+        $send = Smsbao::sendSms($phone,$mb);
+        /*if(empty($send)){
             wlog($this->log_path,'send_sms:发送短信返回内容为空:'.$phone.'-'.$code);
             $this->return_json(E_OP_FAIL,'短信发送失败，请检查网络1');
         }
         if($send->Message != 'OK'){
             wlog($this->log_path,'send_sms:'.$phone.'-'.$code.'-'.json_encode($send,JSON_UNESCAPED_UNICODE));
             $this->return_json(E_OP_FAIL,'短信发送失败，请检查网络2');
+        }*/
+        if($send['msg']!='success'){
+            wlog($this->log_path,'send_sms:'.$phone.'-'.$code.'发送失败,'.$send['msg']);
+            $this->return_json(E_OP_FAIL,'短信发送失败'.$send['msg']);
         }
         $this->redis->set(REDIS_YZM_KEY.':'.$phone.'_'.$type,$code,REDIS_EXPIRE_5M);//暂存到redis
         $this->return_json(OK,['code'=>(string)$code]);
