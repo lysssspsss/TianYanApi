@@ -156,7 +156,7 @@ class Lecture extends Base
             'create_time' => date("Y-m-d H:i:s"),
             'name' => $name,//专栏名称
             'type' => $channel_type,//pay_channel 或 open_channel
-            'description' => $description,//专栏介绍
+            'description' => !empty($description)?$description:' ',//专栏介绍
             //'cover_url' => SERVER_URL . "/public/images/cover/cover" . rand(1, 20) . ".jpg",//封面图片
             'cover_url' => $cover_url,//封面图片
             'money' => $money,//收费金额
