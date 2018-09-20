@@ -600,6 +600,7 @@ class Live extends Base
         $where['isshow'] = 'show';
 
         $sql = "lecture_id=" . $lecture_id . " and isshow='show' and message_type != 'set_option' and message_type != 'iframe'";
+        //$sql_bak = "lecture_id=" . $lecture_id;
         $allcount = db('msg')->where($sql)->count();
         if (!empty($start_date) && $reverse==0) {
             $sql .= " and add_time>='$start_date'";
@@ -669,8 +670,8 @@ class Live extends Base
         }else{
             $mstarr = ['text','reply_text','reply_audi'];//互动页显示的消息类型
             $js_arr = [$js_memberid,BANZHUREN];
-            $mstarr2 = ['text','audio','reply_text','reply_audi','check_in','music','picture','reward','video'];//主讲页显示的消息类型
-            $listmsg_bak = $arr_invete = [];
+            $mstarr2 = ['text','audio','reply_text','reply_audi','check_in','music','picture','reward','video','publish'];//主讲页显示的消息类型
+            $lecture_listmsg_bak = $lecture_listmsg = $listmsg_bak = $arr_invete = [];
             $arr_invete = db()->table("live_invete i ,live_member m")->field("m.id as js_memberid")->where("i.beinviteid=m.id and i.courseid=" . $lecture_id)->select();
             if (!empty($arr_invete)){
                 $arr_invete = array_column($arr_invete,'js_memberid');
@@ -684,32 +685,75 @@ class Live extends Base
             }
             $js_arr = array_unique(array_merge($js_arr,$manager,$arr_invete));
             //echo '<pre>';var_dump($js_arr);exit;
-
+            $js_str = implode(',',$js_arr);
+            $listmsg_sendname_list = db('msg')->field('sender_nickname')->where(['lecture_id'=>$lecture_id])->where('sender_id in ('.$js_str.')')->group('sender_nickname')->select();
+            $listmsg_sendname_list = array_column($listmsg_sendname_list,'sender_nickname');
+            //var_dump($listmsg_sendname_list);exit;
             if($type == 1){ //筛选内容。type为1时显示主讲页，为2时显示互动页内容
                 foreach($listmsg as $key=> $value){
-                    if(in_array($value['message_type'],$mstarr2) && in_array($value['sender_id'],$js_arr)){
-                        /*var_dump($listmsg[$key],$i);
-                        $i++;*/
+                    if(in_array($value['sender_id'],$js_arr)){
+                        //$lecture_listmsg[$key] = $listmsg[$key];
+                        $listmsg_bak[$key] = $listmsg[$key];
+                        /*if(in_array($value['message_type'],$mstarr2)) {
+                            $listmsg_bak[$key] = $listmsg[$key];
+                        }*/
+                    }
+                    /*if(in_array($value['message_type'],$mstarr2) && in_array($value['sender_id'],$js_arr)){
+                        $listmsg_bak[$key] = $listmsg[$key];
+                    }*/
+                    if ($value['message_type'] == 'reward'){
                         $listmsg_bak[$key] = $listmsg[$key];
                     }
+                    if ($value['message_type'] == 'reply_text' || $value['message_type'] == 'reply_audi') {
+                        $replyarr = explode(':', $value['reply']);
+                        if (!in_array($replyarr[0], $listmsg_sendname_list)) {
+                            unset($listmsg_bak[$key]);
+                        }
+                    }
                 }
-                $message_arr = array_column($listmsg_bak,'content');
-                foreach($listmsg_bak as $key2 => $value2){
+                //$zj_sendname_arr = array_unique(array_column($listmsg_sendname_list,'sender_nickname'));
+                //var_dump($zj_sendname_arr);exit;
+                /*foreach($lecture_listmsg as $key2 => $value2) {
+                    if ($value2['message_type'] == 'reply_text' || $value2['message_type'] == 'reply_audi') {
+                        if (!empty($value2['reply'])) {
+                            $replyarr = explode(':', $value2['reply']);
+                            if (!in_array($replyarr[0], $zj_sendname_arr)) {
+                                $lecture_listmsg_bak[$key2] = $lecture_listmsg[$key2];
+                            }
+                        }
+                    }
+                }*/
+                //$message_arr = array_column($listmsg_bak,'content');
+                /*foreach($listmsg_bak as $key2 => $value2){
                     if(!empty($value2['reply']) && !in_array($value2['reply'],$message_arr)){
                         unset($listmsg_bak[$key2]);
                     }
-                }
+                }*/
                 $listmsg = $listmsg_bak;
             }else{
-                foreach($listmsg as $key=> $value){
+                /*foreach($listmsg as $key=> $value){
                     if(in_array($value['message_type'],$mstarr2) && in_array($value['sender_id'],$js_arr)){
                         unset($listmsg[$key]);
+                    }
+                }*/
+                foreach($listmsg as $key=> $value){
+                    if(in_array($value['sender_id'],$js_arr)){
+                        unset($listmsg[$key]);
+                    }
+                    if ($value['message_type'] == 'reward'){
+                        unset($listmsg[$key]);
+                    }
+                    if ($value['message_type'] == 'reply_text' || $value['message_type'] == 'reply_audi') {
+                        $replyarr = explode(':', $value['reply']);
+                        if (!in_array($replyarr[0], $listmsg_sendname_list)) {
+                            $listmsg[$key] = $value;
+                        }
                     }
                 }
             }
             $listmsg = array_values($listmsg);
         }
-
+        //dump($listmsg);exit;
         $res['data'] = $listmsg;
         $res['mark'] = $start_date;
         $res['count'] = $allcount;
