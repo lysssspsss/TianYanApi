@@ -352,7 +352,8 @@ class Lecture extends Base
                         $this->return_json(E_OP_FAIL, '插入课程的主持人信息失败');
                     }
                 }
-                if($mode == 'video' || $mode == 'vedio'){//视频类型的课程
+                //if($mode == 'video' || $mode == 'vedio'){//视频类型的课程
+                //不管是不是视频类型都先创建推拉流地址，以防修改类型的情况
                     $zhibo_url = $this->get_stream_url($data['starttime'],$cid);
                     $videoinfo = [
                         'addtime' => date("Y-m-d H:i:s") . "." . rand(000000, 999999),
@@ -373,7 +374,7 @@ class Lecture extends Base
                         wlog($this->log_path, "add_lecture 插入课程id为：" . $cid . "的video信息失败");
                         $this->return_json(E_OP_FAIL, '插入课程的主持人信息失败');
                     }
-                }
+                //}
 
             } else {
                 Db::rollback();
@@ -622,7 +623,7 @@ class Lecture extends Base
             $where['id'] = $lecture['lecturer'];
         }
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息
-        
+
         if($lecture['channel_id']==BANZHUREN){
             $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
             ->where(['isshow'=>'show','memberid'=>$jiangshi['js_memberid']])
