@@ -622,10 +622,19 @@ class Lecture extends Base
             $where['id'] = $lecture['lecturer'];
         }
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息
-        $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
+        
+        if($lecture['channel_id']==BANZHUREN){
+            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
+            ->where(['isshow'=>'show','memberid'=>$jiangshi['js_memberid']])
+                ->order('priority desc,clicknum desc')
+                ->select();
+        }else{
+            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
             ->where(['isshow'=>'show','channel_id'=>$lecture['channel_id']])
-            ->order('priority desc,clicknum desc')
-            ->select();
+                ->order('priority desc,clicknum desc')
+                ->select();
+        }
+
         $lecture['name'] = $jiangshi['name'];
        /* $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
         if ($status != '进行中') {
