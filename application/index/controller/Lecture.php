@@ -657,6 +657,8 @@ class Lecture extends Base
         }
         !empty($is_vip)?$result['is_vip'] = 'true':$result['is_vip'] = 'false';
 
+        //判断是否已关注
+        $result['isattention'] =  $this->is_attention($this->user['id'],$lecture['channel_id']);
 
         //是否已付费
         if(!empty($lecture['channel_id'])){
@@ -784,7 +786,8 @@ class Lecture extends Base
         $result['memberid'] = $this->user['id'];
         //当前用户是否为直播间管理员
         !empty($manager)?$result['manager'] = 'true':$result['manager'] = 'false';
-
+        //判断是否已关注
+        $result['isattention'] =  $this->is_attention($this->user['id'],$channel['channel_id']);
         //是否已付费
         $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $channel['channel_id'] . " and status='finish'")->find();
 

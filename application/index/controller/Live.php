@@ -128,12 +128,13 @@ class Live extends Base
         if(empty($lecture['channel_id'])){
             $result['isattention'] = 0;
         }else{
-            $atten = db('attention')->field('id')->where(['memberid'=>$currentMember['id'],'roomid'=>$lecture['channel_id'],'type'=>1])->find();
+            /*$atten = db('attention')->field('id')->where(['memberid'=>$currentMember['id'],'roomid'=>$lecture['channel_id'],'type'=>1])->find();
             if (!empty($atten)) {
                 $result['isattention'] = 1;
             } else {
                 $result['isattention'] = 0;
-            }
+            }*/
+            $result['isattention'] =  $this->is_attention($currentMember['id'],$lecture['channel_id']);
         }
 
         $subscrib = db('subscribe')->field('id')->where(['cid'=>$lecture_id,'mid'=>$currentMember['id']])->find();

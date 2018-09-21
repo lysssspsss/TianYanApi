@@ -103,6 +103,21 @@ class Base extends Controller
         return true;
     }
 
+    /**
+     * 判断是否已关注专栏
+     * @param $memberid
+     * @param $channel_id
+     * @return int
+     */
+    protected function is_attention($memberid,$channel_id)
+    {
+        $atten = db('attention')->field('id')->where(['memberid'=>$memberid,'roomid'=>$channel_id,'type'=>1])->find();
+        if (!empty($atten)) {
+            return  1;
+        } else {
+            return  0;
+        }
+    }
 
 
     /**
