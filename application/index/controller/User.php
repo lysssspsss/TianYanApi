@@ -742,17 +742,20 @@ class User extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        $channel = db('channel')->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
         if($type==1){//课程
             //$channel = db('channel')->field('id')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
-            $cidlist = implode(',',array_column($channel,'channel_id'));
+            //$cidlist = implode(',',array_column($channel,'channel_id'));
             $data = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type,starttime,cost')
-                ->where(['isshow'=>'show'])->where('channel_id in ('.$cidlist.')')->order('clicknum','desc')->select();
+                ->where(['isshow'=>'show'])->where(['memberid'=>$this->user['id']])->order('clicknum','desc')->select();
                 //->where('name','like', '%'.$jiangshi['name'].'%')
         }else{//专栏
-            $data = $channel;
+            $data = db('channel')->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
+            //$data = $channel;
         }
         //$data['memberid'] = $this->user['id'];
+        if(empty($data)){
+            $this->return_json(E_OP_FAIL,'暂无 课程/专栏');
+        }
         $this->return_json(OK,$data);
     }
 

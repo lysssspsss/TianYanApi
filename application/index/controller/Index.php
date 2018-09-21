@@ -206,7 +206,7 @@ class Index extends Base
         if(empty($list)) {
             //$this->return_json(OK,[]);
             $res['code'] = OK;
-            $res['data'] = '';
+            $res['data'] = [];
             exit(json_encode($res));
         }
         foreach ($list as $k => $v) {
