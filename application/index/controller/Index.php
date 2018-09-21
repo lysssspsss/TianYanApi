@@ -204,7 +204,10 @@ class Index extends Base
         $list = db('course')->where("(name like '%$input%' or labels like '%$input%') and isshow='show'")->limit($limit-1, $length)->select();
         $data = [];
         if(empty($list)) {
-            $this->return_json(OK,['msg'=>'搜索结果为空']);
+            //$this->return_json(OK,[]);
+            $res['code'] = OK;
+            $res['data'] = '';
+            exit(json_encode($res));
         }
         foreach ($list as $k => $v) {
             $member = db('member')->find($v['memberid']);
