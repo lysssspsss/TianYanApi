@@ -842,6 +842,41 @@ class User extends Base
     }
 
     /**
+     * 意见反馈
+     */
+    public function feedback()
+    {
+        $feedback = input('post.feedback');
+        $phone = input('post.phone');
+        $name = input('post.name');
+        $result = $this->validate(
+            [
+                'feedback'  => $feedback,
+                'phone' => $phone,
+                'name' => $name,
+            ],
+            [
+                'feedback'  => 'require|chsAlphaNum',
+                'phone'  => 'require|min:11|max:11',
+                'name'  => 'require|chsAlphaNum',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data['feedback'] = $feedback;
+        $data['phone'] = $phone;
+        $data['name'] = $name;
+        $data['addtime'] = date('Y-m-d H:i:s');
+        $a = db('feedback')->insertGetId($data);
+        if($a){
+            $this->return_json(OK,['msg'=>'提交成功']);
+        }else{
+            $this->return_json(E_OP_FAIL,'提交失败');
+        }
+    }
+
+    /**
      * floor向下取整
      * @param $num
      * @return float|int

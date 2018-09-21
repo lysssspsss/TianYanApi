@@ -648,7 +648,17 @@ class Base extends Controller
         return $this->redis->del($rk);
     }
 
-
+    /**
+     * 数据类型转换
+     * @param $data
+     * @return array|string
+     */
+    public function tranfer($data)
+    {
+        $data = arr_val_tran_str($data);
+        $data = json_encode($data,JSON_UNESCAPED_UNICODE);
+        return $data;
+    }
 
 
 }

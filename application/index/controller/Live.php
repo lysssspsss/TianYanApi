@@ -668,10 +668,10 @@ class Live extends Base
                 $listmsg[0] = $data;
             }
         }else{
-            $mstarr = ['text','reply_text','reply_audi'];//互动页显示的消息类型
+            //$mstarr = ['text','reply_text','reply_audi'];//互动页显示的消息类型
             $js_arr = [$js_memberid,BANZHUREN];
-            $mstarr2 = ['text','audio','reply_text','reply_audi','check_in','music','picture','reward','video','publish'];//主讲页显示的消息类型
-            $lecture_listmsg_bak = $lecture_listmsg = $listmsg_bak = $arr_invete = [];
+            //$mstarr2 = ['text','audio','reply_text','reply_audi','check_in','music','picture','reward','video','publish'];//主讲页显示的消息类型
+            //$lecture_listmsg_bak = $lecture_listmsg = $listmsg_bak = $arr_invete = [];
             $arr_invete = db()->table("live_invete i ,live_member m")->field("m.id as js_memberid")->where("i.beinviteid=m.id and i.courseid=" . $lecture_id)->select();
             if (!empty($arr_invete)){
                 $arr_invete = array_column($arr_invete,'js_memberid');
@@ -1321,16 +1321,4 @@ class Live extends Base
         return parent::upload_file();
     }
 
-
-    /**
-     * 数据类型转换
-     * @param $data
-     * @return array|string
-     */
-    public function tranfer($data)
-    {
-        $data = arr_val_tran_str($data);
-        $data = json_encode($data,JSON_UNESCAPED_UNICODE);
-        return $data;
-    }
 }

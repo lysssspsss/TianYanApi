@@ -498,6 +498,8 @@ class Wxpayjiu extends Base
                 $msg = db('msg')->where("out_trade_no='".$out_trade_no."' and lecture_id=".$earns['lectureid'])->order("message_id desc")->find();
                 if ($msg){
                     db('msg')->where("message_id=".$msg['message_id'])->setField("isshow","show");
+                    $msg['isshow'] = 'show';
+                    Tools::publish_msg(0,$earns['lectureid'],WORKERMAN_PUBLISH_URL,$this->tranfer($msg));
                 }
                 //\Common\Controller\LogController::W_P_Log("earns type is：".$type);
                 wlog($this->log_path,"earns type is：". $type);
