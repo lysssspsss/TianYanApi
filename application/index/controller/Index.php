@@ -283,7 +283,7 @@ class Index extends Base
 
     public function xieyi()
     {
-        $content = '<pre>天雁商学院会员协议
+        $content = '天雁商学院会员协议
 
 一、注册协议条款的确认和接受
 为获得网络服务，申请人应当认真阅读、充分理解本《协议》中各条款，包括免除或者限制本公司责任的免责条款及对用户
@@ -329,7 +329,7 @@ class Index extends Base
 
 五、声明
 任何单位或个人未经天雁商学院授权许可，不得以天雁商学院提供的产品和服务内容，及天雁商学院商标、文字、形象、
-标识等进行营利活动，天雁商学院将保留对前述行为人追究法律责任的权利。</pre>';
+标识等进行营利活动，天雁商学院将保留对前述行为人追究法律责任的权利。';
         $result['code'] = OK;
         $result['data'] = $content;
         exit(json_encode($result,JSON_UNESCAPED_UNICODE));
