@@ -383,7 +383,7 @@ class User extends Base
                 'name'=>$member['name']?$member['name']:$member['nickname'],
                 'memberid'=>$member['id'],
                 'description'=>$member['intro'],
-                'avatar_url'=>($member['headimg']==$member['img'])?$member['headimg']:$member['img'],
+                'avatar_url'=>$member['headimg'],
                 'attentionnum'=>0,
                 'listennum'=>0,
                 'liveroom_qrcode_url'=>LIVEROOM_QRCODE_URL,
@@ -422,7 +422,8 @@ class User extends Base
             $homedata = array(
                 'name'=>$name,
                 'description'=>$member['intro'],
-                'avatar_url'=>($member['headimg']==$member['img'])?$member['headimg']:$member['img'],
+                //'avatar_url'=>($member['headimg']==$member['img'])?$member['headimg']:$member['img'],
+                'avatar_url'=>$member['headimg'],
             );
             $mcount = db('home')->where(['id'=>$liveroom['id']])->update($homedata);
            /* if(empty($mcount)){
@@ -441,6 +442,12 @@ class User extends Base
     public function get_user_info()
     {
         $this->get_user_redis($this->user['id'],true);
+        $verify = db('verify')->field('status')->where('memberid='.$this->user['id'])->order('id','desc')->find();
+        if(!empty($verify)){
+            if($verify['status'] == 'wait'){
+                $this->user['isauth'] = 'vering';
+            }
+        }
         $this->return_json(OK,$this->user);
     }
 
