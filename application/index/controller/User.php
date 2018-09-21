@@ -444,7 +444,7 @@ class User extends Base
         $this->get_user_redis($this->user['id'],true);
         $verify = db('verify')->field('status')->where('memberid='.$this->user['id'])->order('id','desc')->find();
         if(!empty($verify)){
-            if($verify['status'] == 'wait'){
+            if($verify['status'] == 'wait' && $this->user['isauth'] == 'wait'){
                 $this->user['isauth'] = 'vering';
             }
         }
