@@ -662,7 +662,7 @@ class User extends Base
                 }
             }
         }else{
-            $this->return_json(OK,['msg'=>'暂无收益']);
+            $this->return_json(E_OP_FAIL,'暂无收益');
         }
         //dump($lecture_data);exit;
         $this->return_json(OK,$lecture_data);
@@ -737,7 +737,7 @@ class User extends Base
             foreach($data['channelpay'] as $k => $v){
                 $sub_title = db('course')->field('name')->where(['channel_id'=>$v['channelid']])->order('clicknum','desc')->limit(2)->select();
                 $data['channelpay'][$k]['sub_title1'] = empty($sub_title[0]['name'])?'天雁商学院特级讲师':$sub_title[0]['name'];
-                $data['channelpay'][$k]['sub_title2'] = empty($sub_title[0]['name'])?'天雁商学院特级讲师':$sub_title[1]['name'];
+                $data['channelpay'][$k]['sub_title2'] = empty($sub_title[1]['name'])?'天雁商学院特级讲师':$sub_title[1]['name'];
             }
         }
         $data['memberid'] = $this->user['id'];
