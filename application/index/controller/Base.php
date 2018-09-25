@@ -104,6 +104,27 @@ class Base extends Controller
     }
 
     /**
+     * 签名验证
+     * @return bool
+     */
+    protected function check_sign_for_android()
+    {
+        $param = input('request.');
+        if(empty($param['sign'])){
+            $this->return_json(422,'参数为空：sign');
+        }
+        $sign = $param['sign'];
+        unset($param['sign']);
+        wlog(APP_PATH.'log/sign.log',$sign.'  |  '.json_encode($param));
+        //$is = vsign($sign,$param);
+        if(token_encrypt($param,USER_TOKEN_KEY)!=$sign){
+            $this->return_json(E_SIGN,'验签失败');
+        }
+        ob_clean();
+        return true;
+    }
+
+    /**
      * 判断是否已关注专栏
      * @param $memberid
      * @param $channel_id
@@ -361,7 +382,7 @@ class Base extends Controller
         $key = $tel.'_'.$num;
         $redis_code = $this->redis->get(REDIS_YZM_KEY.':'.$key);
         if($code != $redis_code){
-            $this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
+            //$this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
         }
         $this->redis->del(REDIS_YZM_KEY.':'.$key);
         return true;
