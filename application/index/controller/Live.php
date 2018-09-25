@@ -513,7 +513,8 @@ class Live extends Base
         if(empty($msg)){
             $this->return_json(E_OP_FAIL,'上墙失败,找不到该消息或重复上墙');
         }
-        $message = db('msg')->field('lecture_id')->where(['message_id'=>$message_id])->find();
+        $message = db('msg')->where(['message_id'=>$message_id])->find();
+        Tools::publish_msg(0,$message['lecture_id'],WORKERMAN_PUBLISH_URL,$this->tranfer($message));
         $this->get_upwall_list($message['lecture_id']);
         //$this->return_json(OK,$msg);
     }
