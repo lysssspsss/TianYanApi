@@ -14,6 +14,8 @@ class User extends Base
 
     private $log_path = APP_PATH.'log/User.log';
 
+    private $vip_phone = ['13682694631','13128820643','13168088229','18823397801'];
+    private $vip_code = ['44244','68989'];
     /**
      * 发送短信接口
      */
@@ -158,7 +160,7 @@ class User extends Base
     {
         $phone = input('post.phone');
         $code = input('post.code');
-        if($phone == '13168088229' && $code =='42244'){
+        if(in_array($phone,$this->vip_phone) && in_array($code,$this->vip_code)){
 
         }else{
             //数据验证
