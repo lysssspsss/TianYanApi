@@ -229,7 +229,9 @@ class Index extends Base
             }
             $data[$k]['current_status_display'] = $status ? $status : '已结束';
         }
-
+        if(empty($this->user['id'])){
+            $this->user['id'] = 0;
+        }
         $a = db('searchhistory')->field('id')->where(['memberid'=>$this->user['id'],'content'=>$input])->find();
         if(empty($a['id'])){
             $sdata['content'] = $input;
