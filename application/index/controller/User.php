@@ -467,8 +467,38 @@ class User extends Base
     public function get_user_money()
     {
         $this->get_user_redis($this->user['id'],true);
-        $data['money'] = $this->user[''];
-        $this->return_json(OK,$this->user);
+
+        if($this->user['title']=='lecturer'){
+            $data['can_withdraw'] = $this->user['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+        }else{
+            $data['sumearn'] = Cash::memberEarnings($this->user['id']);
+            $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+            $data['sumearn'] =  $this->floor_down($data['sumearn']);
+            $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
+            unset($data['sumearn']);
+        }
+        $data['money_list'] = [6,68,88,208,388,998];
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * 个人中心-交易记录
+     */
+    public function get_user_jy_record()
+    {
+       /* $this->get_user_redis($this->user['id'],true);
+
+        if($this->user['title']=='lecturer'){
+            $data['can_withdraw'] = $this->user['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+        }else{
+            $data['sumearn'] = Cash::memberEarnings($this->user['id']);
+            $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+            $data['sumearn'] =  $this->floor_down($data['sumearn']);
+            $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
+            unset($data['sumearn']);
+        }
+        $data['money_list'] = [6,68,88,208,388,998];
+        $this->return_json(OK,$data);*/
     }
 
     /**
