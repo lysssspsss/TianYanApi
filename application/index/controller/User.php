@@ -460,6 +460,17 @@ class User extends Base
         $this->return_json(OK,$this->user);
     }
 
+
+    /**
+     * 个人中心-我的余额
+     */
+    public function get_user_money()
+    {
+        $this->get_user_redis($this->user['id'],true);
+        $data['money'] = $this->user[''];
+        $this->return_json(OK,$this->user);
+    }
+
     /**
      * 加V认证
      */
