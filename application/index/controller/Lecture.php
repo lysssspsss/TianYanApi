@@ -582,7 +582,13 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        $this->get_user_redis($this->user['id'],true);
+        if(empty($this->user['id'])){
+            $this->user['id'] = 0;
+            $this->user['remarks'] = '';
+            $this->user['name'] = '';
+        }else{
+            $this->get_user_redis($this->user['id'],true);
+        }
         /*$lecture = db('course')->alias('a')->join('channel b','a.channel_id = b.id')
             ->field('a.id as lecture_id,a.memberid as lecture_memberid,a.coverimg,a.name as title,a.starttime,a.channel_id,a.intro,a.mins,a.qrcode_addtime,a.qrcode,a.live_homeid,a.clicknum,a.cost,a.is_for_vip,a.mode,a.basescrib,b.lecturer,b.is_pay_only_channel,b.name as zhuanlan,b.memberid as channel_memberid,b.roomid')
             ->where(['a.id'=>$lecture_id,'a.isshow'=>'show'])->find();*/
@@ -755,7 +761,13 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        $this->get_user_redis($this->user['id'],true);
+        if(empty($this->user['id'])){
+            $this->user['id'] = 0;
+            $this->user['remarks'] = '';
+            $this->user['name'] = '';
+        }else{
+            $this->get_user_redis($this->user['id'],true);
+        }
         $channel = db('channel')
             ->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,description,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')
             ->where(['id'=>$channel_id,'isshow'=>'show'])->find();
