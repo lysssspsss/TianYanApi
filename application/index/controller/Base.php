@@ -37,7 +37,7 @@ class Base extends Controller
 
         /* 不需要登陆权限的控制器和方法[小写] */
         $pass = [
-            'user' => ['reg', 'sms', 'login','wechat_login'],
+            'user' => ['reg', 'sms', 'login','wechat_login','my_kefu'],
             'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about'],
             'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
             'live'=>['save_video_url']
@@ -113,28 +113,7 @@ class Base extends Controller
         }
         return true;
     }
-
-    /**
-     * 签名验证
-     * @return bool
-     */
-    protected function check_sign_for_android()
-    {
-        return true;
-        $param = input('request.');
-        if(empty($param['sign'])){
-            $this->return_json(422,'参数为空：sign');
-        }
-        $sign = $param['sign'];
-        unset($param['sign']);
-        wlog(APP_PATH.'log/sign.log',$sign.'  |  '.json_encode($param));
-        //$is = vsign($sign,$param);
-        if(token_encrypt($param,USER_TOKEN_KEY)!=$sign){
-            $this->return_json(E_SIGN,'验签失败');
-        }
-        ob_clean();
-        return true;
-    }
+    
 
     /**
      * 判断是否已关注专栏

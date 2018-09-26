@@ -30,7 +30,7 @@ class Index extends Base
      */
     public function main()
     {
-        $name = empty($this->user['name'])?$this->user['nickname']:$this->user['name'];
+        $name = empty($this->user['name'])?(empty($this->user['nickname'])?'游客':$this->user['nickname']):$this->user['name'];
         $data['title'] = '早上好,'.$name;
         $lunbo = db('banner')->field('id,image,url,orderby')->where(['isShow'=>1,'type'=>1])->order('orderby')->select();
         $data['lunbo'] = [];
