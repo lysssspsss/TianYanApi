@@ -36,18 +36,22 @@ class Base extends Controller
 
 
         /* 不需要登陆权限的控制器和方法[小写] */
-        $pass = ['user' => ['reg', 'sms', 'login','wechat_login'],'index'=>['index','xieyi'],'live'=>['save_video_url']];
+        $pass = [
+            'user' => ['reg', 'sms', 'login','wechat_login'],
+            'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about'],
+            'live'=>['save_video_url']
+        ];
 
         $request = Request::instance();
         //$url = $request->controller().$request->action();
         $header = get_auth_headers();
         $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
         // || empty(input('request.bujiami')
-        if($this->source=='ANDROID'){
+        /*if($this->source=='ANDROID'){
             $this->check_sign_for_android();
-        }else{
-            $this->check_sign();/*签名校验*/
-        }
+        }else{*/
+        $this->check_sign($this->source);/*签名校验*/
+        //}
         $this->is_repeat(); /* 重放检测 */
         $this_class = strtolower($request->controller());
         $this_method = strtolower($request->action());
@@ -88,7 +92,7 @@ class Base extends Controller
      * 签名验证
      * @return bool
      */
-    protected function check_sign()
+    protected function check_sign($source = 'IOS')
     {
         $param = input('request.');
         if(empty($param['sign'])){
@@ -97,7 +101,11 @@ class Base extends Controller
         $sign = $param['sign'];
         unset($param['sign']);
         wlog(APP_PATH.'log/sign.log',$sign.'  |  '.json_encode($param));
-        $is = vsign($sign,$param);
+        if($source=='ANDROID'){
+            $is = vsign_for_android($sign,$param);
+        }else{
+            $is = vsign($sign,$param);
+        }
         ob_clean();
         if(!$is){
             $this->return_json(E_SIGN,'验签失败');

@@ -156,6 +156,39 @@ if (!function_exists('vsign')) {
 }
 
 
+if (!function_exists('vsign_for_android')) {
+    /**
+     * 签名验证
+     * @param $sign
+     * @param $content
+     * @return bool
+     */
+    function vsign_for_android($sign, $content)
+    {
+        return true;
+        $sign = base64_decode($sign);
+        //$sign = decode_sign($sign);
+        ksort($content);
+        $content['key'] = USER_TOKEN_KEY;
+        wlog(APP_PATH.'log/sign.log','ksort content:'.json_encode($content));
+        $content = to_url_params($content);
+        wlog(APP_PATH.'log/sign.log','string content:'.$content);
+        $md5 = md5($content);
+        wlog(APP_PATH.'log/sign.log','md5:'.$md5);
+        $big = strtoupper($md5);
+        wlog(APP_PATH.'log/sign.log','big_md5:'.$big);
+        //$content_md5 = strtoupper(md5(to_url_params($content)));
+        $content_md5 = $big;
+        //var_dump($sign,$content_md5);exit;
+        wlog(APP_PATH.'log/sign.log','sign:'.$sign.'  |  content_md5:'.$content_md5);
+        if ($sign == $content_md5) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 if (!function_exists('arr_val_tran_str')) {
     /**
      * 将多维数组中所有的数值转换成字符串

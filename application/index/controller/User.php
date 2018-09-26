@@ -454,6 +454,9 @@ class User extends Base
                 $this->user['isauth'] = 'vering';
             }
         }
+        if(empty($this->user['name'])){
+            $this->user['name'] = $this->user['nickname'];
+        }
         $this->return_json(OK,$this->user);
     }
 
