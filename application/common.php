@@ -136,17 +136,17 @@ if (!function_exists('vsign')) {
     {
         $sign = decode_sign($sign);
         ksort($content);
-        wlog(APP_PATH.'log/sign.log','ksort content:'.json_encode($content));
+        wlog(APP_PATH.'log/sign.log','vsign ksort content:'.json_encode($content));
         $content = to_url_params($content);
-        wlog(APP_PATH.'log/sign.log','string content:'.$content);
+        wlog(APP_PATH.'log/sign.log','vsign string content:'.$content);
         $md5 = md5($content);
-        wlog(APP_PATH.'log/sign.log','md5:'.$md5);
+        wlog(APP_PATH.'log/sign.log','vsign md5:'.$md5);
         $big = strtoupper($md5);
-        wlog(APP_PATH.'log/sign.log','big_md5:'.$big);
+        wlog(APP_PATH.'log/sign.log','vsign big_md5:'.$big);
         //$content_md5 = strtoupper(md5(to_url_params($content)));
         $content_md5 = $big;
         //var_dump($sign,$content_md5);exit;
-        wlog(APP_PATH.'log/sign.log','sign:'.$sign.'  |  content_md5:'.$content_md5);
+        wlog(APP_PATH.'log/sign.log','vsign sign:'.$sign.'  |  content_md5:'.$content_md5);
         if ($sign == $content_md5) {
             return true;
         } else {
@@ -165,22 +165,21 @@ if (!function_exists('vsign_for_android')) {
      */
     function vsign_for_android($sign, $content)
     {
-        return true;
+        //return true;
         $sign = base64_decode($sign);
-        //$sign = decode_sign($sign);
         ksort($content);
         $content['key'] = USER_TOKEN_KEY;
-        wlog(APP_PATH.'log/sign.log','ksort content:'.json_encode($content));
+        wlog(APP_PATH.'log/sign.log','vsign_for_android ksort content:'.json_encode($content));
         $content = to_url_params($content);
-        wlog(APP_PATH.'log/sign.log','string content:'.$content);
+        wlog(APP_PATH.'log/sign.log','vsign_for_android string content:'.$content);
         $md5 = md5($content);
-        wlog(APP_PATH.'log/sign.log','md5:'.$md5);
+        wlog(APP_PATH.'log/sign.log','vsign_for_android md5:'.$md5);
         $big = strtoupper($md5);
-        wlog(APP_PATH.'log/sign.log','big_md5:'.$big);
+        wlog(APP_PATH.'log/sign.log','vsign_for_android big_md5:'.$big);
         //$content_md5 = strtoupper(md5(to_url_params($content)));
         $content_md5 = $big;
         //var_dump($sign,$content_md5);exit;
-        wlog(APP_PATH.'log/sign.log','sign:'.$sign.'  |  content_md5:'.$content_md5);
+        wlog(APP_PATH.'log/sign.log','vsign_for_android sign:'.$sign.'  |  content_md5:'.$content_md5);
         if ($sign == $content_md5) {
             return true;
         } else {
