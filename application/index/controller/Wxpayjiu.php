@@ -72,6 +72,9 @@ class Wxpayjiu extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
 
+        if($product=='reward' && empty($lecture_id)){
+            $this->return_json(E_ARGS,'缺少课程ID');
+        }
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
             $is = db('channelpay')->field('expire,status')->where(['memberid'=>$target,'channelid'=>$channel_id])->find();
@@ -290,11 +293,11 @@ class Wxpayjiu extends Base
                 $res['data'] = $data;
                 break;
             case 'pay_lecture':
-                $fee =$pay_amount;
+                //$fee =$pay_amount;
                 $paydata = array(
                     'memberid'=>$member['id'],
                     'courseid'=>$lecture_id,
-                    'fee'=>$fee,
+                    'fee'=>$pay_amount,
                     'status'=>'wait',
                     'addtime'=>date("Y-m-d H:i:s"),
                     'out_trade_no'=>$orderData['out_trade_no']
@@ -443,7 +446,7 @@ class Wxpayjiu extends Base
 
         //$res['code'] = 0;
         //$this->ajaxReturn($res,'JSON');
-        $a = $this->NotifyProcess($out_trade_no,$fee*100);
+        $a = $this->NotifyProcess($out_trade_no,$fee);
         if($a){
             $this->return_json(OK,['msg'=>'支付成功']);
         }else{
@@ -475,9 +478,11 @@ class Wxpayjiu extends Base
             }
             $data['total_fee'] = $total_fee;
             $data['status'] = "finish";
+
+            //var_dump($total_fee,$data['total_fee']);exit;
             //更新订单状态
             db('orders')->where("out_trade_no='".$out_trade_no."'")->update($data);
-            $data['total_fee'] = $total_fee/100.00;
+            $data['total_fee'] = ($total_fee/100.00);
             //更新用户收益
             $order = db("orders")->where("out_trade_no='".$out_trade_no."'")->find();
             if ($order['getmember']!=0){
