@@ -612,7 +612,6 @@ class User extends Base
         $this->get_user_redis($this->user['id'],true);
         $data['sumearn'] = Cash::memberEarnings($this->user['id']);
         $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
-        var_dump($data['sumearn']);exit;
         $data['sumearn'] =  $this->floor_down($data['sumearn']);
         $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
         $data['memberid'] = $this->user['id'];
