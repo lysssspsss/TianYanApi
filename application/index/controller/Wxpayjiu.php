@@ -83,7 +83,7 @@ class Wxpayjiu extends Base
         }
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
-            $is = db('channelpay')->field('expire,status')->where(['memberid'=>$target,'channelid'=>$channel_id])->find();
+            $is = db('channelpay')->field('expire,status')->where(['memberid'=>$this->user['id'],'channelid'=>$channel_id])->find();
             if(!empty($is)){
                 if($is['status']=='finish' && time()<strtotime($is['expire']))
                 $this->return_json(E_OP_FAIL,'专栏已购买，无需重复购买');
@@ -91,7 +91,7 @@ class Wxpayjiu extends Base
         }
         if (!empty($lecture_id)){
             $lecture = db('course')->find($lecture_id);
-            $is = db('coursepay')->field('id,status')->where(['memberid'=>$target,'courseid'=>$lecture_id])->find();
+            $is = db('coursepay')->field('id,status')->where(['memberid'=>$this->user['id'],'courseid'=>$lecture_id])->find();
             if(!empty($is)){
                 if($is['status']=='finish'){
                     $this->return_json(E_OP_FAIL,'课程已购买，无需重复购买');
@@ -480,6 +480,13 @@ class Wxpayjiu extends Base
         }
     }
 
+    private function set_yue($memberid,$total_fee)
+    {
+        $getmember = db("member")->field('id,sumearn')->find($memberid);
+        $sumearn = $getmember['sumearn'] + $total_fee;
+        db('member')->where("id=".$getmember['id'])->setField("sumearn",$sumearn);
+    }
+
     /**
      * 回调函数
      * @param string $out_trade_no
@@ -547,8 +554,17 @@ class Wxpayjiu extends Base
             $earns = db('earns')->where("out_trade_no='".$out_trade_no."'")->find();
             //\Common\Controller\LogController::W_P_Log("earns id is:".$earns['id']);
             wlog($this->log_path,"earns id is:". $earns['id']);
-            //更新课程表
+
             $type = $earns['type'];
+            if($type != 'recharge'){
+                $paymember = db('member')->field('id,sumearn')->find($order['paymember']);
+                $sumearn = $paymember['sumearn'] - ($data['total_fee']);
+                if($sumearn<0){
+                    $this->return_json(E_OP_FAIL,'余额不足');
+                }
+                db('member')->where("id=".$paymember['id'])->setField("sumearn",$sumearn);
+            }
+            //更新课程表
             if ($earns['lectureid']){
                 $lecture = db('course')->find($earns['lectureid']);
                 $sum = $lecture['sumearns'] + ($data['total_fee']);
@@ -699,6 +715,7 @@ class Wxpayjiu extends Base
                 //更新订单状态
                 db('reciterpay')->where("out_trade_no='".$out_trade_no."'")->update($data);
             }
+
             $this->return_json(OK,['msg'=>'success']);
             //return true;
         }else{
