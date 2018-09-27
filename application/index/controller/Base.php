@@ -39,7 +39,7 @@ class Base extends Controller
         $pass = [
             'user' => ['reg', 'sms', 'login','wechat_login','my_kefu'],
             'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about'],
-            //'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
+            'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
             'live'=>['save_video_url']
         ];
 
@@ -58,9 +58,14 @@ class Base extends Controller
         $this_class = strtolower($request->controller());
         $this_method = strtolower($request->action());
         if (isset($pass[$this_class]) && in_array($this_method, $pass[$this_class])) {
-
+            if(isset($pass['lecture']) && in_array($this_method, $pass['lecture'])){
+                if(!empty($header['Memberid'])){
+                    goto KJ;
+                }
+            }
         }else{
             //$memberid = input('param.memberid');
+            KJ:
             $memberid = empty($header['Memberid'])?'':$header['Memberid'];
             /*$channel = input('param.channel');
             !empty($channel) or $channel = '';*/
