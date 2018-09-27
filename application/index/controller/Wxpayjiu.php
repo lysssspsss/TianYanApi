@@ -475,7 +475,7 @@ class Wxpayjiu extends Base
             if($a){
                 $this->return_json(OK,['msg'=>'支付完成','out_trade_no'=>$out_trade_no,'fee'=>$fee]);
             }else{
-                $this->return_json(OK,['msg'=>'支付失败']);
+                $this->return_json(E_OP_FAIL,'支付失败');
             }
         }
     }
