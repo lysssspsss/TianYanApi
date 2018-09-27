@@ -41,7 +41,7 @@ class Wxpayjiu extends Base
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_lecture&target=294&fee=500&lecture_id=1847  支付单节
     public function js_api_call()
     {
-        $this->return_json(OK,['msg'=>'支付成功']);
+        //$this->return_json(OK,['msg'=>'支付成功']);
         //LogController::W_P_Log("进入支付方法!");
         wlog($this->log_path,"jsApiCall 进入支付方法");
         $lecture_id = input('post.lecture_id');
@@ -154,7 +154,7 @@ class Wxpayjiu extends Base
         switch ($product){
             case 'reward' :
                 try{
-                    $tmembername = $targetmember['name']?$targetmember['name']:$targetmember['nickname'];
+                    $tmembername = empty($targetmember['name'])?$targetmember['name']:$targetmember['nickname'];
                 }catch (Exception $e){
                     $tmembername = $targetmember['nickname'];
                 }
@@ -298,6 +298,19 @@ class Wxpayjiu extends Base
                 $data['message_id'] = $count;
                 $res['data'] = $data;
                 break;
+            case 'recharge':
+                //充值记录表添加记录
+               /* $earnsDatas['memberid'] = $member['id'];
+                $earnsDatas['paymemberid'] = $member['id'];
+                //$earnsDatas['lectureid'] = $lecture_id;
+                $earnsDatas['fee'] = $pay_amount;
+                $earnsDatas['type'] = "recharge";
+                $earnsDatas['out_trade_no'] = $orderData['out_trade_no'];
+                $earnsDatas['status'] = 'wait';
+                $earnsDatas['remarks'] = '用户充值';
+                $earnsDatas['addtime'] = date("Y-m-d H:i:s");
+                $e = db('recharge')->insertGetId($earnsDatas);*/
+                break;
             case 'pay_lecture':
                 //$fee =$pay_amount;
                 $paydata = array(
@@ -429,6 +442,9 @@ class Wxpayjiu extends Base
             case 'pay_channel':
                 $earnsData['type'] = 'pay_channel';
                 break;
+            case 'recharge':
+                $earnsData['type'] = 'recharge';
+                break;
             case 'pay_onlinebook':
                 $earnsData['type'] = 'pay_onlinebook';
                 break;
@@ -448,27 +464,53 @@ class Wxpayjiu extends Base
         $earnsData['out_trade_no'] = $orderData['out_trade_no'];
         $earnsData['status'] = 'wait';
         $earnsData['addtime'] = date("Y-m-d H:i:s");
-        db('earns')->insert($earnsData);//收益表添加记录
+        $a = db('earns')->insertGetId($earnsData);//收益表添加记录
 
         //$res['code'] = 0;
         //$this->ajaxReturn($res,'JSON');
-        $a = $this->NotifyProcess($out_trade_no,$fee);
+        //$a = $this->NotifyProcess($out_trade_no,$fee);
         if($a){
-            $this->return_json(OK,['msg'=>'支付成功']);
+            $this->return_json(OK,['msg'=>'支付完成','out_trade_no'=>$out_trade_no,'fee'=>$fee]);
         }else{
             $this->return_json(OK,['msg'=>'支付失败']);
         }
 
     }
 
-    public function NotifyProcess($out_trade_no,$total_fee)
+    /**
+     * 回调函数
+     * @param string $out_trade_no
+     * @param string $total_fee
+     * @param string $return_code
+     * @return bool
+     */
+    public function NotifyProcess($out_trade_no = '',$total_fee = '',$return_code = 'SUCCESS')
     {
+        if(empty($out_trade_no) || empty($total_fee)){
+            $out_trade_no = input('post.out_trade_no');
+            $total_fee = input('post.fee');
+            $return_code = input('post.return_code');
+        }
+
+        $result = $this->validate(
+            [
+                'total_fee' => $total_fee,
+                'out_trade_no' => $out_trade_no,
+            ],
+            [
+                'total_fee'  => 'require|number' ,
+                'out_trade_no'  => 'require|alphaNum' ,
+            ]);
+        if($result !== true){
+            wlog($this->log_path,"参数验证失败,订单号：$out_trade_no,费用：$fee,状态:$return_code");
+            $this->return_json(E_ARGS,'参数错误');
+        }
         //$data, &$msg
 
         //处理业务逻辑
         //\Common\Controller\LogController::W_P_Log("NotifyProcess call back:" . json_encode($data));
         //wlog($this->log_path,"NotifyProcess call back:". json_encode($data));
-        $return_code = 'SUCCESS';
+        //$return_code = 'SUCCESS';
         //$out_trade_no = $data['out_trade_no'];
         //$attach = $data['attach'];
         //\Common\Controller\LogController::W_P_Log("++++++++++++++++return_code:".$return_code);
@@ -479,7 +521,7 @@ class Wxpayjiu extends Base
             $cpay = db('orders')->where("out_trade_no='".$out_trade_no."'")->select();
             if ($cpay){
                 if ($cpay[0]['status'] == 'finish'){
-                    return true;
+                    $this->return_json(OK,['msg'=>'success']);
                 }
             }
             $data['total_fee'] = $total_fee;
@@ -654,10 +696,11 @@ class Wxpayjiu extends Base
                 //更新订单状态
                 db('reciterpay')->where("out_trade_no='".$out_trade_no."'")->update($data);
             }
-            //$this->result(OK,['msg'=>'success']);
-            return true;
+            $this->return_json(OK,['msg'=>'success']);
+            //return true;
         }else{
-            return false;
+            $this->return_json(E_OP_FAIL,'fail');
+           // return false;
         }
     }
 

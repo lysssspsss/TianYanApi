@@ -27,13 +27,14 @@ class Wxpay extends Base
 //echo weChatPay('订单号','价格');  //直接输出json给前台APP
 
 //入口函数
-    public function weChatPay($order_num,$price){
+    public function wechat_pay($order_num='',$price=''){
+
         $lecture_id = input('post.lecture_id');
         $channel_id =input('post.channel_id');
         $channel_expire = input('post.expire');
         $fee = input('post.fee');
-        $target = input('post.target');
-        $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选
+        $target = input('post.js_memberid');
+        $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选, 余额充值recharge
         $result = $this->validate(
             [
                 'lecture_id' => $lecture_id,
@@ -49,12 +50,12 @@ class Wxpay extends Base
                 'expire'  => 'number' ,
                 'fee'  => 'require|number' ,
                 'target'  => 'require|number' ,
-                'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter' ,
+                'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter,recharge',
             ]);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-
+        $this->return_json(OK,['msg'=>'支付成功']);
         if (!empty($lecture_id)){
             $lecture = db('course')->find($lecture_id);
         }
@@ -140,12 +141,15 @@ class Wxpay extends Base
             $json['data'] = "预支付完成";
             //预支付完成,在下方进行自己内部的业务逻辑
             /*****************************/
-            return json_encode($json);
+
+            $this->return_json(OK,$json);
+            //return json_encode($json);
         }
         else{
             $json['success'] = 0;
             $json['error'] = $get_data['return_msg'];
-            return json_encode($json);
+            $this->return_json(OK,$json);
+            //return json_encode($json);
         }
     }
 
