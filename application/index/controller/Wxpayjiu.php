@@ -492,7 +492,7 @@ class Wxpayjiu extends Base
         if(empty($out_trade_no) || empty($total_fee)){
             $out_trade_no = input('post.out_trade_no');
             $total_fee = input('post.fee');
-            $return_code = input('post.return_code');
+            //$return_code = input('post.return_code');
         }
 
         $result = $this->validate(
