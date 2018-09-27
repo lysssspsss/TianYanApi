@@ -502,7 +502,7 @@ class Wxpayjiu extends Base
             ],
             [
                 'total_fee'  => 'require|number' ,
-                'out_trade_no'  => 'require|alphaNum' ,
+                'out_trade_no'  => 'require|alphaDash' ,
             ]);
         if($result !== true){
             wlog($this->log_path,"参数验证失败,订单号：$out_trade_no,费用：$total_fee,状态:$return_code");
