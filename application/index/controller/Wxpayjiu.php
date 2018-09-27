@@ -469,12 +469,15 @@ class Wxpayjiu extends Base
         //$res['code'] = 0;
         //$this->ajaxReturn($res,'JSON');
         //$a = $this->NotifyProcess($out_trade_no,$fee);
-        if($a){
-            $this->return_json(OK,['msg'=>'支付完成','out_trade_no'=>$out_trade_no,'fee'=>$fee]);
+        if($product!='recharge'){
+            $a = $this->NotifyProcess($out_trade_no,$fee);
         }else{
-            $this->return_json(OK,['msg'=>'支付失败']);
+            if($a){
+                $this->return_json(OK,['msg'=>'支付完成','out_trade_no'=>$out_trade_no,'fee'=>$fee]);
+            }else{
+                $this->return_json(OK,['msg'=>'支付失败']);
+            }
         }
-
     }
 
     /**
@@ -502,7 +505,7 @@ class Wxpayjiu extends Base
                 'out_trade_no'  => 'require|alphaNum' ,
             ]);
         if($result !== true){
-            wlog($this->log_path,"参数验证失败,订单号：$out_trade_no,费用：$fee,状态:$return_code");
+            wlog($this->log_path,"参数验证失败,订单号：$out_trade_no,费用：$total_fee,状态:$return_code");
             $this->return_json(E_ARGS,'参数错误');
         }
         //$data, &$msg
