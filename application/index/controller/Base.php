@@ -39,7 +39,7 @@ class Base extends Controller
         $pass = [
             'user' => ['reg', 'sms', 'login','wechat_login','my_kefu'],
             'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about'],
-            'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
+            //'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
             'live'=>['save_video_url']
         ];
 
