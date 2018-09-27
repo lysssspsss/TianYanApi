@@ -823,15 +823,18 @@ class User extends Base
     public function withdraw_business(){
         $real_name = input('post.real_name');
         $money = input('post.money');
+        $bankcard = input('post.bankcard');
         $wxcode = input('post.wxcode');
         $result = $this->validate(
             [
                 'money'  => $money,
                 'real_name' => $real_name,
+                'bankcard' => $bankcard,
             ],
             [
                 'money'  => 'require|float',
                 'real_name'  => 'require|chsAlphaNum',
+                'bankcard'  => 'require|number',
             ]
         );
         if($result !== true){

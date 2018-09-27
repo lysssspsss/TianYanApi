@@ -41,7 +41,7 @@ class Wxpayjiu extends Base
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_lecture&target=294&fee=500&lecture_id=1847  支付单节
     public function js_api_call()
     {
-        $this->return_json(OK,['msg'=>'支付成功']);
+        //$this->return_json(OK,['msg'=>'支付成功']);
         //LogController::W_P_Log("进入支付方法!");
         wlog($this->log_path,"jsApiCall 进入支付方法");
         $lecture_id = input('post.lecture_id');
@@ -74,6 +74,12 @@ class Wxpayjiu extends Base
 
         if($product=='reward' && empty($lecture_id)){
             $this->return_json(E_ARGS,'缺少课程ID');
+        }
+        if($product=='pay_lecture' && empty($lecture_id)){
+            $this->return_json(E_ARGS,'缺少课程ID');
+        }
+        if($product=='pay_channel支付频道' && empty($channel_id)){
+            $this->return_json(E_ARGS,'缺少专栏ID');
         }
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
