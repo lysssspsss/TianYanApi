@@ -366,8 +366,10 @@ class Lecture extends Base
                         'push_url' => $zhibo_url['push_url'],
                         'video' => $zhibo_url['pull_url'],
                     ];
-                    $vid = Db::name('video')->insertGetId($videoinfo);
-                    if ($vid) {
+                    $videoinfo2 = $videoinfo;
+                    $videoinfo2['video'] = $zhibo_url['m3u8_url'];
+                    $vid = Db::name('video')->insertAll([$videoinfo,$videoinfo2]);
+                    if ($vid==2) {
                         wlog($this->log_path, "add_lecture 插入video信息成功！;id:".$vid);
                     } else {
                         Db::rollback();
@@ -588,7 +590,7 @@ class Lecture extends Base
             $this->user['remarks'] = '';
             $this->user['name'] = '';
         }else{*/
-        $this->get_user_redis($this->user['id'],true);
+            $this->get_user_redis($this->user['id'],true);
         //}
         /*$lecture = db('course')->alias('a')->join('channel b','a.channel_id = b.id')
             ->field('a.id as lecture_id,a.memberid as lecture_memberid,a.coverimg,a.name as title,a.starttime,a.channel_id,a.intro,a.mins,a.qrcode_addtime,a.qrcode,a.live_homeid,a.clicknum,a.cost,a.is_for_vip,a.mode,a.basescrib,b.lecturer,b.is_pay_only_channel,b.name as zhuanlan,b.memberid as channel_memberid,b.roomid')
@@ -762,12 +764,12 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-       /* if(empty($this->user['id'])){
+        /*if(empty($this->user['id'])){
             $this->user['id'] = 0;
             $this->user['remarks'] = '';
             $this->user['name'] = '';
         }else{*/
-        $this->get_user_redis($this->user['id'],true);
+            $this->get_user_redis($this->user['id'],true);
         //}
         $channel = db('channel')
             ->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,description,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')
@@ -1054,13 +1056,15 @@ class Lecture extends Base
         $rand = 0;
         $StreamName = LIVE_STREAMNAME_LEFT.$cid.rand(100,999);
         $strpush = '/'.LIVE_APPNAME.'/'.$StreamName.'-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
-        $strflv =  '/'.LIVE_APPNAME.'/'.$StreamName.'.flv-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
+        //$strflv =  '/'.LIVE_APPNAME.'/'.$StreamName.'.flv-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
+        $strm3u8 =  '/'.LIVE_APPNAME.'/'.$StreamName.'.m3u8-'.$yxqtime.'-'.$rand.'-0-'.LIVE_AUTH_KEY;
         $md5 = md5($strpush);
         $auth_key = $yxqtime.'-'.$rand.'-0-'.$md5;
         $data['push_url'] = LIVE_URL.LIVE_APPNAME.'/'.$StreamName.'?vhost='.LIVE_VHOST.'&auth_key='.$auth_key;
         $data['pull_url'] = 'rtmp://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'?auth_key='.$auth_key;
-        $flvurl = 'http://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'.flv?auth_key='.$yxqtime.'-'.$rand.'-0-'.md5($strflv);
-        wlog($this->log_path, "get_stream_url flv拉流地址为： $flvurl");
+        //$flvurl = 'http://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'.flv?auth_key='.$yxqtime.'-'.$rand.'-0-'.md5($strflv);
+        $data['m3u8_url'] = 'http://'.LIVE_VHOST.'/'.LIVE_APPNAME.'/'.$StreamName.'.m3u8?auth_key='.$yxqtime.'-'.$rand.'-0-'.md5($strm3u8);
+        wlog($this->log_path, 'get_stream_url m3u8拉流地址为：'.$data['m3u8_url']);
         //$this->return_json(OK,$data);exit;
         return $data;
     }

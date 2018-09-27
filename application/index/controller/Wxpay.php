@@ -28,7 +28,6 @@ class Wxpay extends Base
 
 //入口函数
     public function weChatPay($order_num,$price){
-
         $lecture_id = input('post.lecture_id');
         $channel_id =input('post.channel_id');
         $channel_expire = input('post.expire');

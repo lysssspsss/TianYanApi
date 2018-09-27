@@ -96,6 +96,7 @@ class Live extends Base
                     if(strstr($v['video'],'rtmp')){
                         $d_video['push_url'] = $v['push_url'];
                         $d_video['pull_url'] = $v['video'];
+                        break;
                     }else{
                         if (eregi_new("mp4$", $v['video'])||eregi_new("m3u8$", $v['video'])){
                             $d_video['pull_url'] = $v['video'];

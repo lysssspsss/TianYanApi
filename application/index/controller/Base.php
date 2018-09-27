@@ -51,6 +51,7 @@ class Base extends Controller
         if($this->source=='ANDROID'){
 
         }else{
+            //$pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan'];
             $this->check_sign($this->source);/*签名校验*/
         }
         $this->is_repeat(); /* 重放检测 */
