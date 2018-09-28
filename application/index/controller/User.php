@@ -71,6 +71,7 @@ class User extends Base
         $company = input('post.company');
         $name = input('post.name');
         $code = input('post.code');
+        $phone_id = input('post.phone_id');
         //数据验证
         $result = $this->validate(
             [
@@ -78,12 +79,14 @@ class User extends Base
                 'company' => $company,
                 'name' => $name,
                 'code' => $code,
+                'phone_id'  => $phone_id,
             ],
             [
                 'tel'  => 'require|number|max:11|min:11',
                 'company'  => 'chsAlphaNum', //汉字字母数字
                 'name'  => 'require|chsAlpha',//汉字字母
                 'code'  => 'require|number|max:5|min:5',
+                'phone_id'  => 'alphaNum',
             ]
         );
         if($result !== true){
@@ -99,49 +102,57 @@ class User extends Base
         }
         $this->redis->hdel(REDIS_YZM_KEY,$tel.'_2');*/
 
+       //游客注册为用户的情况
         $is_repeat = Db::name('member')->field('id')->where(array('tel'=>$tel))->find();
         if(!empty($is_repeat)){
             $this->return_json(E_OP_FAIL,'注册失败,重复注册');
         }
-        $unique = date('YmdHis').mt_rand(10000,99999);
-        $data['tel'] = $tel;
-        $data['company'] = $company;
-        $data['name'] = $name;
-        $data['nickname'] = $name;
-        $data['sex'] = 2;
-        $data['headimg'] = DEFAULT_IMG;
-        $data['img'] = DEFAULT_IMG;
-        $data['openid'] = $unique;
-        $data['unionid'] = $unique;
-        $data['isfocus'] = 'other';
-        $ip = get_ip();
-        if($ip == '127.0.0.1'){
-            $ip = '183.238.1.246';
+        if(!empty($phone_id)){
+            $data['tel'] = $tel;
+            $data['company'] = $company;
+            $data['name'] = $name;
+            $data['nickname'] = $name;
+            $memberid = Db::name('member')->where(array('openid'=>$phone_id))->update($data);
+        }else{
+            $unique = date('YmdHis').mt_rand(10000,99999);
+            $data['tel'] = $tel;
+            $data['company'] = $company;
+            $data['name'] = $name;
+            $data['nickname'] = $name;
+            $data['sex'] = 2;
+            $data['headimg'] = DEFAULT_IMG;
+            $data['img'] = DEFAULT_IMG;
+            $data['openid'] = $unique;
+            $data['unionid'] = $unique;
+            $data['isfocus'] = 'other';
+            $ip = get_ip();
+            if($ip == '127.0.0.1'){
+                $ip = '183.238.1.246';
+            }
+            $dizhi = get_city($ip);
+            if($dizhi !== false){
+                $data['province'] = $dizhi[1];
+                $data['city'] = $dizhi[2];
+            }
+            $data['addtime'] = date('Y-m-d H:i:s');
+            $data['issubmit'] = 1;
+            $data['source'] = $this->source;
+            //dump($data);exit;
+            // 启动事务,插入用户数据
+            /*Db::startTrans();
+            try{
+
+                //Db::table('hot_hx_account')->insert($hx);
+                Db::commit();
+            } catch (\Exception $e) {
+                Db::rollback();
+                wlog(APP_PATH.'log/Reg_Success.log','注册失败:插入数据错误，已回滚'.$tel.'-'.$return_data_json);
+                $this->return_json(E_OP_FAIL,'注册失败');
+            }*/
+            $memberid = Db::name('member')->insertGetId($data);
+            //var_dump($memberid);exit();
         }
-        $dizhi = get_city($ip);
-        if($dizhi !== false){
-            $data['province'] = $dizhi[1];
-            $data['city'] = $dizhi[2];
-        }
-        $data['addtime'] = date('Y-m-d H:i:s');
-        $data['issubmit'] = 1;
-        $data['source'] = $this->source;
-        //dump($data);exit;
         $return_data_json = json_encode($data,JSON_UNESCAPED_UNICODE);
-        // 启动事务,插入用户数据
-        /*Db::startTrans();
-        try{
-
-            //Db::table('hot_hx_account')->insert($hx);
-            Db::commit();
-        } catch (\Exception $e) {
-            Db::rollback();
-            wlog(APP_PATH.'log/Reg_Success.log','注册失败:插入数据错误，已回滚'.$tel.'-'.$return_data_json);
-            $this->return_json(E_OP_FAIL,'注册失败');
-        }*/
-
-        $memberid = Db::name('member')->insertGetId($data);
-        //var_dump($memberid);exit();
         if(empty($memberid)){
             wlog($this->log_path,'reg:注册失败:插入数据错误'.$tel.'-'.$return_data_json);
             $this->return_json(E_OP_FAIL,'注册失败');
@@ -150,6 +161,70 @@ class User extends Base
         $this->get_user_redis($memberid);
         //$this->set_login_log($data['uid'],1,$data['in_type']);
         $this->return_json(OK,['memberid'=>$memberid]);
+    }
+
+    /**
+     * 游客自动注册接口
+     */
+    public function visitor_reg()
+    {
+        $phone_id = input('post.phone_id');
+
+        //数据验证
+        $result = $this->validate(
+            [
+                'phone_id'  => $phone_id,
+            ],
+            [
+                'phone_id'  => 'require|alphaNum',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+        $member = Db::name('member')->field('id')->where(array('openid'=>$phone_id))->find();
+        if(empty($member)){
+            //$unique = date('YmdHis').mt_rand(10000,99999);
+            $data['tel'] = '';
+            $data['company'] = '';
+            $data['name'] = '天雁学员'.time().mt_rand(10,99);
+            $data['nickname'] = $data['name'];
+            $data['sex'] = 2;
+            $data['headimg'] = DEFAULT_IMG;
+            $data['img'] = DEFAULT_IMG;
+            $data['openid'] = $phone_id;
+            $data['unionid'] = $phone_id;
+            $data['isfocus'] = 'other';
+            $ip = get_ip();
+            if($ip == '127.0.0.1'){
+                $ip = '183.238.1.246';
+            }
+            $dizhi = get_city($ip);
+            if($dizhi !== false){
+                $data['province'] = $dizhi[1];
+                $data['city'] = $dizhi[2];
+            }
+            $data['addtime'] = date('Y-m-d H:i:s');
+            $data['issubmit'] = 1;
+            $data['source'] = $this->source;
+            //dump($data);exit;
+            $return_data_json = json_encode($data,JSON_UNESCAPED_UNICODE);
+            $memberid = Db::name('member')->insertGetId($data);
+            //var_dump($memberid);exit();
+            if(empty($memberid)){
+                wlog($this->log_path,'visitor_reg:注册失败:插入数据错误'.$phone_id.'-'.$return_data_json);
+                $this->return_json(E_OP_FAIL,'注册失败');
+            }
+
+        }else{
+            $memberid = $member['id'];
+        }
+
+        //生成用户token，记录登录状态与日志
+        $this->get_user_redis($memberid);
+        //$this->set_login_log($data['uid'],1,$data['in_type']);
+        $this->return_json(OK,['memberid'=>$memberid,'phone_id'=>$phone_id]);
     }
 
 
@@ -525,6 +600,10 @@ class User extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         $data['memberid'] = $this->user['id'];
+        $a = db('bank')->where(['bankcard'=>$data['bankcard']])->find();
+        if(!empty($a)){
+            $this->return_json(E_OP_FAIL,'请不要重复添加银行卡');
+        }
         $id = db('bank')->insertGetId($data);
         if(empty($id)){
             $this->return_json(E_OP_FAIL,'添加失败');
