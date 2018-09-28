@@ -910,6 +910,9 @@ class User extends Base
             $this->return_json(E_OP_FAIL,"找不到该银行卡信息！");
         }
         $cardtype = ['1'=>'储蓄卡','2'=>'信用卡'];
+        if($real_name!=$bank['name']){
+            $this->return_json(E_OP_FAIL,"您输入的姓名与所选银行卡姓名不一致！");
+        }
         $data = array(
             'code'=>$code,
             'memberid'=>$this->user['id'],
