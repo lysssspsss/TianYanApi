@@ -43,6 +43,9 @@ class Wxpayjiu extends Base
     {
         //$this->return_json(OK,['msg'=>'支付成功']);
         //LogController::W_P_Log("进入支付方法!");
+        if($this->source == 'ANDROID'){
+            $this->return_json(OK,['msg'=>'支付成功']);
+        }
         wlog($this->log_path,"jsApiCall 进入支付方法");
         $lecture_id = input('post.lecture_id');
         $channel_id =input('post.channel_id');

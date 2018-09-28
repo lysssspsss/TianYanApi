@@ -48,9 +48,7 @@ class Base extends Controller
         $header = get_auth_headers();
         $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
         // || empty(input('request.bujiami')
-        if($this->source=='ANDROID'){
-
-        }else{
+        if($this->source!='ANDROID'){
             $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan'];
             $this->check_sign($this->source);/*签名校验*/
         }
