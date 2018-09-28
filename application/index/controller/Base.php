@@ -50,8 +50,8 @@ class Base extends Controller
         // || empty(input('request.bujiami')
         if($this->source!='ANDROID'){
             $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan'];
-            $this->check_sign($this->source);/*签名校验*/
         }
+        $this->check_sign($this->source);/*签名校验*/
         $this->is_repeat(); /* 重放检测 */
         $this_class = strtolower($request->controller());
         $this_method = strtolower($request->action());
