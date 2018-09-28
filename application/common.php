@@ -166,7 +166,7 @@ if (!function_exists('vsign_for_android')) {
     function vsign_for_android($sign, $content)
     {
         //return true;
-        $sign = base64_decode($sign);
+        //$sign = base64_decode($sign);
         ksort($content);
         $content['key'] = USER_TOKEN_KEY;
         wlog(APP_PATH.'log/sign.log','vsign_for_android ksort content:'.json_encode($content));
