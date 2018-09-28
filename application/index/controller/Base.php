@@ -39,7 +39,7 @@ class Base extends Controller
         $pass = [
             'user' => ['reg', 'sms', 'login','wechat_login','my_kefu'],
             'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about'],
-            'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
+            //'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
             'live'=>['save_video_url']
         ];
 
@@ -51,7 +51,7 @@ class Base extends Controller
         if($this->source=='ANDROID'){
 
         }else{
-            //$pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan'];
+            $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan'];
             $this->check_sign($this->source);/*签名校验*/
         }
         $this->is_repeat(); /* 重放检测 */
