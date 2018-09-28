@@ -532,6 +532,7 @@ class User extends Base
         if(empty($this->user['name'])){
             $this->user['name'] = $this->user['nickname'];
         }
+        $this->user['kaiguan'] = 'false';//IOS审核开关
         $this->return_json(OK,$this->user);
     }
 
