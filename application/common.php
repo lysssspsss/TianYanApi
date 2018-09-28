@@ -167,8 +167,12 @@ if (!function_exists('vsign_for_android')) {
     {
         //return true;
         //$sign = base64_decode($sign);
-        ksort($content);
+        /*$data['type'] = 1;
+        $data['key'] = 'KqHDDFrdJ2e7DfEwQIw';*/
+        //$a = md5('key=KqHDDFrdJ2e7DfEwQIw&type=1');
+        //var_dump('key=KqHDDFrdJ2e7DfEwQIw&type=1 加密结果:'.$a);exit;
         $content['key'] = USER_TOKEN_KEY;
+        ksort($content);
         wlog(APP_PATH.'log/sign.log','vsign_for_android ksort content:'.json_encode($content));
         $content = to_url_params($content);
         wlog(APP_PATH.'log/sign.log','vsign_for_android string content:'.$content);
