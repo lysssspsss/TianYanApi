@@ -835,7 +835,7 @@ class User extends Base
             [
                 'money'  => 'require|float',
                 'real_name'  => 'require|chsAlphaNum',
-                'bankcard'  => 'require|number',
+                'bankcard'  => 'number',
             ]
         );
         if($result !== true){
