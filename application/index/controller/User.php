@@ -884,19 +884,19 @@ class User extends Base
      * 处理申请提现--新版
      */
     public function withdraw_business(){
-        $real_name = input('post.real_name');
+        //$real_name = input('post.real_name');
         $money = input('post.money');
         $bankcard = input('post.bankcard');
         //$wxcode = input('post.wxcode');
         $result = $this->validate(
             [
                 'money'  => $money,
-                'real_name' => $real_name,
+                //'real_name' => $real_name,
                 'bankcard' => $bankcard,
             ],
             [
                 'money'  => 'require|float',
-                'real_name'  => 'require|chsAlphaNum',
+                //'real_name'  => 'require|chsAlphaNum',
                 'bankcard'  => 'require|number',
             ]
         );
@@ -910,16 +910,16 @@ class User extends Base
             $this->return_json(E_OP_FAIL,"找不到该银行卡信息！");
         }
         $cardtype = ['1'=>'储蓄卡','2'=>'信用卡'];
-        if($real_name!=$bank['name']){
+       /* if($real_name!=$bank['name']){
             $this->return_json(E_OP_FAIL,"您输入的姓名与所选银行卡姓名不一致！");
-        }
+        }*/
         $data = array(
             'code'=>$code,
             'memberid'=>$this->user['id'],
             'num'=>$money,
             'applytime'=>date("Y-m-d H:i:s"),
             'status'=>"wait",
-            'name'=>"$real_name-银行卡提现 | 卡号:".$bank['bankcard']." | 银行：".$bank['bank']." | 真实姓名：".$bank['name']." | 银行预留手机号：".$bank['tel']." | 卡类型：".$cardtype[$bank['type']],
+            'name'=>$bank['name']."-银行卡提现 | 卡号:".$bank['bankcard']." | 银行：".$bank['bank']." | 银行预留手机号：".$bank['tel']." | 卡类型：".$cardtype[$bank['type']],
             'checktime'=>'',
         );
         $USE = db('member')->field('unpassnum')->find($this->user['id']);
