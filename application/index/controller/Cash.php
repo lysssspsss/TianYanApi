@@ -124,6 +124,7 @@ class Cash extends Base
             $popular = db()->query($popular_sql);
             $popular = $popular[0]['sums'];
             $sum = $popular + $course_play1 + $course_pay1 + ($channel_pay * 0.5) + $course_play + $course_pay + $course_invited_sql;
+
             if ($memberid==17176){
                 $sum += 32.8;
             }

@@ -557,6 +557,10 @@ class Lecture extends Base
             $cidlist = implode(',',array_column($cover,'id'));
             $jiangshi['lecture'] = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type')
                 ->where(['isshow'=>'show'])->where('channel_id in ('.$cidlist.')')->order('clicknum','desc')->select();
+           /* if(in_array(BANZHUREN,$cidlist)){
+                db('course')->limit(50);
+            }*/
+            //$jiangshi['lecture'] = db('course')->select();
             //->where('name','like', '%'.$jiangshi['name'].'%')
         }
         $this->return_json(OK,$jiangshi);
@@ -637,6 +641,7 @@ class Lecture extends Base
             $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
             ->where(['isshow'=>'show','memberid'=>$jiangshi['js_memberid']])
                 ->order('priority desc,clicknum desc')
+                ->limit(50)
                 ->select();
         }else{
             $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
@@ -669,7 +674,6 @@ class Lecture extends Base
         }
 
         //是否是vip会员
-
         if($lecture['is_for_vip']){
             $verifyMember = $this->verifyMember($this->user['unionid']);
             $is_vip = $verifyMember['result'];

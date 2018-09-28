@@ -77,7 +77,11 @@ class Controller
             $this->redis = self::$redis_cache;
         }
         $this->redis = self::get_redis();
-        $this->redis->select($this->redis_private);
+        if($_SERVER['SERVER_NAME']==SERVER_URL_BACK){
+            $this->redis->select($this->redis_public);
+        }else{
+            $this->redis->select($this->redis_private);
+        }
     }
 
 

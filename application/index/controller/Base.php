@@ -42,6 +42,7 @@ class Base extends Controller
             //'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
             'live'=>['save_video_url']
         ];
+        $pass2 = ['live'=>['uploadfile']];
 
         $request = Request::instance();
         //$url = $request->controller().$request->action();
@@ -61,6 +62,11 @@ class Base extends Controller
                     goto KJ;
                 }
             }
+            /*if(isset($pass2['live']) && in_array($this_method, $pass2['live'])){
+                if($this->source=='ANDROID'){
+
+                }
+            }*/
         }else{
             //$memberid = input('param.memberid');
             KJ:

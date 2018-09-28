@@ -469,16 +469,67 @@ class User extends Base
         $this->get_user_redis($this->user['id'],true);
 
         if($this->user['title']=='lecturer'){
-            $data['can_withdraw'] = $this->user['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
-        }else{
             //$data['sumearn'] = Cash::memberEarnings($this->user['id']);
             $data['sumearn'] = $this->user['sumearn'];
             $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
             $data['sumearn'] =  $this->floor_down($data['sumearn']);
             $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
             unset($data['sumearn']);
+        }else{
+            $data['can_withdraw'] = $this->user['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
         }
         $data['money_list'] = [6,68,88,208,388,998];
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * 个人中心-获取我的银行卡列表
+     */
+    public function get_bankcard_list()
+    {
+        $data = db('bank')->where(['memberid'=>$this->user['id']])->select();
+        if(empty($data)){
+            $this->return_json(E_OP_FAIL,['msg'=>'结果为空']);
+        }
+        $this->return_json(OK,$data);
+    }
+
+    /**
+     * 个人中心-添加银行卡
+     */
+    public function bankcard_add()
+    {
+        $data['name'] = input('post.name');//持卡人姓名
+        $data['bankcard'] = input('post.bankcard');//银行卡号
+        $data['bank'] = input('post.bank');//银行
+        $data['type'] = input('post.type');//类型 1储蓄卡 2信用卡
+        $data['tel'] = input('post.tel');//手机号
+
+        $result = $this->validate(
+            [
+                'name' => $data['name'],
+                'bankcard'  => $data['bankcard'],
+                'bank'  => $data['bank'],
+                'type' => $data['type'],
+                'tel'  => $data['tel'],
+            ],
+            [
+                'name'  => 'require|chsAlphaNum',
+                'bankcard'  => 'require|number',
+                'bank'  => 'require|chsAlphaNum',
+                'type'  => 'require|in:1,2',
+                'tel'  => 'require|number|max:11|min:11',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        $data['memberid'] = $this->user['id'];
+        $id = db('bank')->insertGetId($data);
+        if(empty($id)){
+            $this->return_json(E_OP_FAIL,'添加失败');
+        }
+        $data['id'] = $id;
         $this->return_json(OK,$data);
     }
 
@@ -612,12 +663,24 @@ class User extends Base
         }
         $this->get_user_redis($this->user['id'],true);
         //$data['sumearn'] = Cash::memberEarnings($this->user['id']);
+        /*if($this->user['sumearn'] != $data['sumearn']){
+
+        }*/
         $data['sumearn'] = $this->user['sumearn'];
         $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
         $data['sumearn'] =  $this->floor_down($data['sumearn']);
         $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
         $data['memberid'] = $this->user['id'];
         $this->return_json(OK,$data);
+    }
+
+    /**
+     * 更新用户可用余额
+     * @param $data
+     */
+    private function update_sumearn($data)
+    {
+        db('member')->where(['id'=>$this->user['id']])->update($data);
     }
 
     /**
