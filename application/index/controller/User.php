@@ -880,15 +880,73 @@ class User extends Base
         $this->return_json(OK,$data);
     }
 
-
     /**
-     * 处理申请提现
+     * 处理申请提现--新版
      */
     public function withdraw_business(){
         $real_name = input('post.real_name');
         $money = input('post.money');
         $bankcard = input('post.bankcard');
-        $wxcode = input('post.wxcode');
+        //$wxcode = input('post.wxcode');
+        $result = $this->validate(
+            [
+                'money'  => $money,
+                'real_name' => $real_name,
+                'bankcard' => $bankcard,
+            ],
+            [
+                'money'  => 'require|float',
+                'real_name'  => 'require|chsAlphaNum',
+                'bankcard'  => 'require|number',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+        $code = "transfers".date("YmdHis") . rand(000000, 999999);
+        $bank = db('bank')->where(['memberid'=>$this->user['id'],'bankcard'=>$bankcard])->find();
+        if(empty($bank)){
+            $this->return_json(E_OP_FAIL,"找不到该银行卡信息！");
+        }
+        $cardtype = ['1'=>'储蓄卡','2'=>'信用卡'];
+        $data = array(
+            'code'=>$code,
+            'memberid'=>$this->user['id'],
+            'num'=>$money,
+            'applytime'=>date("Y-m-d H:i:s"),
+            'status'=>"wait",
+            'name'=>"$real_name-银行卡提现 | 卡号:".$bank['bankcard']." | 银行：".$bank['bank']." | 真实姓名：".$bank['name']." | 银行预留手机号：".$bank['tel']." | 卡类型：".$cardtype[$bank['type']],
+            'checktime'=>'',
+        );
+        $USE = db('member')->field('unpassnum')->find($this->user['id']);
+        $datas['unpassnum'] = $money+$USE['unpassnum'];
+
+        Db::startTrans();
+        $count = db('takeout')->insertGetId($data);
+        if(!$count){
+            Db::rollback();
+            $this->return_json(E_OP_FAIL,"申请提现失败！");
+        }
+        //改变可提现收益
+        $a = db('member')->where('id='.$this->user['id'])->setField('unpassnum',$datas['unpassnum']);
+        if(!$a){
+            Db::rollback();
+            $this->return_json(E_OP_FAIL,"申请提现失败！");
+        }
+        Db::commit();
+        $this->return_json(OK,['memberid'=>$this->user['id'],'takeout_id'=>$count]);
+    }
+
+
+    /**
+     * 处理申请提现--旧版
+     */
+    private function withdraw_business_jiu(){
+        $real_name = input('post.real_name');
+        $money = input('post.money');
+        $bankcard = input('post.bankcard');
+        //$wxcode = input('post.wxcode');
         $result = $this->validate(
             [
                 'money'  => $money,
