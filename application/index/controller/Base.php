@@ -54,9 +54,9 @@ class Base extends Controller
         }
         $this->check_sign($this->source);/*签名校验*/
         $this->is_repeat(); /* 重放检测 */
-        if(!empty(input('Request.phone_id')) && empty($header['Memberid'])){
-            $phone_id = input('Request.phone_id');
-            $m = db('member')->field('id')->where(['phone_id'=>$phone_id])->find();
+        if(!empty(input('request.phone_id')) && empty($header['Memberid'])){
+            $phone_id = input('request.phone_id');
+            $m = db('member')->field('id')->where(['openid'=>$phone_id])->find();
             if(!empty($m)){
                 $header['Memberid'] = $m['id'];
             }
