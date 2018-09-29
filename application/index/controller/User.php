@@ -1000,7 +1000,7 @@ class User extends Base
             'num'=>$money,
             'applytime'=>date("Y-m-d H:i:s"),
             'status'=>"wait",
-            'name'=>$bank['name']."-银行卡提现 | 卡号:".$bank['bankcard']." | 银行：".$bank['bank']." | 银行预留手机号：".$bank['tel']." | 卡类型：".$cardtype[$bank['type']],
+            'name'=>$bank['name']."-银行卡提现 | 卡号:".$bank['bankcard']." | 银行:".$bank['bank']." | 银行预留手机号:".$bank['tel']." | 卡类型:".$cardtype[$bank['type']],
             'checktime'=>'',
         );
         $USE = db('member')->field('unpassnum')->find($this->user['id']);

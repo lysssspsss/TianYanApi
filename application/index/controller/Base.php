@@ -51,10 +51,16 @@ class Base extends Controller
         // || empty(input('request.bujiami')
         if($this->source!='ANDROID'){
             $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan','get_free'];
-            $pass['wxpayjiu'] = ['js_api_call','notifyprocess'];
         }
         $this->check_sign($this->source);/*签名校验*/
         $this->is_repeat(); /* 重放检测 */
+        if(!empty(input('Request.phone_id')) && empty($header['Memberid'])){
+            $phone_id = input('Request.phone_id');
+            $m = db('member')->field('id')->where(['phone_id'=>$phone_id])->find();
+            if(!empty($m)){
+                $header['Memberid'] = $m['id'];
+            }
+        }
         $this_class = strtolower($request->controller());
         $this_method = strtolower($request->action());
         if (isset($pass[$this_class]) && in_array($this_method, $pass[$this_class])) {
@@ -63,27 +69,15 @@ class Base extends Controller
                     goto KJ;
                 }
             }
-            /*if(isset($pass2['live']) && in_array($this_method, $pass2['live'])){
-                if($this->source=='ANDROID'){
-
-                }
-            }*/
         }else{
-            //$memberid = input('param.memberid');
             KJ:
             $memberid = empty($header['Memberid'])?'':$header['Memberid'];
-            /*$channel = input('param.channel');
-            !empty($channel) or $channel = '';*/
             $result = $this->validate(
                 [
-                   // 'user_token'  => $user_token,
                     'uid'  => $memberid,
-                    //'channel'  => $channel,
                 ],
                 [
-                   // 'user_token'  => 'require|alphaNum|max:32',
                     'uid'  => 'number|max:16',
-                    //'channel'  => 'alphaNum',
                 ]
             );
             if($result !== true){
@@ -93,10 +87,8 @@ class Base extends Controller
             if(!$user){
                 $this->return_json(E_OP_FAIL,'请重新登录1',true,true);
             }
-            //$user['channel'] = $channel;
             $this->user = $user;
         }
-
         $this->sn = 'ty';
     }
 

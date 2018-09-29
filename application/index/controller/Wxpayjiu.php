@@ -75,7 +75,7 @@ class Wxpayjiu extends Base
                 'channel_id'  => 'number' ,
                 'expire'  => 'number' ,
                 'fee'  => 'require|number' ,
-                'target'  => 'require|number' ,
+                'target'  => 'number' ,
                 'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter,recharge',
                 'phone_id'  => 'alphaNum',
             ]);
@@ -96,6 +96,9 @@ class Wxpayjiu extends Base
             if(empty($this->user)){
                 $this->return_json(E_OP_FAIL,'找不到该用户');
             }
+        }
+        if(empty($target)){
+            $target = $this->user['id'];
         }
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
