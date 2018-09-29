@@ -50,7 +50,8 @@ class Base extends Controller
         $this->source = empty($header['Source'])?'APP':$header['Source'];/* 获取请求来源 */
         // || empty(input('request.bujiami')
         if($this->source!='ANDROID'){
-            $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan'];
+            $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan','get_free'];
+            $pass['wxpayjiu'] = ['js_api_call','notifyprocess'];
         }
         $this->check_sign($this->source);/*签名校验*/
         $this->is_repeat(); /* 重放检测 */

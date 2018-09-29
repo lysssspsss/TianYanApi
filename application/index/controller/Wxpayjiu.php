@@ -39,6 +39,9 @@ class Wxpayjiu extends Base
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=reward&target=294&fee=200&lecture_id=1862
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_channel&target=294&fee=9900&expire=null&channel_id=196  支付专栏
     //http://local.livehome.com/index.php/Home/WxJsAPI/jsApiCall?product=pay_lecture&target=294&fee=500&lecture_id=1847  支付单节
+    /**
+     * IOS支付接口
+     */
     public function js_api_call()
     {
         //$this->return_json(OK,['msg'=>'支付成功']);
@@ -47,12 +50,15 @@ class Wxpayjiu extends Base
             $this->return_json(OK,['msg'=>'支付成功']);
         }
         wlog($this->log_path,"jsApiCall 进入支付方法");
+
         $lecture_id = input('post.lecture_id');
         $channel_id =input('post.channel_id');
         $channel_expire = input('post.expire');
         $fee = input('post.fee');
         $target = input('post.js_memberid');
         $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选  余额充值recharge
+        $phone_id =input('post.phone_id'); //IOS手机ID
+
         wlog($this->log_path,"接收参数:课程id：$lecture_id, 专栏id：$channel_id,fee:$fee,expire:$channel_expire,用户id:$target, 内容：$product");
         $result = $this->validate(
             [
@@ -62,6 +68,7 @@ class Wxpayjiu extends Base
                 'fee' => $fee,
                 'target' => $target,
                 'product' => $product,
+                'phone_id' => $phone_id,
             ],
             [
                 'lecture_id'  => 'number' ,
@@ -69,12 +76,12 @@ class Wxpayjiu extends Base
                 'expire'  => 'number' ,
                 'fee'  => 'require|number' ,
                 'target'  => 'require|number' ,
-                'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter,recharge' ,
+                'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter,recharge',
+                'phone_id'  => 'alphaNum',
             ]);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-
         if($product=='reward' && empty($lecture_id)){
             $this->return_json(E_ARGS,'缺少课程ID');
         }
@@ -83,6 +90,12 @@ class Wxpayjiu extends Base
         }
         if($product=='pay_channel' && empty($channel_id)){
             $this->return_json(E_ARGS,'缺少专栏ID');
+        }
+        if(empty($this->user['id'])){
+            $this->user = db('member')->where(array('openid'=>$phone_id))->find();
+            if(empty($this->user)){
+                $this->return_json(E_OP_FAIL,'找不到该用户');
+            }
         }
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);

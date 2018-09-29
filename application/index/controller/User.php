@@ -183,7 +183,7 @@ class User extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
 
-        $member = Db::name('member')->field('id')->where(array('openid'=>$phone_id))->find();
+        $member = Db::name('member')->field('id,sumearn')->where(array('openid'=>$phone_id))->find();
         if(empty($member)){
             //$unique = date('YmdHis').mt_rand(10000,99999);
             $data['tel'] = '';
@@ -216,15 +216,16 @@ class User extends Base
                 wlog($this->log_path,'visitor_reg:注册失败:插入数据错误'.$phone_id.'-'.$return_data_json);
                 $this->return_json(E_OP_FAIL,'注册失败');
             }
-
+            $sumearn = 0;
         }else{
             $memberid = $member['id'];
+            $sumearn = $member['sumearn'];
         }
 
         //生成用户token，记录登录状态与日志
         $this->get_user_redis($memberid);
         //$this->set_login_log($data['uid'],1,$data['in_type']);
-        $this->return_json(OK,['memberid'=>$memberid,'phone_id'=>$phone_id]);
+        $this->return_json(OK,['phone_id'=>$phone_id,'sumearn'=>$sumearn]);
     }
 
 
