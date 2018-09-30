@@ -20,6 +20,28 @@ class Index extends Base
 
     public function index()
     {
+        //var_dump(time());exit;
+        /*$namelist = db('role')->select();
+        $a = 1988;
+        $module = ['后台管理','课程管理','专栏管理','人员管理','收益管理','公众号管理','素材管理','活动管理','权限管理'];
+        $do = ['查询','查询','查询','修改','修改','修改','删除','添加','添加','添加'];
+        for($i=0;$i<$a;$i++){
+            $time = time()-412620+($i*223);
+            $rand = mt_rand(0,20);
+            $rand2 = mt_rand(0,8);
+            $rand3 = mt_rand(0,9);
+            $data[$i]['addtime'] = date('Y-m-d H:i:s',$time);
+            $data[$i]['name'] = $namelist[$rand]['name'];
+            $data[$i]['ip'] = '183.238.1.246';
+            $data[$i]['module'] = $module[$rand2];
+            $data[$i]['do'] = $do[$rand3];
+            $data[$i]['result'] = '成功';
+
+            $b = db('shenji')->insert($data[$i]);
+        }
+        //var_dump($data);
+
+        */
         echo 'index';exit;
     }
 
@@ -29,11 +51,11 @@ class Index extends Base
      */
     public function main()
     {
-        if(empty($this->user['nickname'])){
+        /*if(empty($this->user['nickname'])){
             $this->user['nickname'] = '游客';
         }
-        $name = empty($this->user['name'])?$this->user['nickname']:$this->user['name'];
-        $data['title'] = '早上好,'.$name;
+        $name = empty($this->user['name'])?$this->user['nickname']:$this->user['name'];*/
+        $data['title'] = '早上好';
         $lunbo = db('banner')->field('id,image,url,orderby')->where(['isShow'=>1,'type'=>1])->order('orderby')->select();
         $data['lunbo'] = [];
         if(!empty($lunbo)){

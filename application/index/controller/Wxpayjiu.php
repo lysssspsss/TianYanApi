@@ -97,8 +97,10 @@ class Wxpayjiu extends Base
                 $this->return_json(E_OP_FAIL,'找不到该用户');
             }
         }
-        if(empty($target)){
+        if(empty($target) && !empty($phone_id)){
             $target = $this->user['id'];
+        }elseif (empty($target) && empty($this->user['id'])){
+            $this->return_json(E_OP_FAIL,'找不到该用户');
         }
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
