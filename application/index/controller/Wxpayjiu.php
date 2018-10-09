@@ -105,7 +105,7 @@ class Wxpayjiu extends Base
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
             $is = db('channelpay')->field('expire,status')->where(['memberid'=>$this->user['id'],'channelid'=>$channel_id])->find();
-            if(!empty($is)){
+            if(!empty($is)  && $product=='pay_channel'){
                 if($is['status']=='finish' && time()<strtotime($is['expire']))
                 $this->return_json(E_OP_FAIL,'专栏已购买，无需重复购买');
             }
@@ -113,7 +113,7 @@ class Wxpayjiu extends Base
         if (!empty($lecture_id)){
             $lecture = db('course')->find($lecture_id);
             $is = db('coursepay')->field('id,status')->where(['memberid'=>$this->user['id'],'courseid'=>$lecture_id])->find();
-            if(!empty($is)){
+            if(!empty($is) && $product=='pay_lecture'){
                 if($is['status']=='finish'){
                     $this->return_json(E_OP_FAIL,'课程已购买，无需重复购买');
                 }

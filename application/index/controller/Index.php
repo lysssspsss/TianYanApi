@@ -111,11 +111,11 @@ class Index extends Base
      */
     private function get_wenhou()
     {
-        $h=date('G');
-        if ($h<11) return '早上好';
-        else if ($h<13) return '中午好';
-        else if ($h<17) return '下午好';
-        else return '晚上好';
+        $h = date('G');
+        if ($h<11)      return '早上好';
+        elseif ($h<13) return '中午好';
+        elseif ($h<17) return '下午好';
+        else           return '晚上好';
     }
 
     /**
