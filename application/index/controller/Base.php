@@ -42,7 +42,7 @@ class Base extends Controller
             //'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
             'live'=>['save_video_url']
         ];
-        $pass2 = ['live'=>['uploadfile']];
+        //$pass2 = ['live'=>['uploadfile']];
 
         $request = Request::instance();
         //$url = $request->controller().$request->action();
@@ -51,6 +51,7 @@ class Base extends Controller
         // || empty(input('request.bujiami')
         if($this->source!='ANDROID'){
             $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan','get_free'];
+            $pass['live'] = ['uploadfile'];
         }
         $this->check_sign($this->source);/*签名校验*/
         $this->is_repeat(); /* 重放检测 */
