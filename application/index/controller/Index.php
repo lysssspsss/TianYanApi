@@ -56,7 +56,7 @@ class Index extends Base
         }
         $name = empty($this->user['name'])?$this->user['nickname']:$this->user['name'];
         $data['title'] = $this->get_wenhou().','.$name;
-        var_dump($data);exit;
+        //var_dump($data);exit;
         $lunbo = db('banner')->field('id,image,url,orderby')->where(['isShow'=>1,'type'=>1])->order('orderby')->select();
         $data['lunbo'] = [];
         if(!empty($lunbo)){
