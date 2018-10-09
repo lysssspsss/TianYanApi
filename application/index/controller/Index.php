@@ -51,11 +51,12 @@ class Index extends Base
      */
     public function main()
     {
-        /*if(empty($this->user['nickname'])){
+        if(empty($this->user['nickname'])){
             $this->user['nickname'] = '游客';
         }
-        $name = empty($this->user['name'])?$this->user['nickname']:$this->user['name'];*/
-        $data['title'] = '早上好';
+        $name = empty($this->user['name'])?$this->user['nickname']:$this->user['name'];
+        $data['title'] = $this->get_wenhou().','.$name;
+        var_dump($data);exit;
         $lunbo = db('banner')->field('id,image,url,orderby')->where(['isShow'=>1,'type'=>1])->order('orderby')->select();
         $data['lunbo'] = [];
         if(!empty($lunbo)){
@@ -102,6 +103,19 @@ class Index extends Base
         $data['mingshi'] = $this->get_mingshi();
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
         $this->return_json(OK,$data);
+    }
+
+    /**
+     * 根据时间获取问候语
+     * @return string
+     */
+    private function get_wenhou()
+    {
+        $h=date('G');
+        if ($h<11) return '早上好';
+        else if ($h<13) return '中午好';
+        else if ($h<17) return '下午好';
+        else return '晚上好';
     }
 
     /**

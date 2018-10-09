@@ -72,6 +72,11 @@ class Base extends Controller
                     goto KJ;
                 }
             }
+            if($this_class == 'index' && $this_method=='main'){
+                if(!empty($header['Memberid'])){
+                    goto KJ;
+                }
+            }
         }else{
             KJ:
             $memberid = empty($header['Memberid'])?'':$header['Memberid'];
