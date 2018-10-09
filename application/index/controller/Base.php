@@ -51,10 +51,13 @@ class Base extends Controller
         // || empty(input('request.bujiami')
         if($this->source!='ANDROID'){
             $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan','get_free'];
-        }else{
-            $pass['live'] = ['uploadfile'];
         }
-        $this->check_sign($this->source);/*签名校验*/
+        $this_class = strtolower($request->controller());
+        $this_method = strtolower($request->action());
+
+        if(!($this->source=='ANDROID' && $this_class=='live' && $this_method=='uploadfile')){
+            $this->check_sign($this->source);/*签名校验*/
+        }
         $this->is_repeat(); /* 重放检测 */
         if(!empty(input('request.phone_id')) && empty($header['Memberid'])){
             $phone_id = input('request.phone_id');
@@ -63,8 +66,6 @@ class Base extends Controller
                 $header['Memberid'] = $m['id'];
             }
         }
-        $this_class = strtolower($request->controller());
-        $this_method = strtolower($request->action());
         if (isset($pass[$this_class]) && in_array($this_method, $pass[$this_class])) {
             if(isset($pass['lecture']) && in_array($this_method, $pass['lecture'])){
                 if(!empty($header['Memberid'])){
