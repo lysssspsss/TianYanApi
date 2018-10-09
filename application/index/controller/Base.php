@@ -51,6 +51,7 @@ class Base extends Controller
         // || empty(input('request.bujiami')
         if($this->source!='ANDROID'){
             $pass['lecture'] = ['get_jiangshi','get_kecheng','get_zhuanlan','get_free'];
+        }else{
             $pass['live'] = ['uploadfile'];
         }
         $this->check_sign($this->source);/*签名校验*/
