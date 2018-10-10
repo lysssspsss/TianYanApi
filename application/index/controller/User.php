@@ -14,7 +14,7 @@ class User extends Base
 
     private $log_path = APP_PATH.'log/User.log';
 
-    private $vip_phone = ['13682694631','13128820643','13168088229','18823397801'];
+    private $vip_phone = ['13682694631','13128820643','13168088229','18823397801','18823397802'];
     private $vip_code = ['44244','68989'];
     /**
      * 发送短信接口
