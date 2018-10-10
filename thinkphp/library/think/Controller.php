@@ -78,9 +78,9 @@ class Controller
         }
         $this->redis = self::get_redis();
         if($_SERVER['SERVER_NAME']==SERVER_URL_BACK){
-            $this->redis->select($this->redis_public);
+            $this->redis->select($this->redis_public);//线上
         }else{
-            $this->redis->select($this->redis_private);
+            $this->redis->select($this->redis_private);//测试
         }
     }
 

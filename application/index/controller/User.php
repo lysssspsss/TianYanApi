@@ -533,6 +533,7 @@ class User extends Base
         if(empty($this->user['name'])){
             $this->user['name'] = $this->user['nickname'];
         }
+        $this->user['sumearn'] = Cash::memberEarnings($this->user['id']);
         $this->user['kaiguan'] = 'false';//IOS审核开关
         $this->return_json(OK,$this->user);
     }
@@ -546,8 +547,8 @@ class User extends Base
         $this->get_user_redis($this->user['id'],true);
 
         if($this->user['title']=='lecturer'){
-            //$data['sumearn'] = Cash::memberEarnings($this->user['id']);
-            $data['sumearn'] = $this->user['sumearn'];
+            $data['sumearn'] = Cash::memberEarnings($this->user['id']);
+            //$data['sumearn'] = $this->user['sumearn'];
             $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
             $data['sumearn'] =  $this->floor_down($data['sumearn']);
             $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
@@ -743,11 +744,11 @@ class User extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         $this->get_user_redis($this->user['id'],true);
-        //$data['sumearn'] = Cash::memberEarnings($this->user['id']);
+        $data['sumearn'] = Cash::memberEarnings($this->user['id']);
         /*if($this->user['sumearn'] != $data['sumearn']){
 
         }*/
-        $data['sumearn'] = $this->user['sumearn'];
+        //$data['sumearn'] = $this->user['sumearn'];
         $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
         $data['sumearn'] =  $this->floor_down($data['sumearn']);
         $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
