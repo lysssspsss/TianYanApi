@@ -89,9 +89,9 @@ class Wxpay extends Base
         //生成预支付交易单的必选参数:
         $newPara = array();
         //应用ID
-        $newPara["appid"] = "商户appid";
+        $newPara["appid"] = WECHATPAY_APPID;
         //商户号
-        $newPara["mch_id"] = "商户id";
+        $newPara["mch_id"] = WECHATPAY_MCHID;
         //设备号
         $newPara["device_info"] = WECHATPAY_DEVICE_INFO;
         //随机字符串,这里推荐使用函数生成
@@ -110,7 +110,7 @@ class Wxpay extends Base
         //交易类型
         $newPara["trade_type"] = "APP";
 
-        $key = "密钥：在商户后台个人安全中心设置";
+        $key = WECHATPAY_KEY;//"密钥：在商户后台个人安全中心设置";
         //第一次签名
         $newPara["sign"] = $this->appgetSign($newPara,$key);
         //把数组转化成xml格式

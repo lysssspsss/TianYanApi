@@ -24,10 +24,26 @@ const JIGUANG_REGISTRATION_ID = '1a1018970a8d274291f';
  * 微信支付
  */
 const WECHATPAY_URL = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-const WECHATPAY_APPID = '';
-const WECHATPAY_MCHID = '';
+const WECHATPAY_APPID = 'wxa674ca5ea6141e79';
+const WECHATPAY_MCHID = '1516590501';
 const WECHATPAY_DEVICE_INFO = 'WEB';
-const WECHATPAY_KEY = '';
+const WECHATPAY_KEY = '12e68fa788b610d3b511cec9ccdd35b1';
+
+/**
+ * 微信相关
+ */
+//公众号
+const WECHAT_GZH_APPID = 'wx8f291dccc9e8f39b';
+const WECHAT_GZH_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
+//APP
+//const WECHAT_APPID = 'wx7b4b44dce0248205';
+const WECHAT_APPID = 'wxa674ca5ea6141e79';
+//const WECHAT_APPSECRET = '4508898569cdc065b6c102bc9f6d697a';
+const WECHAT_APPSECRET = '12e68fa788b610d3b511cec9ccdd35b1';
+const WECHAT_SOURCECODE = 'gh_2f514810fe61';
+const WECHAT_TOKEN ='tianyanlivehome2017';
+const WECHAT_USER_URL = 'https://api.weixin.qq.com/sns/userinfo';
+const WECHAT_OAUTH_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token';
 
 /**
  * 阿里云直播相关
@@ -98,19 +114,7 @@ const REDIS_EXPIRE_1D = 86400;        // 过期时间 1 天
 const REDIS_EXPIRE_2D = 172800;       // 过期时间 2 天
 const REDIS_YZM_KEY = 'verify_code'; //验证码键值
 
-/**
- * 微信相关
- */
-//公众号
-const WECHAT_GZH_APPID = 'wx8f291dccc9e8f39b';
-const WECHAT_GZH_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
-//APP
-const WECHAT_APPID = 'wx7b4b44dce0248205';
-const WECHAT_APPSECRET = '4508898569cdc065b6c102bc9f6d697a';
-const WECHAT_SOURCECODE = 'gh_2f514810fe61';
-const WECHAT_TOKEN ='tianyanlivehome2017';
-const WECHAT_USER_URL = 'https://api.weixin.qq.com/sns/userinfo';
-const WECHAT_OAUTH_URL = 'https://api.weixin.qq.com/sns/oauth2/access_token';
+
 
 /**
  * 课程分享公众号链接
