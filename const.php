@@ -36,10 +36,10 @@ const WECHATPAY_KEY = '12e68fa788b610d3b511cec9ccdd35b1';
 const WECHAT_GZH_APPID = 'wx8f291dccc9e8f39b';
 const WECHAT_GZH_APPSECRET = '331cf131b3b025fdc71ac7712de86fdd';
 //APP
-//const WECHAT_APPID = 'wx7b4b44dce0248205';
-const WECHAT_APPID = 'wxa674ca5ea6141e79';
-//const WECHAT_APPSECRET = '4508898569cdc065b6c102bc9f6d697a';
-const WECHAT_APPSECRET = '12e68fa788b610d3b511cec9ccdd35b1';
+const WECHAT_APPID = 'wx7b4b44dce0248205';
+//const WECHAT_APPID = 'wxa674ca5ea6141e79';
+const WECHAT_APPSECRET = '4508898569cdc065b6c102bc9f6d697a';
+//const WECHAT_APPSECRET = '12e68fa788b610d3b511cec9ccdd35b1';
 const WECHAT_SOURCECODE = 'gh_2f514810fe61';
 const WECHAT_TOKEN ='tianyanlivehome2017';
 const WECHAT_USER_URL = 'https://api.weixin.qq.com/sns/userinfo';
