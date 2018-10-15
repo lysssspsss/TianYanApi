@@ -139,10 +139,16 @@ class Wxpay extends Base
         //把数组转化成xml格式
         $xmlData = $this->arrayToXml($newPara);
         $get_data = $this->sendPrePayCurl($xmlData);
+        //var_dump($get_data);exit;
         /*$get_data['return_code'] = "SUCCESS";
         $get_data['result_code'] = "SUCCESS";*/
+        if(empty($get_data['data'])){
+            $json['success'] = 0;
+            $json['error'] = '支付失败(第三方返回内容为空)';
+            $this->return_json(OK,$json);
+        }
         //返回的结果进行判断。
-        if($get_data['return_code'] == "SUCCESS" && $get_data['result_code'] == "SUCCESS"){
+        if($get_data['data']['return_code'] == "SUCCESS"){
             //根据微信支付返回的结果进行二次签名
             //二次签名所需的随机字符串
             $newPara["nonce_str"] = $this->createNoncestr();
@@ -172,10 +178,9 @@ class Wxpay extends Base
             }
             $this->return_json(OK,$json);
             //return json_encode($json);
-        }
-        else{
+        } else{
             $json['success'] = 0;
-            $json['error'] = $get_data['return_msg'];
+            $json['error'] = $get_data['data']['return_msg'];
             $this->return_json(OK,$json);
             //return json_encode($json);
         }
