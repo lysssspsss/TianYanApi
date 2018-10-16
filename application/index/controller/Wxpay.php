@@ -120,15 +120,15 @@ class Wxpay extends Base
         //随机字符串,这里推荐使用函数生成
         $newPara["nonce_str"] = $this->createNoncestr();
         //商品描述
-        $newPara["body"] = "tianyan_pay";
+        $newPara["body"] = "天雁APP支付";
         //商户订单号,这里是商户自己的内部的订单号
         $newPara["out_trade_no"] = $out_trade_no;
         //总金额
         //$newPara["total_fee"] = $price*100;
         $newPara["total_fee"] = (int)$fee;
         //终端IP
-        //$newPara["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
-        $newPara["spbill_create_ip"] = '183.238.1.246';
+        $newPara["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
+        //$newPara["spbill_create_ip"] = '183.238.1.246';
         //通知地址，注意，这里的url里面不要加参数
         $newPara["notify_url"] = SERVER_URL.'/api.php/index/Wxpaynotify/notify';//"支付成功后的回调地址";
         //交易类型
