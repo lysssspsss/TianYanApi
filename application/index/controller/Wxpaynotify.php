@@ -22,10 +22,10 @@ class Wxpaynotify
                 wlog($this->log_path,'微信支付返回结果签名认证成功,微信支付订单号：'.$transaction_id.'，商家订单号：'.$out_trade_no);
 
                 //当该订单状态已经更新后再次调用时则直接返回
-                $cpay = db('orders')->where("out_trade_no='".$out_trade_no."'")->select();
-                if ($cpay){
-                    if ($cpay[0]['status'] == 'finish'){
-                        //return true;
+                $cpay = db('orders')->field('status')->where('out_trade_no='.$out_trade_no)->find();
+                if (!empty($cpay)){
+                    wlog($this->log_path,'查询是否有该订单号'.json_encode($cpay));
+                    if ($cpay['status'] == 'finish'){
                         echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                     }
                 }
@@ -34,10 +34,10 @@ class Wxpaynotify
 
                 //var_dump($total_fee,$data['total_fee']);exit;
                 //更新订单状态
-                db('orders')->where("out_trade_no='".$out_trade_no."'")->update($data);
+                db('orders')->where('out_trade_no='.$out_trade_no)->update($data);
                 $data['total_fee'] = ($total_fee/100.00);
                 //更新用户收益
-                $order = db("orders")->where("out_trade_no='".$out_trade_no."'")->find();
+                $order = db("orders")->where('out_trade_no='.$out_trade_no)->find();
                 if ($order['getmember']!=0){
                     $getmember = db("member")->find($order['getmember']);
                     $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
@@ -45,8 +45,8 @@ class Wxpaynotify
                 }
 
                 //更新收益表
-                db('earns')->where("out_trade_no='".$out_trade_no."'")->setField("status",'finish');
-                $earns = db('earns')->where("out_trade_no='".$out_trade_no."'")->find();
+                db('earns')->where('out_trade_no='.$out_trade_no)->setField("status",'finish');
+                $earns = db('earns')->where('out_trade_no='.$out_trade_no)->find();
                 //\Common\Controller\LogController::W_P_Log("earns id is:".$earns['id']);
                 wlog($this->log_path,"earns id is:". $earns['id']);
                 //更新课程表
