@@ -3,24 +3,30 @@ namespace app\index\controller;
 
 class Wxpaynotify
 {
-
+    private $log_path = APP_PATH.'log/Wxpay_android.log';//日志路径
     public function notify()
     {
         $xml = isset($GLOBALS["HTTP_RAW_POST_DATA"]) ? $GLOBALS['HTTP_RAW_POST_DATA'] : file_get_contents("php://input");
         $data = $this->xmlToArray($xml);
+        if(empty($data)){
+            wlog($this->log_path,'微信支付返回结果为空');
+            exit;
+        }
         if($data['return_code'] == 'SUCCESS' && $data['result_code'] == 'SUCCESS'){
+            wlog($this->log_path,'微信支付返回结果'.json_encode($data,JSON_UNESCAPED_UNICODE));
             if($this->checkSign($data)) {
                 $transaction_id = $data['transaction_id'];      //微信支付订单号
                 $out_trade_no   = $data['out_trade_no'];        //商家订单号
                 $total_fee   = $data['total_fee'];        //金额
-                $this->errorLog('微信支付返回结果,微信支付订单号：'.$transaction_id.'，商家订单号：'.$out_trade_no,[]);
-
+                //$this->errorLog('微信支付返回结果,微信支付订单号：'.$transaction_id.'，商家订单号：'.$out_trade_no,[]);
+                wlog($this->log_path,'微信支付返回结果签名认证成功,微信支付订单号：'.$transaction_id.'，商家订单号：'.$out_trade_no);
 
                 //当该订单状态已经更新后再次调用时则直接返回
                 $cpay = db('orders')->where("out_trade_no='".$out_trade_no."'")->select();
                 if ($cpay){
                     if ($cpay[0]['status'] == 'finish'){
-                        return true;
+                        //return true;
+                        echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                     }
                 }
                 $data['total_fee'] = $total_fee;
@@ -196,10 +202,11 @@ class Wxpaynotify
                     db('reciterpay')->where("out_trade_no='".$out_trade_no."'")->update($data);
                 }
             } else {
-                $this->errorLog('微信支付返回结果签名验证失败',$data);
+                //$this->errorLog('微信支付返回结果签名验证失败',$data);
+                wlog($this->log_path,'微信支付返回结果签名验证失败'.json_encode($data));
             }
         } else {
-            $this->errorLog('微信支付返回结果',$data);
+            wlog($this->log_path,'微信支付返回结果'.json_encode($data));
         }
         echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
     }

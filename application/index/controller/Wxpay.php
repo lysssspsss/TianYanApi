@@ -10,7 +10,7 @@ use think\Config;
 
 class Wxpay extends Base
 {
-    private $log_path = APP_PATH.'log/Wxpay.log';//日志路径
+    private $log_path = APP_PATH.'log/Wxpay_android.log';//日志路径
     /**
      * 初始化  安卓微信支付接口
      */
@@ -126,6 +126,9 @@ class Wxpay extends Base
         //总金额
         //$newPara["total_fee"] = $price*100;
         $newPara["total_fee"] = (int)$fee;
+        if($newPara["total_fee"]<=0){
+            $this->return_json(E_OP_FAIL,'金额需大于零');
+        }
         //终端IP
         $newPara["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
         //$newPara["spbill_create_ip"] = '183.238.1.246';

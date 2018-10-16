@@ -10,7 +10,7 @@ use think\Config;
 
 class Wxpayjiu extends Base
 {
-    private $log_path = APP_PATH.'log/Wxpayjiu.log';//日志路径
+    private $log_path = APP_PATH.'log/Wxpay_IOS.log';//日志路径
     /**
      * 初始化
      */
