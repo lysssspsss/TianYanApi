@@ -94,17 +94,17 @@ class Wxpay extends Base
             $reciter = db('reciter')->find($reciterid);
         }
 
-        $member = $this->user;
-        if($member){
+        //$member = $this->user;
+        /*if($member){
             $openId = $member['openid'];
-        }
+        }*/
         if ($product!='pay_onlinebook'&&$product!='pay_reciter'&&$product!='pay_wuhan'&&$product!='pay_register'&&$product!='pay_zlhd'){
             $targetmember = db('member')->find($target);
         }else{ //当支付类型为pay_onlinebook时，支付的目标用户为系统，则$targetmember['id'] = 0
             $targetmember['id'] = 0;
         }
-        $pay_amount = $fee/100.00;//费用
-        $add_time = date("Y-m-d H:i:s").".".rand(000000,999999);//时间
+        //$pay_amount = $fee/100.00;//费用
+        //$add_time = date("Y-m-d H:i:s").".".rand(000000,999999);//时间
         $out_trade_no = $product.date("YmdHis").rand(000000,999999);//订单号
 
 
@@ -116,28 +116,31 @@ class Wxpay extends Base
         //商户号
         $newPara["mch_id"] = WECHATPAY_MCHID;
         //设备号
-        $newPara["device_info"] = WECHATPAY_DEVICE_INFO;
+        //$newPara["device_info"] = WECHATPAY_DEVICE_INFO;
         //随机字符串,这里推荐使用函数生成
         $newPara["nonce_str"] = $this->createNoncestr();
         //商品描述
-        $newPara["body"] = "天雁APP支付";
+        $newPara["body"] = "tianyan_pay";
         //商户订单号,这里是商户自己的内部的订单号
         $newPara["out_trade_no"] = $out_trade_no;
         //总金额
         //$newPara["total_fee"] = $price*100;
-        $newPara["total_fee"] = $fee;
+        $newPara["total_fee"] = (int)$fee;
         //终端IP
-        $newPara["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
+        //$newPara["spbill_create_ip"] = $_SERVER["REMOTE_ADDR"];
+        $newPara["spbill_create_ip"] = '183.238.1.246';
         //通知地址，注意，这里的url里面不要加参数
-        $newPara["notify_url"] = SERVER_URL.'/api.php/index/Wxpay/notify';//"支付成功后的回调地址";
+        $newPara["notify_url"] = SERVER_URL.'/api.php/index/Wxpaynotify/notify';//"支付成功后的回调地址";
         //交易类型
         $newPara["trade_type"] = "APP";
 
         $key = WECHATPAY_KEY;//"密钥：在商户后台个人安全中心设置";
         //第一次签名
         $newPara["sign"] = $this->appgetSign($newPara,$key);
+
         //把数组转化成xml格式
         $xmlData = $this->arrayToXml($newPara);
+
         $get_data = $this->sendPrePayCurl($xmlData);
         //var_dump($get_data);exit;
         /*$get_data['return_code'] = "SUCCESS";
@@ -148,7 +151,7 @@ class Wxpay extends Base
             $this->return_json(OK,$json);
         }
         //返回的结果进行判断。
-        if($get_data['data']['return_code'] == "SUCCESS"){
+        if($get_data['data']['return_code'] == "SUCCESS" && $get_data['data']['result_code'] == "SUCCESS"){
             //根据微信支付返回的结果进行二次签名
             //二次签名所需的随机字符串
             $newPara["nonce_str"] = $this->createNoncestr();
@@ -159,7 +162,7 @@ class Wxpay extends Base
                 "appid"=>$newPara['appid'],
                 "noncestr"=>$newPara['nonce_str'],
                 "package"=>"Sign=WXPay",
-                "prepayid"=>$get_data['prepay_id'],
+                "prepayid"=>$get_data['data']['prepay_id'],
                 "partnerid"=>$newPara['mch_id'],
                 "timestamp"=>$newPara['timeStamp'],
             );
@@ -767,7 +770,10 @@ class Wxpay extends Base
                 $xml.="<".$key.">".$val."</".$key.">";
             }
             else
+            {
                 $xml.="<".$key."><![CDATA[".$val."]]></".$key.">";
+            }
+
         }
         $xml.="</xml>";
         return $xml;
@@ -843,6 +849,7 @@ class Wxpay extends Base
         }
         //签名步骤一：按字典序排序参数
         ksort($Parameters);
+        //echo $Parameters['nonce_str'];
         $String = $this->formatBizQueryParaMap($Parameters, false);
         //echo '【string1】'.$String.'</br>';
 
@@ -873,8 +880,13 @@ class Wxpay extends Base
             {
                 $v = urlencode($v);
             }
-            //$buff .= strtolower($k) . "=" . $v . "&";
             $buff .= $k . "=" . $v . "&";
+            /*if($k == 'nonce_str'){
+                $buff .= $k . "=" . $v . "&amp";
+            }else{
+                $buff .= $k . "=" . $v . "&";
+            }*/
+            //$buff .= strtolower($k) . "=" . $v . "&";
         }
         $reqPar = '';
         if (strlen($buff) > 0)

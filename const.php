@@ -27,7 +27,9 @@ const WECHATPAY_URL = "https://api.mch.weixin.qq.com/pay/unifiedorder";
 const WECHATPAY_APPID = 'wxa674ca5ea6141e79';
 const WECHATPAY_MCHID = '1516590501';
 const WECHATPAY_DEVICE_INFO = 'WEB';
-const WECHATPAY_KEY = '12e68fa788b610d3b511cec9ccdd35b1';
+//const WECHATPAY_KEY = '12e68fa788b610d3b511cec9ccdd35b1';
+const WECHATPAY_KEY = '21e55fa787b612d5b511cec2ccdd25b8';
+//const WECHATPAY_KEY = 'f47616e8c43a26329c7aae556de75580';
 
 /**
  * 微信相关
