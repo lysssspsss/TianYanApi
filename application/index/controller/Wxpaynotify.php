@@ -214,6 +214,7 @@ class Wxpaynotify
         } else {
             wlog($this->log_path,'微信支付返回结果'.json_encode($datas));
         }
+        wlog($this->log_path,'------------微信支付结束-------------');
         echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
     }
 
