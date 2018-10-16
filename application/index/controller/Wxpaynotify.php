@@ -9,9 +9,9 @@ class Wxpaynotify
     private $log_path = APP_PATH.'log/Wxpay_android.log';//日志路径
     public function notify()
     {
-        /*$xml = isset($GLOBALS["HTTP_RAW_POST_DATA"]) ? $GLOBALS['HTTP_RAW_POST_DATA'] : file_get_contents("php://input");
-        $data = $this->xmlToArray($xml);*/
-        $datas = input('post.');
+        $xml = isset($GLOBALS["HTTP_RAW_POST_DATA"]) ? $GLOBALS['HTTP_RAW_POST_DATA'] : file_get_contents("php://input");
+        $datas = $this->xmlToArray($xml);
+        //$datas = input('post.');
         if(empty($datas)){
             wlog($this->log_path,'微信支付返回结果为空');
             exit;

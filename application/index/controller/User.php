@@ -712,7 +712,11 @@ class User extends Base
         $count = db('channel')->alias('h')->join('attention a','h.id=a.roomid')->field('a.roomid as channel_id,h.memberid,h.lecturer,h.name as title,h.cover_url')
             ->where(['a.memberid'=>$member['id'],'a.type'=>1])->count();
         if(empty($list)){
-            $this->return_json(E_OP_FAIL,'结果为空');
+            if($this->source == 'ANDROID'){
+                $this->return_json(E_OP_FAIL,'结果为空');
+            }else{
+                $this->return_json(OK,['msg'=>'结果为空']);
+            }
         }
         foreach($list as $key => $value){
             if($value['memberid']==BANZHUREN){
