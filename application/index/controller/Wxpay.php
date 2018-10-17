@@ -20,13 +20,12 @@ class Wxpay extends Base
     }
 
     //微信APP支付 一定要先仔细阅读微信的官方文档，统一下单接口
-// 调取微信APP支付必须先开通商户后台的微信APP支付
-// 注意：开通微信APP支付会发邮件到你们邮箱，下面的商户号和appid还有key密钥，都必须是开通后的。说这些主要是提醒，有些商户是多个商户后台的，所以就有多个商户id和商户appid和商户key，必须匹配，不然获取不到预支付id，也就是prepay_id的。
-// header("Content-type: text/xml");   // 支付出问题时，方便查看xml格式数据，放开可以查看传送的xml字符串    xml要用 echo输出 不要var_dump()
+    // 调取微信APP支付必须先开通商户后台的微信APP支付
+    // 注意：开通微信APP支付会发邮件到你们邮箱，下面的商户号和appid还有key密钥，都必须是开通后的。说这些主要是提醒，有些商户是多个商户后台的，所以就有多个商户id和商户appid和商户key，必须匹配，不然获取不到预支付id，也就是prepay_id的。
+    // header("Content-type: text/xml");   // 支付出问题时，方便查看xml格式数据，放开可以查看传送的xml字符串    xml要用 echo输出 不要var_dump()
+    //echo weChatPay('订单号','价格');  //直接输出json给前台APP
 
-//echo weChatPay('订单号','价格');  //直接输出json给前台APP
-
-//入口函数
+    //入口函数
     public function wechat_pay(){
 
         wlog($this->log_path,"jsApiCall 进入支付方法");
