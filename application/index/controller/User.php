@@ -960,10 +960,12 @@ class User extends Base
             //$data = $channel;
         }
         //$data['memberid'] = $this->user['id'];
-        if($this->source == 'ANDROID'){
-            $this->return_json(E_OP_FAIL,'暂无 课程/专栏');
-        }else{
-            $this->return_json(OK,['msg'=>'暂无 课程/专栏']);
+        if(empty($data)){
+            if($this->source == 'ANDROID'){
+                $this->return_json(E_OP_FAIL,'暂无 课程/专栏');
+            }else{
+                $this->return_json(OK,['msg'=>'暂无 课程/专栏']);
+            }
         }
         $this->return_json(OK,$data);
     }
