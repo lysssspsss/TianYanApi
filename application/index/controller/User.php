@@ -84,7 +84,7 @@ class User extends Base
             [
                 'tel'  => 'require|number|max:11|min:11',
                 'company'  => 'chsAlphaNum', //汉字字母数字
-                'name'  => 'require|chsAlpha',//汉字字母
+                'name'  => 'require|chsAlphaNum',//汉字字母
                 'code'  => 'require|number|max:5|min:5',
                 'phone_id'  => 'alphaNum',
             ]

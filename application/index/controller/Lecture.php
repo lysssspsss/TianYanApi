@@ -687,9 +687,9 @@ class Lecture extends Base
         if(!empty($lecture['channel_id'])){
             if($lecture['is_pay_only_channel']){//是否仅付费专栏
                 $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
-                if(!$ispay){//数据库数据有些混乱。暂时加上这个判断，以后要注释
+               /* if(!$ispay){//数据库数据有些混乱。暂时加上这个判断，以后要注释
                     $ispay = db('coursepay')->field('id')->where("memberid=" . $this->user['id'] . " and courseid=" . $lecture['lecture_id'] . " and status='finish'")->find();
-                }
+                }*/
                 //var_dump($ispay,1);exit;
             }else{
                 $ispay = db('channelpay')->field('id')->where("memberid=" . $this->user['id'] . " and channelid=" . $lecture['channel_id'] . " and status='finish'")->find();
