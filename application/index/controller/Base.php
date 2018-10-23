@@ -384,7 +384,7 @@ class Base extends Controller
         $key = $tel.'_'.$num;
         $redis_code = $this->redis->get(REDIS_YZM_KEY.':'.$key);
         if($code != $redis_code){
-            //$this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
+            $this->return_json(E_ARGS,'验证码错误');//测试时暂时注释
         }
         $this->redis->del(REDIS_YZM_KEY.':'.$key);
         return true;
