@@ -797,6 +797,7 @@ class User extends Base
         $data['lecture_pay'] = round($shuju['course_pay']+$shuju['course_pay1'],0);//课程付费收益
         $data['lecture_reward'] = round($shuju['course_play']+$shuju['course_play1'],0);//课程打赏收益
         $data['lecture_tuiguang'] = round($shuju['popular'],2);//推广收益
+        $data['recharge'] = round($shuju['recharge'],2);//充值的余额
         $data['memberid'] = $this->user['id'];
         $this->return_json(OK,$data);
     }

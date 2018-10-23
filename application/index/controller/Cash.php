@@ -66,12 +66,19 @@ class Cash extends Base
             }
             $course_invited_sql = db()->query($invited_sql);
             $course_invited_sql = $course_invited_sql[0]['sums'];
+
+            //6、用户充值的金额
+            $recharge_sql = " select round(sum(fee),2) as sums from live_earns where memberid =" . $memberid . " and type='recharge' and status='finish'";
+            $recharge = db()->query($recharge_sql);
+            $recharge = $recharge[0]['sums'];
+
             $result["popular"] = $popular;
             $result["course_play1"] = $course_play1;
             $result["course_play"] = $course_play+$course_invited_sql;
             $result["course_pay1"] = $course_pay1;
             $result["channel_pay"] = $channel_pay;
             $result["course_pay"] = $course_pay;
+            $result["recharge"] = $recharge;
             return $result;
         }else{
             return $result;
@@ -123,7 +130,13 @@ class Cash extends Base
             $popular_sql = " select round(sum(n.fee),2) as sums from live_earns n where memberid =" . $memberid . " and remarks='分销推广'";
             $popular = db()->query($popular_sql);
             $popular = $popular[0]['sums'];
-            $sum = $popular + $course_play1 + $course_pay1 + ($channel_pay * 0.5) + $course_play + $course_pay + $course_invited_sql;
+
+            //6、用户充值的金额
+            $recharge_sql = " select round(sum(fee),2) as sums from live_earns where memberid =" . $memberid . " and type='recharge' and status='finish'";
+            $recharge = db()->query($recharge_sql);
+            $recharge = $recharge[0]['sums'];
+
+            $sum = $popular + $course_play1 + $course_pay1 + ($channel_pay * 0.5) + $course_play + $course_pay + $course_invited_sql + $recharge;
             if ($memberid==17176){
                 $sum += 32.8;
             }
