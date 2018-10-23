@@ -556,7 +556,7 @@ class Lecture extends Base
             $jiangshi['cover_url'] = $cover[0]['cover_url'];
             $cidlist = implode(',',array_column($cover,'id'));
             $jiangshi['lecture'] = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type')
-                ->where(['isshow'=>'show'])->where('channel_id in ('.$cidlist.')')->order('clicknum','desc')->select();
+                ->where(['isshow'=>'show'])->where('channel_id in ('.$cidlist.')')->order('id','desc')->select();
            /* if(in_array(BANZHUREN,$cidlist)){
                 db('course')->limit(50);
             }*/
@@ -640,13 +640,13 @@ class Lecture extends Base
         if($lecture['channel_id']==BANZHUREN){
             $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
             ->where(['isshow'=>'show','memberid'=>$jiangshi['js_memberid']])
-                ->order('priority desc,clicknum desc')
+                ->order('id desc')//,priority desc,clicknum desc
                 ->limit(50)
                 ->select();
         }else{
             $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
             ->where(['isshow'=>'show','channel_id'=>$lecture['channel_id']])
-                ->order('priority desc,clicknum desc')
+                ->order('id desc')
                 ->select();
         }
 
@@ -798,7 +798,7 @@ class Lecture extends Base
             $where = ['isshow'=>'show','channel_id'=>$channel['channel_id']];
             $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')
                 ->where($where)
-                ->order('priority desc,clicknum desc')->select();
+                ->order('id desc')->select();
         //}
 
       /*  $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')

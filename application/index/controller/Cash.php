@@ -146,5 +146,4 @@ class Cash extends Base
             return 0;
         }
     }
-
 }
