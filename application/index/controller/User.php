@@ -533,10 +533,19 @@ class User extends Base
         if(empty($this->user['name'])){
             $this->user['name'] = $this->user['nickname'];
         }
-        $this->user['sumearn'] = Cash::memberEarnings($this->user['id']);
+        $data['sumearn'] = Cash::memberEarnings($this->user['id']);
+        $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+        $this->user['sumearn'] = $data['can_withdraw'];
         $this->user['kaiguan'] = 'false';//IOS审核开关
         $this->return_json(OK,$this->user);
     }
+
+    /*private function get_yue()
+    {
+        $data['sumearn'] = Cash::memberEarnings($this->user['id']);
+        $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - abs($this->user['unpassnum']);
+        $this->user['sumearn'] = $data['can_withdraw'];
+    }*/
 
 
     /**
