@@ -6,8 +6,8 @@ const FING_TAG = 0;//发现fragment控制标示
 /**
  * 网络请求端口
  */
-//const SERVER_URL = "http://111.230.238.183:9527";
-const SERVER_URL = "https://api.tianyan199.com";
+const SERVER_URL = "http://111.230.238.183:9527";
+//const SERVER_URL = "https://api.tianyan199.com";
 const SERVER_URL_BACK = "api.tianyan199.com";// 备用
 const SERVER_PATH = '/data/wwwroot/TianYanApi';
 
