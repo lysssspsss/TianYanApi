@@ -574,12 +574,13 @@ class Wxpayjiu extends Base
             //更新用户收益
             $order = db("orders")->where("out_trade_no='".$out_trade_no."'")->find();
             if ($order['getmember']!=0){
-                $getmember = db('member')->field('money')->find($order['getmember']);
+                $getmember = db('member')->field('id,sumearn,money')->find($order['getmember']);
                 $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
-                db('member')->where(['id'=>$getmember['id']])->update(['sumearn'=>$mdata['sumearn']]);
+                $aaaa = db('member')->where(['id'=>$getmember['id']])->setField('sumearn',$mdata['sumearn']);
                 if($type == 'recharge'){
                     $mdata['money'] = $getmember['money'] + ($data['total_fee']);
-                    db('member')->where(['id'=>$getmember['id']])->update(['money'=>$mdata['money']]);
+                    $bbbb = db('member')->where(['id'=>$getmember['id']])->setField('money',$mdata['money']);
+                    //var_dump($getmember['id'],$bbbb);
                 }
             }
 
