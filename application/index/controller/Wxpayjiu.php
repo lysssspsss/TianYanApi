@@ -576,10 +576,10 @@ class Wxpayjiu extends Base
             if ($order['getmember']!=0){
                 $getmember = db('member')->field('money')->find($order['getmember']);
                 $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
-                db('member')->where("id=".$getmember['id'])->setField("sumearn",$mdata['sumearn']);
+                db('member')->where(['id'=>$getmember['id']])->update(['sumearn'=>$mdata['sumearn']]);
                 if($type == 'recharge'){
                     $mdata['money'] = $getmember['money'] + ($data['total_fee']);
-                    db('member')->where("id=".$getmember['id'])->setField("money",$mdata['money']);
+                    db('member')->where(['id'=>$getmember['id']])->update(['money'=>$mdata['money']]);
                 }
             }
 
