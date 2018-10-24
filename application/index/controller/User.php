@@ -533,19 +533,37 @@ class User extends Base
         if(empty($this->user['name'])){
             $this->user['name'] = $this->user['nickname'];
         }
-        $data['sumearn'] = Cash::memberEarnings($this->user['id']);
-        $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+        //$data['sumearn'] = Cash::memberEarnings($this->user['id']);
+        //$data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+        if($this->source == 'IOS'){
+            if($this->user['title']=='lecturer'){
+                $data = $this->get_yue();
+                unset($data['sumearn']);
+            }else{
+                $data['can_withdraw'] = $this->user['money'];
+            }
+        }else{
+            $data = $this->get_yue();
+            unset($data['sumearn']);
+        }
         $this->user['sumearn'] = $data['can_withdraw'];
         $this->user['kaiguan'] = 'false';//IOS审核开关
         $this->return_json(OK,$this->user);
     }
 
-    /*private function get_yue()
+    /**
+     * 获取余额
+     * @return mixed
+     */
+    private function get_yue()
     {
         $data['sumearn'] = Cash::memberEarnings($this->user['id']);
-        $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - abs($this->user['unpassnum']);
-        $this->user['sumearn'] = $data['can_withdraw'];
-    }*/
+        //$data['sumearn'] = $this->user['sumearn'];
+        $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
+        $data['sumearn'] =  $this->floor_down($data['sumearn']);
+        $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
+        return $data;
+    }
 
 
     /**
@@ -554,17 +572,17 @@ class User extends Base
     public function get_user_money()
     {
         $this->get_user_redis($this->user['id'],true);
-        $data['sumearn'] = Cash::memberEarnings($this->user['id']);
-        //$data['sumearn'] = $this->user['sumearn'];
-        $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
-        $data['sumearn'] =  $this->floor_down($data['sumearn']);
-        $data['can_withdraw'] =  $this->floor_down($data['can_withdraw']);
-        unset($data['sumearn']);
-        /*if($this->user['title']=='lecturer'){
-
+        if($this->source == 'IOS'){
+            if($this->user['title']=='lecturer'){
+                $data = $this->get_yue();
+                unset($data['sumearn']);
+            }else{
+                $data['can_withdraw'] = $this->user['money'];
+            }
         }else{
-            $data['can_withdraw'] = $this->user['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
-        }*/
+            $data = $this->get_yue();
+            unset($data['sumearn']);
+        }
         $data['money_list'] = [6,68,88,208,388,998];
         $this->return_json(OK,$data);
     }

@@ -562,13 +562,6 @@ class Wxpayjiu extends Base
             //更新订单状态
             db('orders')->where("out_trade_no='".$out_trade_no."'")->update($data);
             $data['total_fee'] = ($total_fee/100.00);
-            //更新用户收益
-            $order = db("orders")->where("out_trade_no='".$out_trade_no."'")->find();
-            if ($order['getmember']!=0){
-                $getmember = db("member")->find($order['getmember']);
-                $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
-                db('member')->where("id=".$getmember['id'])->setField("sumearn",$mdata['sumearn']);
-            }
 
             //更新收益表
             db('earns')->where("out_trade_no='".$out_trade_no."'")->setField("status",'finish');
@@ -577,13 +570,27 @@ class Wxpayjiu extends Base
             wlog($this->log_path,"earns id is:". $earns['id']);
 
             $type = $earns['type'];
+
+            //更新用户收益
+            $order = db("orders")->where("out_trade_no='".$out_trade_no."'")->find();
+            if ($order['getmember']!=0){
+                $getmember = db('member')->field('money')->find($order['getmember']);
+                $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
+                db('member')->where("id=".$getmember['id'])->setField("sumearn",$mdata['sumearn']);
+                if($type == 'recharge'){
+                    $mdata['money'] = $getmember['money'] + ($data['total_fee']);
+                    db('member')->where("id=".$getmember['id'])->setField("money",$mdata['money']);
+                }
+            }
+
             if($type != 'recharge'){
-                $paymember = db('member')->field('id,sumearn')->find($order['paymember']);
+                $paymember = db('member')->field('id,sumearn,money')->find($order['paymember']);
                 $sumearn = $paymember['sumearn'] - ($data['total_fee']);
-                if($sumearn<0){
+                $money = $paymember['money'] - ($data['total_fee']);
+                if($sumearn<0 || $money<0){
                     $this->return_json(E_OP_FAIL,'余额不足');
                 }
-                db('member')->where("id=".$paymember['id'])->setField("sumearn",$sumearn);
+                db('member')->where("id=".$paymember['id'])->update(['sumearn'=>$sumearn,'money'=>$money]);
             }
             //更新课程表
             if ($earns['lectureid']){

@@ -148,7 +148,7 @@ class WeChat extends  Controller{
     public function doSendTempleteMsg($touser, $template_id, $url, $data, $topcolor = '#7B68EE')
     {
         wlog($this->log_path, "doSendTempleteMsg 推送消息".$touser.'|'.$template_id.'|'.$url.'|');
-        return true;
+        //return true;
         $template = array(
             'touser' => $touser,
             'template_id' => $template_id,
