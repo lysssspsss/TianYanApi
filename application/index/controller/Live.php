@@ -89,23 +89,21 @@ class Live extends Base
         $d_video['pull_url'] = '';
         $d_video['img'] = '';
         if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
-            $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show'])->select();
+            $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show','is_app'=>'1'])->find();
             //var_dump($vedio);exit;
             if(!empty($vedio)){
-                foreach ($vedio as $k=>$v ){
-                    if(strstr($v['video'],'rtmp')){
-                        $d_video['push_url'] = $v['push_url'];
-                        $d_video['pull_url'] = $v['video'];
-                        break;
-                    }else{
-                        if (eregi_new("mp4$", $v['video'])||eregi_new("m3u8$", $v['video'])){
-                            $d_video['pull_url'] = $v['video'];
-                        } elseif(eregi_new("webm$", $v['video'])){
-                            $d_video['pull_url'] = $v['video'];
-                        }
+                if(strstr($vedio['video'],'rtmp')){
+                        $d_video['push_url'] = $vedio['push_url'];
+                        $d_video['pull_url'] = $vedio['video'];
+                }else{
+                    if (eregi_new("mp4$", $vedio['video'])||eregi_new("m3u8$", $vedio['video'])){
+                        $d_video['pull_url'] = $vedio['video'];
+                    } elseif(eregi_new("webm$", $vedio['video'])){
+                        $d_video['pull_url'] = $vedio['video'];
                     }
                 }
-                $d_video['img'] = $vedio[0]['video_cover'];
+
+                $d_video['img'] = $vedio['video_cover'];
                 if (!isset($d_video['img'])){
                     $d_video['img'] = $lecture['coverimg'];
                 }

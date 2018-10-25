@@ -368,6 +368,7 @@ class Lecture extends Base
                     ];
                     $videoinfo2 = $videoinfo;
                     $videoinfo2['video'] = $zhibo_url['m3u8_url'];
+                    $videoinfo['is_app'] = '1';
                     $vid = Db::name('video')->insertAll([$videoinfo,$videoinfo2]);
                     if ($vid==2) {
                         wlog($this->log_path, "add_lecture 插入video信息成功！;id:".$vid);
@@ -620,7 +621,7 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
         if($lecture['mode'] == 'video' || $lecture['mode'] == 'vedio'){
-            $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id])->find();
+            $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id,'is_app'=>'1'])->find();
             if(strstr($video['video'],'rtmp')){
                 $lecture['mode'] = 'live';//直播类型
             }
