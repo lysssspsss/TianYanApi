@@ -1133,6 +1133,7 @@ class User extends Base
         $hour = date('H',$timestramp);
         $day = date('w',$timestramp);//还需完善*/
         $data['finish_time'] = date('m-d',strtotime($data['applytime'])+86400);
+        $data['bankcard'] = '用户默认银行卡';
         unset($data['applytime']);
         $this->return_json(OK,$data);
     }
