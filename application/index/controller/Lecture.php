@@ -369,6 +369,7 @@ class Lecture extends Base
                     $videoinfo2 = $videoinfo;
                     $videoinfo2['video'] = $zhibo_url['m3u8_url'];
                     $videoinfo['is_app'] = '1';
+                    $videoinfo2['is_app'] = '';
                     $vid = Db::name('video')->insertAll([$videoinfo,$videoinfo2]);
                     if ($vid==2) {
                         wlog($this->log_path, "add_lecture 插入video信息成功！;id:".$vid);
