@@ -97,6 +97,7 @@ class Live extends Base
                         $d_video['push_url'] = $v['push_url'];
                         $d_video['pull_url'] = $v['video'];
                         $d_video['img'] = $v['video_cover'];
+                        $lecture['mode'] = 'live';
                         break;
                     }else{
                         if (strstr($v['video'],"mp4")||strstr( $v['video'],"m3u8")){
@@ -1293,6 +1294,11 @@ class Live extends Base
             'EndTime'=>$endtime,
         ];
         $url = "https://live.aliyuncs.com/?";
+        $result['code'] = '200';
+        $result['data']['msg'] = '已结束直播，请等候三分钟即可保存录播文件';
+        echo json_encode($result, JSON_UNESCAPED_UNICODE);
+        ignore_user_abort();
+        sleep(200);
         $obj = new Signature($arr,$url);
         $res = $obj->callInterface();
         $str = '';
