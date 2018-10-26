@@ -623,8 +623,10 @@ class Lecture extends Base
         }
         if($lecture['mode'] == 'video' || $lecture['mode'] == 'vedio'){
             $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id,'is_app'=>'1'])->find();
-            if(strstr($video['video'],'rtmp')){
-                $lecture['mode'] = 'live';//直播类型
+            if(!empty($video)){
+                if(strstr($video['video'],'rtmp')){
+                    $lecture['mode'] = 'live';//直播类型
+                }
             }
         }
         if(empty($lecture['channel_id'])){

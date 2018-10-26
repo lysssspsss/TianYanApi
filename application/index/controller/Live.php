@@ -89,22 +89,27 @@ class Live extends Base
         $d_video['pull_url'] = '';
         $d_video['img'] = '';
         if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
-            $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show','is_app'=>'1'])->find();
+            $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show'])->select();
             //var_dump($vedio);exit;
             if(!empty($vedio)){
-                /*if(strstr($vedio['video'],'rtmp')){
-                        $d_video['push_url'] = $vedio['push_url'];
-                        $d_video['pull_url'] = $vedio['video'];
-                }else{
-                    if (eregi_new("mp4$", $vedio['video'])||eregi_new("m3u8$", $vedio['video'])){
-                        $d_video['pull_url'] = $vedio['video'];
-                    } elseif(eregi_new("webm$", $vedio['video'])){
-                        $d_video['pull_url'] = $vedio['video'];
+                foreach($vedio as $k => $v){
+                    if(strstr($v['video'],'rtmp')){
+                        $d_video['push_url'] = $v['push_url'];
+                        $d_video['pull_url'] = $v['video'];
+                        $d_video['img'] = $v['video_cover'];
+                        break;
+                    }else{
+                        if (strstr($v['video'],"mp4")||strstr( $v['video'],"m3u8")){
+                            $d_video['push_url'] = $v['push_url'];
+                            $d_video['pull_url'] = $v['video'];
+                        } elseif(strstr( $v['video'],"webm")){
+                            $d_video['push_url'] = $v['push_url'];
+                            $d_video['pull_url'] = $v['video'];
+                        }
+                        $d_video['img'] = $v['video_cover'];
                     }
-                }*/
-                $d_video['push_url'] = $vedio['push_url'];
-                $d_video['pull_url'] = $vedio['video'];
-                $d_video['img'] = $vedio['video_cover'];
+                }
+
                 if (!isset($d_video['img'])){
                     $d_video['img'] = $lecture['coverimg'];
                 }
