@@ -1299,6 +1299,19 @@ class Live extends Base
         echo json_encode($aaa, JSON_UNESCAPED_UNICODE);
         ignore_user_abort();
         sleep(200);*/
+        $jsons = json_encode($arr);
+        $this->redis->hset('save_video_url',$lecture_id,$jsons);
+        $this->return_json(OK,['msg'=>'已结束直播，请等候三分钟即可保存录播文件']);
+        //var_dump($stearmname);exit;
+        /*$url = 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName='.LIVE_VHOST.'&AppName='.LIVE_APPNAME.'&StreamName='
+            .$stearmname.'&StartTime='.$starttime.'&EndTime='.$endtime.'&Format=json&Version=2016-11-01'
+            .'&SignatureMethod=HMAC-SHA1&SignatureNonce='.time().mt_rand(100,999).'&SignatureVersion=1.0&AccessKeyId='.ALIYUN_ACCESS_KEY_ID.'&Timestamp='.date('Y-m-d').'T'.date('H:i:s').'Z';*/
+        // 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName=live.aliyunlive.com&AppName=aliyuntest&StreamName=xxx&StartTime=xxx&EndTime=xxx&<公共请求参数>';
+    }
+
+    public function baocun()
+    {
+        /*$this->redis->hGetAll('save_video_url');
         $obj = new Signature($arr,$url);
         $res = $obj->callInterface();
         $str = '';
@@ -1321,14 +1334,8 @@ class Live extends Base
             $this->return_json(E_OP_FAIL, '修改视频信息失败');
         }
 
-        $this->return_json(OK,['pull_url'=>$video_url]);
-        //var_dump($stearmname);exit;
-        /*$url = 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName='.LIVE_VHOST.'&AppName='.LIVE_APPNAME.'&StreamName='
-            .$stearmname.'&StartTime='.$starttime.'&EndTime='.$endtime.'&Format=json&Version=2016-11-01'
-            .'&SignatureMethod=HMAC-SHA1&SignatureNonce='.time().mt_rand(100,999).'&SignatureVersion=1.0&AccessKeyId='.ALIYUN_ACCESS_KEY_ID.'&Timestamp='.date('Y-m-d').'T'.date('H:i:s').'Z';*/
-        // 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName=live.aliyunlive.com&AppName=aliyuntest&StreamName=xxx&StartTime=xxx&EndTime=xxx&<公共请求参数>';
+        $this->return_json(OK,['pull_url'=>$video_url]);*/
     }
-
 
     /**
      * 上传文件
