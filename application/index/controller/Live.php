@@ -1300,7 +1300,7 @@ class Live extends Base
         ignore_user_abort();
         sleep(200);*/
         $jsons = json_encode($arr);
-        $this->redis->hset('save_video_url',$lecture_id,$jsons);
+        $this->redis->hSet('save_video_url',$lecture_id,$jsons);
         $this->return_json(OK,['msg'=>'已结束直播，请等候三分钟即可保存录播文件']);
         //var_dump($stearmname);exit;
         /*$url = 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName='.LIVE_VHOST.'&AppName='.LIVE_APPNAME.'&StreamName='
@@ -1311,30 +1311,40 @@ class Live extends Base
 
     public function baocun()
     {
-        /*$this->redis->hGetAll('save_video_url');
-        $obj = new Signature($arr,$url);
-        $res = $obj->callInterface();
-        $str = '';
-        if(empty($res['status'])){
-            $this->return_json(E_OP_FAIL,$res['msg']);
-        }
-        $oss_arr = json_decode($res['msg'],true);
+        $save_video_url = $this->redis->hGetAll('save_video_url');
+        $url = "https://live.aliyuncs.com/?";
+        if(!empty($save_video_url)){
+            $video_url = '';
+            foreach($save_video_url as $key => $value){
+                $arr = json_decode($value,true);
+                $obj = new Signature($arr,$url);
+                $res = $obj->callInterface();
+                $str = '';
+                if(empty($res['status'])){
+                    $this->return_json(E_OP_FAIL,$res['msg']);
+                }
+                $oss_arr = json_decode($res['msg'],true);
 
-        if(empty($oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'])){
-            $this->return_json(E_OP_FAIL, '没有找到录制的视频');
+                if(empty($oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'])){
+                    $this->return_json(E_OP_FAIL, '没有找到录制的视频');
+                }
+                $oss_obj = $oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'];
+                $video_url = Tools::get_oss_url_sign($oss_obj,OSS_LUZHI_TIMEOUT);
+                $videoinfo = ['video' => $video_url];
+                $vid = db('video')->where(['lecture_id'=>$key])->update($videoinfo);
+                if ($vid) {
+                    wlog($this->log_path, "save_video_url 修改课程id为：" . $key . "的video字段信息成功");
+                    $this->redis->hDel('save_video_url',$key);
+                } else {
+                    wlog($this->log_path, "save_video_url 修改课程id为：" . $key . "的video字段信息失败");
+                    $this->return_json(E_OP_FAIL, '修改视频信息失败');
+                }
+                break;
+            }
+            $this->return_json(OK,['pull_url' => $video_url]);
+        }else{
+            $this->return_json(E_OP_FAIL,'为空');
         }
-        $oss_obj = $oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'];
-        $video_url = Tools::get_oss_url_sign($oss_obj,OSS_LUZHI_TIMEOUT);
-        $videoinfo = ['video' => $video_url];
-        $vid = db('video')->where(['lecture_id'=>$lecture_id])->update($videoinfo);
-        if ($vid) {
-            wlog($this->log_path, "save_video_url 修改课程id为：" . $lecture_id . "的video字段信息成功");
-        } else {
-            wlog($this->log_path, "save_video_url 修改课程id为：" . $lecture_id . "的video字段信息失败");
-            $this->return_json(E_OP_FAIL, '修改视频信息失败');
-        }
-
-        $this->return_json(OK,['pull_url'=>$video_url]);*/
     }
 
     /**
