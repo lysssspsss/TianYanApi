@@ -1321,12 +1321,16 @@ class Live extends Base
                 $res = $obj->callInterface();
                 $str = '';
                 if(empty($res['status'])){
-                    $this->return_json(E_OP_FAIL,$res['msg']);
+                    //$this->return_json(E_OP_FAIL,$res['msg']);
+                    wlog($this->log_path, $res['msg']);
+                    continue;
                 }
                 $oss_arr = json_decode($res['msg'],true);
 
                 if(empty($oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'])){
-                    $this->return_json(E_OP_FAIL, '没有找到录制的视频');
+                    //$this->return_json(E_OP_FAIL, '没有找到录制的视频');
+                    wlog($this->log_path, "没有找到录制的视频".$key);
+                    continue;
                 }
                 $oss_obj = $oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'];
                 $video_url = Tools::get_oss_url_sign($oss_obj,OSS_LUZHI_TIMEOUT);
@@ -1337,11 +1341,12 @@ class Live extends Base
                     $this->redis->hDel('save_video_url',$key);
                 } else {
                     wlog($this->log_path, "save_video_url 修改课程id为：" . $key . "的video字段信息失败");
-                    $this->return_json(E_OP_FAIL, '修改视频信息失败');
+                    continue;
+                    //$this->return_json(E_OP_FAIL, '修改视频信息失败');
                 }
-                break;
+               
             }
-            $this->return_json(OK,['pull_url' => $video_url]);
+            $this->return_json(OK,['msg' => '完成']);
         }else{
             $this->return_json(E_OP_FAIL,'为空');
         }
