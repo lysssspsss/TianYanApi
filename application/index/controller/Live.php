@@ -66,7 +66,7 @@ class Live extends Base
             $lecture['lectureStatus'] = 'approved';
         }
         $lecture['intro'] = str_replace(PHP_EOL, '', $lecture['intro']);
-        $result['lecture'] = $lecture;
+
 
         /*
          * 获取讲师信息
@@ -119,8 +119,8 @@ class Live extends Base
 
         }
         //$d_video['pull_url'] = urlencode($d_video['pull_url']);
+        $result['lecture'] = $lecture;
         $result['dvideo'] = $d_video;
-
         $result['js_member'] = $member;
         $currentMember = $this->user;
         $result['cmember'] = $currentMember;
