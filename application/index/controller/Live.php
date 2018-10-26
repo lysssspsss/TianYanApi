@@ -92,7 +92,7 @@ class Live extends Base
             $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show','is_app'=>'1'])->find();
             //var_dump($vedio);exit;
             if(!empty($vedio)){
-                if(strstr($vedio['video'],'rtmp')){
+                /*if(strstr($vedio['video'],'rtmp')){
                         $d_video['push_url'] = $vedio['push_url'];
                         $d_video['pull_url'] = $vedio['video'];
                 }else{
@@ -101,8 +101,9 @@ class Live extends Base
                     } elseif(eregi_new("webm$", $vedio['video'])){
                         $d_video['pull_url'] = $vedio['video'];
                     }
-                }
-
+                }*/
+                $d_video['push_url'] = $vedio['push_url'];
+                $d_video['pull_url'] = $vedio['video'];
                 $d_video['img'] = $vedio['video_cover'];
                 if (!isset($d_video['img'])){
                     $d_video['img'] = $lecture['coverimg'];
