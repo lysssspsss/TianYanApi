@@ -90,6 +90,7 @@ class Index extends Base
             }
             $data['lunbo'] = array_values($lunbo);
         }
+        $data['toutiao'] = $this->toutiao();
         $data['jingxuan'] = db('course')->field('id,name,clicknum,coverimg,mode,type,memberid,channel_id')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit(4)->select();
         $data['jingxuan'] = $this->check_js_member_id($data['jingxuan']);
         $data['todaylive'] = db('course')->field('id,name,sub_title,coverimg,mode,type,starttime,memberid,channel_id')
@@ -298,7 +299,8 @@ class Index extends Base
     public function toutiao()
     {
         $frontpage = db('frontpage')->field('id,title')->where(['isshow'=>'show'])->order('orderby','desc')->limit(4)->select();
-        $this->return_json(OK,$frontpage);
+        return $frontpage;
+        //$this->return_json(OK,$frontpage);
     }
 
     /**
