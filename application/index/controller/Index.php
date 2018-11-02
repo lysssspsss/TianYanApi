@@ -298,7 +298,7 @@ class Index extends Base
      */
     public function toutiao()
     {
-        $frontpage = db('frontpage')->field('id,title')->where(['isshow'=>'show'])->order('orderby','desc')->limit(4)->select();
+        $frontpage = db('frontpage')->field('id,title,url')->where(['isshow'=>'show'])->order('orderby','desc')->limit(4)->select();
         return $frontpage;
         //$this->return_json(OK,$frontpage);
     }
