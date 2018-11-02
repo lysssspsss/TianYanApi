@@ -293,6 +293,50 @@ class Index extends Base
     }
 
     /**
+     * 首页知识头条
+     */
+    public function toutiao()
+    {
+        $frontpage = db('frontpage')->field('id,title')->where(['isshow'=>'show'])->order('orderby','desc')->limit(4)->select();
+        $this->return_json(OK,$frontpage);
+    }
+
+    /**
+     * 知识头条列表页
+     * @return array
+     */
+    public function get_toutiao_list(){
+        $model = db('frontpage');
+        $arr = $model->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
+        $list = array();
+        foreach ($arr as $k=>$v){
+            if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
+                $list['today'][] = $v;
+            }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
+                $list['yesterday'][] = $v;
+            }/*elseif($k < 4){
+                $list['today'][] = $v;
+            }elseif ($k >=4 && $k <8){
+                $list['yesterday'][] = $v;
+            }*/
+            else{
+                $list[$v['news_date']][] = $v;
+            }
+        }
+        $this->return_json(OK,$list);
+    }
+
+    /**
+     * 知识头条详情页
+     * @return array
+     */
+    public function get_toutiao_detail(){
+        $id = (int)input('get.id');
+        $detail = db('frontpage')->where(['id'=>$id])->find();
+        $this->return_json(OK,$detail);
+    }
+
+    /**
      * 主页的行业大咖
      * @return mixed
      */
@@ -311,6 +355,7 @@ class Index extends Base
         $data = db('famous')->field('memberid,channel_id,name,intro,intro1,intro2,img,js_memberid,fake_clicknum as clicknum')->where('ms_order <> 0 and is_main <> 0')->order('is_main','desc')->select();
         return $data;
     }
+
 
     /**
      * 关于我们
