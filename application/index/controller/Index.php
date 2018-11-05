@@ -359,6 +359,19 @@ class Index extends Base
     public function get_toutiao_detail(){
         $id = (int)input('get.id');
         $detail = db('frontpage')->where(['id'=>$id])->find();
+
+        if($detail['manuscript']){
+            $this->assign("manuscript", 1);
+        }else{
+            $this->assign("manuscript", 0);
+        }
+        $table = db('ask_comments');
+        //是否点赞
+        $upvote = $table->where("acitivity = 2 and action = 2 and memberid=".$this->user['id']. " and questionid=".$id)->find();
+        $detail['upvote'] = $upvote ? 'true' : 'false';
+        //是否收藏
+        $collect = $table->where("acitivity = 2 and action = 3 and memberid=".$this->user['id']. " and questionid=".$id)->find();
+        $detail['collect'] = $collect ? 'true' : 'false';
         $this->return_json(OK,$detail);
     }
 
