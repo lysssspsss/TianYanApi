@@ -311,20 +311,32 @@ class Index extends Base
         $model = db('frontpage');
         $arr = $model->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
         $list = array();
-        foreach ($arr as $k=>$v){
-            if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
-                $list['today'][] = $v;
-            }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
-                $list['yesterday'][] = $v;
-            }/*elseif($k < 4){
-                $list['today'][] = $v;
-            }elseif ($k >=4 && $k <8){
-                $list['yesterday'][] = $v;
-            }*/
-            else{
-                $list[$v['news_date']][] = $v;
+        if($this->source == 'IOS'){
+            $i = 0;
+            foreach ($arr as $k=>$v){
+                if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
+                    $list['today'][$k+1]['day'] = 'today';
+                    $list['today'][$k+1]['list'] = $v;
+                }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
+                    $list['yesterday'][$k+1]['day']  = 'yesterday';
+                    $list['yesterday'][$k+1]['list'] = $v;
+                } else{
+                    $list[$v['news_date']][$k+1]['day'] = $v['news_date'];
+                    $list[$v['news_date']][$k+1]['list'] = $v;
+                }
+            }
+        }else{
+            foreach ($arr as $k=>$v){
+                if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
+                    $list['today'][] = $v;
+                }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
+                    $list['yesterday'][] = $v;
+                } else{
+                    $list[$v['news_date']][] = $v;
+                }
             }
         }
+
         $this->return_json(OK,$list);
     }
 
