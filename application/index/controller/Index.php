@@ -308,36 +308,48 @@ class Index extends Base
      * @return array
      */
     public function get_toutiao_list(){
-        $model = db('frontpage');
-        $arr = $model->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
+        $arr = db('frontpage')->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(12)->select();
         $list = array();
-        if($this->source == 'IOS'){
-            $i = 0;
-            foreach ($arr as $k=>$v){
-                if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
-                    $list['today'][$k+1]['day'] = 'today';
-                    $list['today'][$k+1]['list'] = $v;
-                }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
-                    $list['yesterday'][$k+1]['day']  = 'yesterday';
-                    $list['yesterday'][$k+1]['list'] = $v;
-                } else{
-                    $list[$v['news_date']][$k+1]['day'] = $v['news_date'];
-                    $list[$v['news_date']][$k+1]['list'] = $v;
-                }
-            }
-        }else{
-            foreach ($arr as $k=>$v){
-                if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
-                    $list['today'][] = $v;
-                }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
-                    $list['yesterday'][] = $v;
-                } else{
-                    $list[$v['news_date']][] = $v;
-                }
+
+        foreach ($arr as $k=>$v){
+            if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
+                $list['today']['day'] = 'today';
+                $list['today']['list'][$k+1] = $v;
+            }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
+                $list['yesterday']['day']  = 'yesterday';
+                $list['yesterday']['list'][$k+1] = $v;
+            } else{
+                $list[$v['news_date']]['day'] = $v['news_date'];
+                $list[$v['news_date']]['list'][$k+1] = $v;
             }
         }
-
+        $list =  array_values($list);
+        foreach($list as $key =>$value){
+            $list[$key]['list'] = array_values($value['list']);
+        }
         $this->return_json(OK,$list);
+        /*foreach ($arr as $k=>$v){
+            if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
+                $list['today'][] = $v;
+            }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
+                $list['yesterday'][] = $v;
+            } else{
+                $list[$v['news_date']][] = $v;
+            }
+        }*/
+
+        /*foreach ($arr as $k=>$v){
+            if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
+                $list[$k]['day'] = 'today';
+                $list[$k]['list'][] = $v;
+            }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
+                $list[$k]['day']  = 'yesterday';
+                $list[$k]['list'][] = $v;
+            } else{
+                $list[$k]['day'] = $v['news_date'];
+                $list[$k]['list'][] = $v;
+            }
+        }*/
     }
 
     /**
