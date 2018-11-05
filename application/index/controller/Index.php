@@ -308,7 +308,7 @@ class Index extends Base
      * @return array
      */
     public function get_toutiao_list(){
-        $arr = db('frontpage')->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(12)->select();
+        $arr = db('frontpage')->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
         $list = array();
 
         foreach ($arr as $k=>$v){
