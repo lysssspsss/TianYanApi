@@ -328,51 +328,108 @@ class Index extends Base
             $list[$key]['list'] = array_values($value['list']);
         }
         $this->return_json(OK,$list);
-        /*foreach ($arr as $k=>$v){
-            if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
-                $list['today'][] = $v;
-            }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
-                $list['yesterday'][] = $v;
-            } else{
-                $list[$v['news_date']][] = $v;
-            }
-        }*/
-
-        /*foreach ($arr as $k=>$v){
-            if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
-                $list[$k]['day'] = 'today';
-                $list[$k]['list'][] = $v;
-            }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
-                $list[$k]['day']  = 'yesterday';
-                $list[$k]['list'][] = $v;
-            } else{
-                $list[$k]['day'] = $v['news_date'];
-                $list[$k]['list'][] = $v;
-            }
-        }*/
     }
 
     /**
      * 知识头条详情页
      * @return array
      */
-    public function get_toutiao_detail(){
-        $id = (int)input('get.id');
-        $detail = db('frontpage')->where(['id'=>$id])->find();
+    public function get_toutiao_detail($id = ''){
 
+        $id = empty($id)?(int)input('get.id'):$id;
+        $detail = db('frontpage')->where(['id'=>$id])->find();
         if($detail['manuscript']){
             $this->assign("manuscript", 1);
         }else{
             $this->assign("manuscript", 0);
         }
-        $table = db('ask_comments');
         //是否点赞
-        $upvote = $table->where("acitivity = 2 and action = 2 and memberid=".$this->user['id']. " and questionid=".$id)->find();
-        $detail['upvote'] = $upvote ? 'true' : 'false';
-        //是否收藏
-        $collect = $table->where("acitivity = 2 and action = 3 and memberid=".$this->user['id']. " and questionid=".$id)->find();
-        $detail['collect'] = $collect ? 'true' : 'false';
+        if(!empty($this->user['id'])){
+            $table = db('ask_comments');
+            $upvote = $table->where("acitivity = 2 and action = 2 and memberid=".$this->user['id']. " and questionid=".$id)->find();
+            $detail['upvote'] = $upvote ? 'true' : 'false';
+            //是否收藏
+            $collect = $table->where("acitivity = 2 and action = 3 and memberid=".$this->user['id']. " and questionid=".$id)->find();
+            $detail['collect'] = $collect ? 'true' : 'false';
+        }else{
+            $detail['upvote'] ='false';
+            $detail['collect'] ='false';
+        }
+
         $this->return_json(OK,$detail);
+    }
+
+
+    /**
+     * 知识头条收藏
+     * @return mixed
+     */
+    public function toutiao_collect(){
+        $id = (int)input('post.id');
+        $action = 3;
+        $table = db('ask_comments');
+        $already = $table->where("acitivity = 2 and action = ".$action." and memberid=".$this->user['id']. " and questionid=".$id)->find();
+        if(!empty($already)){
+            $res['collect'] = 1;
+        }else{
+            $data = array(
+                "questionid" => $id,
+                "memberid" => $this->user['id'],
+                "acitivity" => 2,
+                "action" => $action,
+                "addtime" => date("Y-m-d H:i:s",time())
+            );
+            $count = $table->insertGetId($data);
+            if($count){
+                $res['collect'] = 0;
+            }else{
+                $res['collect'] = 1;
+            }
+        }
+        $this->return_json(OK,$res);
+        //$this->ajaxReturn($res,"JSON");
+    }
+
+    /**
+     * 获取上一条或下一条知识头条
+     */
+    public function get_toutiao_next()
+    {
+        $id = (int)input('get.id');
+        $type = (int)input('get.type');
+        $arr = db('frontpage')->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
+        $i = 1;
+        $resid = 0;
+        if($type == 1){
+            //上一个
+            /*foreach($arr as $key => $value){
+                if($i == 0){
+                    $resid = $value['id'];
+                    break;
+                }
+                if($value['id'] == $id){
+                    $i--;
+                }
+            }*/
+            $end = end($arr);
+            //if($end == )
+            for($i=0;$i<=count($arr);$i++){
+                $y = next($arr);
+                var_dump($y);exit;
+            }
+        }else{
+            //下一个
+            foreach($arr as $key => $value){
+                if($i == 2){
+                    $resid = $value['id'];
+                    break;
+                }
+                if($value['id'] == $id){
+                    $i++;
+                }
+            }
+        }
+        $this->get_toutiao_detail($resid);
     }
 
     /**
