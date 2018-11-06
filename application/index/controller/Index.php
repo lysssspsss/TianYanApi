@@ -370,7 +370,7 @@ class Index extends Base
         $table = db('ask_comments');
         $already = $table->where("acitivity = 2 and action = ".$action." and memberid=".$this->user['id']. " and questionid=".$id)->find();
         if(!empty($already)){
-            $res['collect'] = 1;
+            $res['collect'] = 'success';
         }else{
             $data = array(
                 "questionid" => $id,
@@ -381,9 +381,9 @@ class Index extends Base
             );
             $count = $table->insertGetId($data);
             if($count){
-                $res['collect'] = 0;
+                $res['collect'] = 'success';
             }else{
-                $res['collect'] = 1;
+                $res['collect'] = 'fail';
             }
         }
         $this->return_json(OK,$res);
