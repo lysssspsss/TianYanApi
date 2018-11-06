@@ -370,7 +370,8 @@ class Index extends Base
         $table = db('ask_comments');
         $already = $table->where("acitivity = 2 and action = ".$action." and memberid=".$this->user['id']. " and questionid=".$id)->find();
         if(!empty($already)){
-            $res['collect'] = 'success';
+            //$res['collect'] = 'success';
+            $this->return_json(E_OP_FAIL,'请不要重复收藏');
         }else{
             $data = array(
                 "questionid" => $id,
@@ -398,34 +399,27 @@ class Index extends Base
         $id = (int)input('get.id');
         $type = (int)input('get.type');
         $arr = db('frontpage')->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
-        $i = 1;
         $resid = 0;
         if($type == 1){
             //上一个
-            /*foreach($arr as $key => $value){
-                if($i == 0){
-                    $resid = $value['id'];
-                    break;
-                }
+            $reset = reset($arr);
+            if($reset['id'] == $id){
+                $this->return_json(E_OP_FAIL,'当前已经是第一条');
+            }
+            foreach($arr as $key => $value){
                 if($value['id'] == $id){
-                    $i--;
+                    $resid = $arr[$key-1]['id'];
                 }
-            }*/
-            $end = end($arr);
-            //if($end == )
-            for($i=0;$i<=count($arr);$i++){
-                $y = next($arr);
-                var_dump($y);exit;
             }
         }else{
             //下一个
+            $end = end($arr);
+            if($end['id'] == $id){
+                $this->return_json(E_OP_FAIL,'当前已经是最后一条');
+            }
             foreach($arr as $key => $value){
-                if($i == 2){
-                    $resid = $value['id'];
-                    break;
-                }
                 if($value['id'] == $id){
-                    $i++;
+                    $resid = $arr[$key+1]['id'];
                 }
             }
         }
