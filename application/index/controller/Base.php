@@ -38,7 +38,7 @@ class Base extends Controller
         /* 不需要登陆权限的控制器和方法[小写] */
         $pass = [
             'user' => ['reg', 'sms', 'login','wechat_login','my_kefu','visitor_reg'],
-            'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about','get_toutiao_list','get_toutiao_detail'],
+            'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about','get_toutiao_list','get_toutiao_detail','get_toutiao_next'],
             //'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
             'live'=>['save_video_url','baocun']
         ];
@@ -72,7 +72,8 @@ class Base extends Controller
                     goto KJ;
                 }
             }
-            if($this_class == 'index' && $this_method=='main'){
+            if($this_class == 'index' && in_array($this_method,['main','get_toutiao_detail','get_toutiao_next'])){
+                //治外法权:在不需要登录权限的方法当中，如果有需要用到用户ID的地方，需要这个步骤
                 if(!empty($header['Memberid'])){
                     goto KJ;
                 }
