@@ -308,7 +308,7 @@ class Index extends Base
      * @return array
      */
     public function get_toutiao_list(){
-        $arr = db('frontpage')->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
+        $arr = db('frontpage')->field('id,title,descip,news_date,url')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
         $list = array();
 
         foreach ($arr as $k=>$v){
@@ -399,6 +399,9 @@ class Index extends Base
         $id = (int)input('get.id');
         $type = (int)input('get.type');
         $arr = db('frontpage')->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
+        if(empty($arr)){
+            $this->return_json(E_OP_FAIL,'为空');
+        }
         $resid = 0;
         if($type == 1){
             //上一个
