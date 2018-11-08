@@ -402,7 +402,8 @@ class Index extends Base
         if(empty($already)){
             $this->return_json(E_OP_FAIL,'该头条已删除');
         }
-        $already['img'] = 'http://thirdwx.qlogo.cn/mmopen/vi_32/J60ISrY4ctU8do4UFn6aythILqPzicS7at3hyfibByic4FlpQkiaVQ6WswuPX5T6qmsKPhygULe48SHiafkcguUsWNw/132';
+        $already['url'] = FENXIANG_TT_URL.$id;
+        $already['img'] = OSS_URL.'/Public/img/132.jpg';
         $this->return_json(OK,$already);
     }
 

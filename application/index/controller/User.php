@@ -538,16 +538,18 @@ class User extends Base
         if($this->source == 'IOS'){
             if($this->user['title']=='lecturer'){
                 $data = $this->get_yue();
-                unset($data['sumearn']);
+                //unset($data['sumearn']);
             }else{
                 $data['can_withdraw'] = $this->user['money'];
             }
         }else{
             $data = $this->get_yue();
-            unset($data['sumearn']);
+            //unset($data['sumearn']);
         }
-        $this->user['sumearn'] = $data['can_withdraw'];
-        $this->user['kaiguan'] = 'false';//IOS审核开关
+        $this->user['sumearn'] = $data['sumearn'];//总收益
+        $this->user['can_withdraw'] = $data['can_withdraw'];//余额（可提现金额）
+        $this->user['attention_count'] = db('attention')->where(['memberid'=>$this->user['id'],'type'=>1])->count('id');//关注数量（专栏）
+        $this->user['collect_count'] = db('ask_comments')->where("acitivity = 2 and action = 3 and memberid=".$this->user['id'])->count('id');//收藏数量（头条）
         $this->return_json(OK,$this->user);
     }
 
@@ -1143,7 +1145,7 @@ class User extends Base
      */
     public function my_kefu()
     {
-        $data['qrcode'] = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/ty_kf.png';
+        $data['qrcode'] = OSS_URL.'/Public/img/ty_kf.png';
         $data['phone'] = '13925227539';
         $this->return_json(OK,$data);
     }
