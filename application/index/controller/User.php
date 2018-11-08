@@ -1,6 +1,7 @@
 <?php
 namespace app\index\controller;
 use app\tools\controller\Smsbao;
+use app\index\controller\Index;
 use think\Db;
 use app\tools\controller\Message;
 use Think\Exception;
@@ -741,11 +742,7 @@ class User extends Base
         $count = db('channel')->alias('h')->join('attention a','h.id=a.roomid')->field('a.roomid as channel_id,h.memberid,h.lecturer,h.name as title,h.cover_url')
             ->where(['a.memberid'=>$member['id'],'a.type'=>1])->count();
         if(empty($list)){
-            if($this->source == 'ANDROID'){
-                $this->return_json(E_OP_FAIL,'结果为空');
-            }else{
-                $this->return_json(OK,['msg'=>'结果为空']);
-            }
+            $this->returns('结果为空');
         }
         foreach($list as $key => $value){
             if($value['memberid']==BANZHUREN){
@@ -991,11 +988,7 @@ class User extends Base
         }
         //$data['memberid'] = $this->user['id'];
         if(empty($data)){
-            if($this->source == 'ANDROID'){
-                $this->return_json(E_OP_FAIL,'暂无 课程/专栏');
-            }else{
-                $this->return_json(OK,['msg'=>'暂无 课程/专栏']);
-            }
+            $this->returns('暂无 课程/专栏');
         }
         $this->return_json(OK,$data);
     }
@@ -1138,6 +1131,25 @@ class User extends Base
         $data['bankcard'] = '用户默认银行卡';
         unset($data['applytime']);
         $this->return_json(OK,$data);
+    }
+
+    /**
+     * 获取收藏列表
+     */
+    public function get_collect_list()
+    {
+        $id_list = db('ask_comments')->field('questionid')->where("acitivity = 2 and action = 3 and memberid=".$this->user['id'])->select();//收藏
+        if(empty($id_list)){
+            $this->returns('暂无收藏');
+        }
+        $id_list = array_column($id_list,'questionid');
+        $id_str = implode(',',$id_list);
+        $arr = db('frontpage')->field('id,title,descip,news_date,url')->where("isshow='show' and title != '' and id in ($id_str)")->order('orderby','desc')->select();
+        if(empty($arr)){
+            $this->returns('暂无收藏');
+        }
+        $list = Index::build_toutiao_list($arr);
+        $this->return_json(OK,$list);
     }
 
     /**

@@ -309,8 +309,21 @@ class Index extends Base
      */
     public function get_toutiao_list(){
         $arr = db('frontpage')->field('id,title,descip,news_date,url')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
-        $list = array();
+        if(empty($arr)){
+            $this->returns('为空');
+        }
+        $list = self::build_toutiao_list($arr);
+        $this->return_json(OK,$list);
+    }
 
+    /**
+     * 组装知识头条列表数据
+     * @param $arr
+     * @return array
+     */
+    public static function build_toutiao_list($arr)
+    {
+        $list = array();
         foreach ($arr as $k=>$v){
             if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
                 $list['today']['day'] = 'today';
@@ -327,7 +340,7 @@ class Index extends Base
         foreach($list as $key =>$value){
             $list[$key]['list'] = array_values($value['list']);
         }
-        $this->return_json(OK,$list);
+        return $list;
     }
 
     /**
@@ -373,6 +386,10 @@ class Index extends Base
             //$res['collect'] = 'success';
             $this->return_json(E_OP_FAIL,'请不要重复收藏');
         }else{
+            $already = db('frontpage')->field('id,title,descip')->where(['id'=>$id])->find();
+            if(empty($already)){
+                $this->returns('没有该头条');
+            }
             $data = array(
                 "questionid" => $id,
                 "memberid" => $this->user['id'],
@@ -418,7 +435,7 @@ class Index extends Base
         $type = (int)input('get.type');
         $arr = db('frontpage')->field('id,title,descip,news_date')->where("isshow='show' and title != ''")->order('orderby','desc')->limit(200)->select();
         if(empty($arr)){
-            $this->return_json(E_OP_FAIL,'为空');
+            $this->returns('结果为空');
         }
         $resid = 0;
         if($type == 1){

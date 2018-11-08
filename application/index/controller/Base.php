@@ -143,6 +143,18 @@ class Base extends Controller
         }
     }
 
+    /**
+     * 根据来源返回不同结构的提示语
+     */
+    protected function returns($msg='')
+    {
+        if($this->source == 'ANDROID'){
+            $this->return_json(E_OP_FAIL,$msg);
+        }else{
+            $this->return_json(OK,['msg'=>$msg]);
+        }
+    }
+
 
     /**
      * json格式返回数据

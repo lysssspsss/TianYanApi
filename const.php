@@ -122,6 +122,10 @@ const REDIS_YZM_KEY = 'verify_code'; //验证码键值
  * 课程分享公众号链接
  */
 const FENXIANG_URL = 'https://tianyan199.com/index.php/Home/Lecture/index?id=';
+/**
+ * 头条分享公众号链接
+ */
+const FENXIANG_TT_URL = 'https://tianyan199.com/index.php/Home/FrontPage/detail?id=';
 
 /**
  * 七牛云 相关
