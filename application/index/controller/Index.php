@@ -392,6 +392,23 @@ class Index extends Base
     }
 
     /**
+     * 知识头条分享
+     * @return mixed
+     */
+    public function toutiao_share(){
+        $id = (int)input('get.id');
+        $table = db('frontpage');
+        $already = $table->field('id,title,descip')->where(['id'=>$id])->find();
+        if(empty($already)){
+            $this->return_json(E_OP_FAIL,'该头条已删除');
+        }
+        $already['img'] = 'http://thirdwx.qlogo.cn/mmopen/vi_32/J60ISrY4ctU8do4UFn6aythILqPzicS7at3hyfibByic4FlpQkiaVQ6WswuPX5T6qmsKPhygULe48SHiafkcguUsWNw/132';
+        $this->return_json(OK,$already);
+    }
+
+
+
+    /**
      * 获取上一条或下一条知识头条
      */
     public function get_toutiao_next()
