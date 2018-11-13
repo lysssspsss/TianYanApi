@@ -378,7 +378,24 @@ class Index extends Base
      * @return mixed
      */
     public function toutiao_collect(){
-        $id = (int)input('post.id');
+        $id = input('post.id');
+        $type = input('post.type')?input('post.type'):1;//1收藏，2取消收藏
+        //数据验证
+        $result = $this->validate(
+            [
+                'input' => $id,
+                'limit' => $type,
+            ],
+            [
+                'input'  => 'require|number',
+                'limit' =>  'require|in:1,2',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+
+
         $action = 3;
         $table = db('ask_comments');
         $already = $table->where("acitivity = 2 and action = ".$action." and memberid=".$this->user['id']. " and questionid=".$id)->find();
@@ -386,23 +403,28 @@ class Index extends Base
             //$res['collect'] = 'success';
             $this->return_json(E_OP_FAIL,'请不要重复收藏');
         }else{
-            $already = db('frontpage')->field('id,title,descip')->where(['id'=>$id])->find();
-            if(empty($already)){
-                $this->returns('没有该头条');
+            if($type == 1){//收藏
+                $already = db('frontpage')->field('id,title,descip')->where(['id'=>$id])->find();
+                if(empty($already)){
+                    $this->returns('没有该头条');
+                }
+                $data = array(
+                    "questionid" => $id,
+                    "memberid" => $this->user['id'],
+                    "acitivity" => 2,
+                    "action" => $action,
+                    "addtime" => date("Y-m-d H:i:s",time())
+                );
+                $count = $table->insertGetId($data);
+                if($count){
+                    $res['collect'] = 'success';
+                }else{
+                    $res['collect'] = 'fail';
+                }
+            }else{//取消收藏
+
             }
-            $data = array(
-                "questionid" => $id,
-                "memberid" => $this->user['id'],
-                "acitivity" => 2,
-                "action" => $action,
-                "addtime" => date("Y-m-d H:i:s",time())
-            );
-            $count = $table->insertGetId($data);
-            if($count){
-                $res['collect'] = 'success';
-            }else{
-                $res['collect'] = 'fail';
-            }
+
         }
         $this->return_json(OK,$res);
         //$this->ajaxReturn($res,"JSON");

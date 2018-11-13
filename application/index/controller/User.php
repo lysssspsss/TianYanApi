@@ -542,6 +542,7 @@ class User extends Base
                 //unset($data['sumearn']);
             }else{
                 $data['can_withdraw'] = $this->user['money'];
+                $data['sumearn'] = 0;
             }
         }else{
             $data = $this->get_yue();
