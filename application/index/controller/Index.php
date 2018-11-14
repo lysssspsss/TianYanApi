@@ -326,10 +326,10 @@ class Index extends Base
         $list = array();
         foreach ($arr as $k=>$v){
             if(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()))){
-                $list['today']['day'] = 'today';
+                $list['today']['day'] = '今天';
                 $list['today']['list'][$k+1] = $v;
             }elseif(strtotime($v['news_date']) == strtotime(date('Y-m-d'.'00:00:00',time()-3600*24))){
-                $list['yesterday']['day']  = 'yesterday';
+                $list['yesterday']['day']  = '昨天';
                 $list['yesterday']['list'][$k+1] = $v;
             } else{
                 $list[$v['news_date']]['day'] = $v['news_date'];
@@ -394,37 +394,38 @@ class Index extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-
-
         $action = 3;
         $table = db('ask_comments');
-        $already = $table->where("acitivity = 2 and action = ".$action." and memberid=".$this->user['id']. " and questionid=".$id)->find();
+        $where = "acitivity = 2 and action = ".$action." and memberid=".$this->user['id']. " and questionid=".$id;
+        $already = $table->where($where)->find();
+        $res = [];
         if(!empty($already)){
             //$res['collect'] = 'success';
-            $this->return_json(E_OP_FAIL,'请不要重复收藏');
-        }else{
-            if($type == 1){//收藏
-                $already = db('frontpage')->field('id,title,descip')->where(['id'=>$id])->find();
-                if(empty($already)){
-                    $this->returns('没有该头条');
-                }
-                $data = array(
-                    "questionid" => $id,
-                    "memberid" => $this->user['id'],
-                    "acitivity" => 2,
-                    "action" => $action,
-                    "addtime" => date("Y-m-d H:i:s",time())
-                );
-                $count = $table->insertGetId($data);
-                if($count){
-                    $res['collect'] = 'success';
-                }else{
-                    $res['collect'] = 'fail';
-                }
-            }else{//取消收藏
-
+            if($type == 2){//取消收藏
+                $table->where($where)->delete();
+                $res['collect'] = 'cancel success';
+            }else{
+                $this->return_json(E_OP_FAIL,'请不要重复收藏');
             }
-
+        }else{
+           //收藏
+            $already = db('frontpage')->field('id,title,descip')->where(['id'=>$id])->find();
+            if(empty($already)){
+                $this->returns('没有该头条');
+            }
+            $data = array(
+                "questionid" => $id,
+                "memberid" => $this->user['id'],
+                "acitivity" => 2,
+                "action" => $action,
+                "addtime" => date("Y-m-d H:i:s",time())
+            );
+            $count = $table->insertGetId($data);
+            if($count){
+                $res['collect'] = 'success';
+            }else{
+                $res['collect'] = 'fail';
+            }
         }
         $this->return_json(OK,$res);
         //$this->ajaxReturn($res,"JSON");
