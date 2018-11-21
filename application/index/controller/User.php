@@ -8,15 +8,29 @@ use Think\Exception;
 
 class User extends Base
 {
+    private $log_path = APP_PATH.'log/User.log';
+    //private $vip_phone = ['13682694631','13128820643','13168088229','18823397801','18823397802','18112345678','17324476831','15524574410','18175994824'];
+    private $vip_phone;
+    private $vip_code = ['44244','68989'];
+
     public function __construct()
     {
         parent::__construct();
+        $rdname = 'admin_phone';
+        $admin_phone = $this->redis->get($rdname);
+        if(empty($admin_phone)){
+            $admin_phone = db($rdname)->select();
+            if(!empty($admin_phone)){
+                $this->vip_phone = array_column($admin_phone,'tel');
+                $this->redis->set($rdname,json_encode($this->vip_phone));
+            }else{
+                $this->vip_phone = [];
+            }
+        }else{
+            $this->vip_phone = json_decode($admin_phone,true);
+        }
     }
 
-    private $log_path = APP_PATH.'log/User.log';
-
-    private $vip_phone = ['13682694631','13128820643','13168088229','18823397801','18823397802','18112345678','17324476831','15524574410','18175994824'];
-    private $vip_code = ['44244','68989'];
     /**
      * 发送短信接口
      */
