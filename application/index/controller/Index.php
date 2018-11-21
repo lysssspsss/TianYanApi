@@ -45,6 +45,28 @@ class Index extends Base
         echo 'index';exit;
     }
 
+    public function stock()
+    {
+        /*$appkey ='';
+        $url = "http://web.juhe.cn:8080/finance/stock/hs";
+        $params = array(
+            "gid" => "",//股票编号，上海股市以sh开头，深圳股市以sz开头如：sh601009
+            "key" => $appkey,//APP Key
+        );
+        $paramstring = http_build_query($params);
+        $content = juhecurl($url,$paramstring);
+        $result = json_decode($content,true);
+        if($result){
+            if($result['error_code']=='0'){
+                print_r($result);
+            }else{
+                echo $result['error_code'].":".$result['reason'];
+            }
+        }else{
+            echo "请求失败";
+        }*/
+    }
+
 
     /**
      * 获取首页

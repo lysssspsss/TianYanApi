@@ -496,6 +496,7 @@ class Wxpayjiu extends Base
             if($a){
                 $this->return_json(OK,['msg'=>'支付完成','out_trade_no'=>$out_trade_no,'fee'=>$fee]);
             }else{
+                wlog($this->log_path,"支付失败".$member['id'].":".$membername);
                 $this->return_json(E_OP_FAIL,'支付失败');
             }
         }
@@ -533,7 +534,7 @@ class Wxpayjiu extends Base
                 'out_trade_no'  => 'require|alphaDash' ,
             ]);
         if($result !== true){
-            wlog($this->log_path,"参数验证失败,订单号：$out_trade_no,费用：$total_fee,状态:$return_code");
+            wlog($this->log_path,"参数验证失败,订单号：$out_trade_no,费用：$total_fee,状态:ERROR");
             $this->return_json(E_ARGS,'参数错误');
         }
         //$data, &$msg
@@ -577,9 +578,11 @@ class Wxpayjiu extends Base
                 $getmember = db('member')->field('id,sumearn,money')->find($order['getmember']);
                 $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
                 $aaaa = db('member')->where(['id'=>$getmember['id']])->setField('sumearn',$mdata['sumearn']);
+                wlog($this->log_path,"更新用户受益 sumearn：". (int)$aaaa);
                 if($type == 'recharge'){
                     $mdata['money'] = $getmember['money'] + ($data['total_fee']);
                     $bbbb = db('member')->where(['id'=>$getmember['id']])->setField('money',$mdata['money']);
+                    wlog($this->log_path,"更新用户受益 money：". (int)$bbbb);
                     //var_dump($getmember['id'],$bbbb);
                 }
             }
@@ -591,19 +594,21 @@ class Wxpayjiu extends Base
                 if($sumearn<0 || $money<0){
                     $this->return_json(E_OP_FAIL,'余额不足');
                 }
-                db('member')->where("id=".$paymember['id'])->update(['sumearn'=>$sumearn,'money'=>$money]);
+                $ccc = db('member')->where("id=".$paymember['id'])->update(['sumearn'=>$sumearn,'money'=>$money]);
+                wlog($this->log_path,"减少用户余额 sumearn & money：". (int)$ccc);
             }
             //更新课程表
             if ($earns['lectureid']){
                 $lecture = db('course')->find($earns['lectureid']);
                 $sum = $lecture['sumearns'] + ($data['total_fee']);
                 $lecdata['sumearns'] = $sum;
-                db('course')->where("id=".$earns['lectureid'])->update($lecdata);
-
+                $ddd = db('course')->where("id=".$earns['lectureid'])->update($lecdata);
+                wlog($this->log_path,"更新课程表".$earns['lectureid'].' | '.(int)$ddd);
                 //更新消息表
                 $msg = db('msg')->where("out_trade_no='".$out_trade_no."' and lecture_id=".$earns['lectureid'])->order("message_id desc")->find();
                 if ($msg){
                     db('msg')->where("message_id=".$msg['message_id'])->setField("isshow","show");
+                    //wlog($this->log_path,"更新消息表".$earns['lectureid'].' | '.(int)$ddd);
                     $msg['isshow'] = 'show';
                     Tools::publish_msg(0,$earns['lectureid'],WORKERMAN_PUBLISH_URL,$this->tranfer($msg));
                 }
@@ -744,10 +749,11 @@ class Wxpayjiu extends Base
                 //更新订单状态
                 db('reciterpay')->where("out_trade_no='".$out_trade_no."'")->update($data);
             }
-
+            wlog($this->log_path,"+++++充值成功+++++");
             $this->return_json(OK,['msg'=>'success']);
             //return true;
         }else{
+            wlog($this->log_path,"+++++充值失败+++++");
             $this->return_json(E_OP_FAIL,'fail');
            // return false;
         }
