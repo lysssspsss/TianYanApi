@@ -622,6 +622,7 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
         if($lecture['mode'] == 'video' || $lecture['mode'] == 'vedio'){
+            $lecture['mode'] = 'vedio';
             $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id,'is_app'=>'1'])->find();
             if(!empty($video)){
                 if(strstr($video['video'],'rtmp')){

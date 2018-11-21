@@ -89,6 +89,7 @@ class Live extends Base
         $d_video['pull_url'] = '';
         $d_video['img'] = '';
         if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
+            $lecture['mode'] = 'vedio';
             $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show'])->select();
             //var_dump($vedio);exit;
             if(!empty($vedio)){
