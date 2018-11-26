@@ -524,7 +524,7 @@ class Index extends Base
      */
     private function get_main_daka()
     {
-        $data = db('famous')->field('memberid,channel_id,name,intro as nick,img,js_memberid')->where('dk_order <> 0 and is_main <> 0')->order('is_main','desc')->select();
+        $data = db('famous')->field('memberid,channel_id,name,intro as nick,intro1,intro2,img,js_memberid')->where('dk_order <> 0 and is_main <> 0')->order('is_main','desc')->select();
         return $data;
     }
 
@@ -548,13 +548,14 @@ class Index extends Base
         if(empty($field)){
             $field = 'id,name,cover,iscopyright,orders';
         }
-        $onlineBooksList = db('onlinebooks')->field($field)->where(['isshow'=>'show'])->order('orders asc,id desc')->select();
+        $onlineBooksList = db('onlinebooks')->field($field)->where(['isshow'=>'show'])->order('orders asc,id desc')->limit(10)->select();
         $copyrightList = [];
         $noCopyrightList = [];
         if(empty($onlineBooksList)){
             return [0=>[],1=>[]];
         }
         foreach ($onlineBooksList as $key => $value){
+            $value['jie'] = 6;
             $value['iscopyright'] == 'yes' ? $copyrightList[] = $value : $noCopyrightList[] = $value;
         }
         return [$copyrightList,$noCopyrightList];
@@ -567,7 +568,7 @@ class Index extends Base
     public function get_yuedu_list()
     {
         $type = (int)input('get.type');
-        $list = $this->get_yuedu('id,name,cover,iscopyright,orders,intro');
+        $list = $this->get_yuedu('id,name,cover,iscopyright,orders,intro,listentimes');
         if($type == 1){
             $this->return_json(OK,$list[0]);
         }else{
