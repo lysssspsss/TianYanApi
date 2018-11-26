@@ -124,15 +124,8 @@ class Index extends Base
         $data['daka'] = $this->get_main_daka();
         $data['mingshi'] = $this->get_mingshi();
         $yuedu = $this->get_yuedu();
-        if($this->source == 'IOS'){
-            //$data['yuedu'] = ['mtts'=>$yuedu[0],'zblj'=>$yuedu[1]];
-            $data['yuedu'] = $yuedu;
-            $data['mtts'] = $yuedu[0];
-            $data['zblj'] = $yuedu[1];
-        }else{
-            $data['mtts'] = $yuedu[0];
-            $data['zblj'] = $yuedu[1];
-        }
+        $data['mtts'] = $yuedu[0];
+        $data['zblj'] = $yuedu[1];
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
         $this->return_json(OK,$data);
     }
@@ -548,7 +541,7 @@ class Index extends Base
         if(empty($field)){
             $field = 'id,name,cover,iscopyright,orders';
         }
-        $onlineBooksList = db('onlinebooks')->field($field)->where(['isshow'=>'show'])->order('orders asc,id desc')->limit(10)->select();
+        $onlineBooksList = db('onlinebooks')->field($field)->where(['isshow'=>'show'])->order('orders asc,id desc')->select();
         $copyrightList = [];
         $noCopyrightList = [];
         if(empty($onlineBooksList)){
@@ -556,6 +549,12 @@ class Index extends Base
         }
         foreach ($onlineBooksList as $key => $value){
             $value['jie'] = 6;
+            /*$value['jie'] = $this->redis->hget('yuedu',$value['id']);
+            if(empty($value['jie'])){
+                $value['jie'] = $list = M('Bookchapter')->where([''])->select();
+            }else{
+                $value['jie'] = json_decode($value['jie'],true);
+            }*/
             $value['iscopyright'] == 'yes' ? $copyrightList[] = $value : $noCopyrightList[] = $value;
         }
         return [$copyrightList,$noCopyrightList];
