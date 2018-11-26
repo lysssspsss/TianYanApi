@@ -548,13 +548,6 @@ class Index extends Base
             return [0=>[],1=>[]];
         }
         foreach ($onlineBooksList as $key => $value){
-            $value['jie'] = 6;
-            /*$value['jie'] = $this->redis->hget('yuedu',$value['id']);
-            if(empty($value['jie'])){
-                $value['jie'] = $list = M('Bookchapter')->where([''])->select();
-            }else{
-                $value['jie'] = json_decode($value['jie'],true);
-            }*/
             $value['iscopyright'] == 'yes' ? $copyrightList[] = $value : $noCopyrightList[] = $value;
         }
         return [$copyrightList,$noCopyrightList];
@@ -567,14 +560,232 @@ class Index extends Base
     public function get_yuedu_list()
     {
         $type = (int)input('get.type');
-        $list = $this->get_yuedu('id,name,cover,iscopyright,orders,intro,listentimes');
+        $page = abs((int)input('get.page'));
+        /*if(empty($page)){
+            $page = 1;
+        }*/
+        //->page($page,10)
+        $onlineBooksList = db('onlinebooks')->field('id,name,cover,iscopyright,orders,intro,listentimes')->where(['isshow'=>'show'])->order('orders asc,id desc')->select();
+        $count = db('onlinebooks')->where(['isshow'=>'show'])->count('id');
+        $copyrightList = [];
+        $noCopyrightList = [];
+        if(empty($onlineBooksList)){
+            return [0=>[],1=>[]];
+        }
+        foreach ($onlineBooksList as $key => $value){
+            $value['jie'] = $this->redis->hget('yuedu',$value['id']);
+            if(empty($value['jie'])){
+                $value['jie'] = db('Bookchapter')->field('count(id) as jie')->where(['bookid'=>$value['id']])->select();
+                if(empty($value['jie'][0]['jie'])){
+                    $value['jie'] = '10+';
+                }else{
+                    $value['jie'] = $value['jie'][0]['jie'];
+                }
+                $this->redis->hset('yuedu',$value['id'],$value['jie']);
+            }
+            $value['iscopyright'] == 'yes' ? $copyrightList[] = $value : $noCopyrightList[] = $value;
+        }
+
         if($type == 1){
-            $this->return_json(OK,$list[0]);
+            $this->return_json(OK,$copyrightList,$count);
         }else{
-            $this->return_json(OK,$list[1]);
+            $this->return_json(OK,$noCopyrightList,$count);
         }
     }
 
+    /**
+     * 获取阅读悦读时光详情页
+     * @return array
+     */
+    public function get_yuedu_detail()
+    {
+        $onlineBookes_model = db('Onlinebooks');
+        $where = array(
+            'id' => (int)input('get.id')
+        );
+        $field = 'id,name,intro,detail,cover,type,isshow,truncate(fee/100,2) as fee';
+        $status = 0;// 辨别金钱与命运
+        $info = $onlineBookes_model->where($where)->field($field)->find();
+
+        if ($info['isshow'] == 'hide' || empty($info)) {
+            $this->return_json(E_OP_FAIL,'书籍已下架!');
+        }
+
+        if($info['id'] != 9){
+            $groom = $onlineBookes_model
+                ->where(array('id' => array('neq', $where['id']),'isshow' => 'show'))
+                ->field('id,name,intro,cover,listentimes')
+                ->limit(2)
+                ->order('Rand()')
+                ->select();
+        }else{
+            $groom = $this->get_yuedu_die_data();
+        }
+        foreach ($groom as $key => $value){
+            $groom[$key]['jie'] = $this->redis->hget('yuedu',$value['id']);
+            if(empty($groom[$key]['jie'])){
+                $groom[$key]['jie'] = db('Bookchapter')->field('count(id) as jie')->where(['bookid'=>$value['id']])->select();
+                if(empty($groom[$key]['jie'][0]['jie'])){
+                    $groom[$key]['jie'] = '10+';
+                }else{
+                    $groom[$key]['jie'] = $groom[$key]['jie'][0]['jie'];
+                }
+                $this->redis->hset('yuedu',$value['id'],$groom[$key]['jie']);
+            }
+        }
+        $list = $this->get_book_list($info['id']);
+        $this->return_json(OK,['info'=>$info,'groom'=>$groom,'list'=>$list]);
+    }
+
+
+    /**
+     * 获取书籍章节列表
+     * @param $id
+     * @return mixed
+     */
+    public function get_book_list($id)
+    {
+        $where = array(
+            'bc.isshow' => 'show',
+            'bc.bookid' => $id,
+            'bc.isdelete' => 0
+        );
+        $field = 'bc.id,bc.bookid,bc.name,bc.intro,bc.cover,bc.length,bc.discusstimes,bc.listentimes,bc.url,ob.type,1 as is_pay';
+        /*$length = 5;
+        $page = I('page') ?: 1;*/
+        $list = db('Bookchapter')
+            ->alias('bc')
+            ->join('live_onlinebooks ob','ob.id = bc.bookid')
+            ->where($where)
+            ->field($field)
+            ->order('bc.orderby asc,bc.id desc')
+            //->page($page, $length)
+            ->select();
+
+        // 查询是否支付，前两个章节数据免费
+        if ($list && $list[0]['type'] == 'pay') {
+            //$_idArr = $this->_first_two_id($id);
+            foreach ($list as $key => $value) {
+                $list[$key]['is_pay'] = $this->_is_pay($value['bookid'], $value['id']);
+            }
+            $list[0]['is_pay'] = 1;
+            $list[1]['is_pay'] = 1;
+        }
+        return $list;
+    }
+
+    /**
+     * 获取前二章节ID
+     * @param $bookid
+     * @return mixed
+     */
+   /* public function _first_two_id($bookid)
+    {
+
+        $where = array(
+            'bookid' => $bookid
+        );
+        $field = 'bc.id';
+
+        $idArr = db('Bookchapter')
+            ->alias('bc')
+            ->join('onlinebooks ob','ob.id = bc.bookid')
+            ->where($where)
+            ->field($field)
+            ->limit(2)
+            ->order('bc.id asc')
+            ->select();
+
+        $result = array_column($idArr, 'id');
+        return $result;
+    }*/
+
+    /**
+     * 判断书籍章节是否需要支付
+     * @param $arr
+     * @param $bookid
+     * @param $chapterid
+     * @return int
+     */
+    protected function _is_pay($bookid, $chapterid)
+    {
+        $result = 0;//0支付，1否之
+        /*
+         * 注册用户id为2的听书直接免费
+         * */
+
+        if($bookid==2){
+            return 1;
+        }
+        $result = db('Onlinebookpay')
+            ->field('id')
+            ->where(array('bookid' => $bookid, 'memberid' => $this->user['id'], 'status' => 'finish'))
+            ->find();
+
+        // 查询支付情况
+        if (!empty($result)) {
+            $result = 1;//已支付
+        } else {
+            //$result = in_array($chapterid, $arr) ? 1 : 0;
+            $result = 0;//未支付
+        }
+        return $result;
+    }
+
+    private function get_yuedu_die_data()
+    {
+        $groom = array(
+            '0' => array(
+                'name' => '李善民教授',
+                'cover' => 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/mao_8.png',
+                'audio'=> 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/active/lishanmin.mp3',
+                'intro'=> '中山大学副校长、博士生导师'
+            ),
+            '1' => array(
+                'name' => '于绍文先生',
+                'cover' => 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/mao_6.png',
+                'audio'=> 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/active/yushaowen.mp3',
+                'intro'=> '《经理人》杂志社社长、经理人传媒有限公司董事长'
+            ),
+            '2' => array(
+                'name' => '赵福俊先生',
+                'cover' => 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/mao_3.png',
+                'audio'=> 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/active/zhaofujun.mp3',
+                'intro'=> '中国平安人寿保险副总经理'
+            ),
+            '3' => array(
+                'name' => '林力博先生',
+                'cover' => 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/mao_2.png',
+                'audio'=> 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/active/linlibo.mp3',
+                'intro'=> '英国金融时报中文版《FT睿》前主编、法国《葡萄酒评论》中文版主编'
+            ),
+            '4' => array(
+                'name' => '李宏先生',
+                'cover' => 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/mao_1.png',
+                'audio'=> 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/active/lihong.mp3',
+                'intro'=> '思高方达基金服务中国公司董事长总经理'
+            ),
+            '5' => array(
+                'name' => '秦朔博士',
+                'cover' => 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/mao_4.png',
+                'audio'=> 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/active/qinsuo.mp3',
+                'intro'=> '《南风窗》前主编、《第一财经》媒体集团主编'
+            ),
+            '6' => array(
+                'name' => '周斌博士',
+                'cover' => 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/mao_5.png',
+                'audio'=> 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/active/zhoubin.mp3',
+                'intro'=> '华东师范大学风险管理与保险系系主任'
+            ),
+            '7' => array(
+                'name' => '汪静波博士',
+                'cover' => 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/mao_7.png',
+                'audio'=> 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/active/wangjingbo.mp3',
+                'intro'=> '纽交所上市的中国第一家IFA、诺亚财富CEO'
+            )
+        );
+        return $groom;
+    }
 
     /**
      * 关于我们

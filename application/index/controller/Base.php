@@ -38,7 +38,7 @@ class Base extends Controller
         /* 不需要登陆权限的控制器和方法[小写] */
         $pass = [
             'user' => ['reg', 'sms', 'login','wechat_login','my_kefu','visitor_reg'],
-            'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about','get_toutiao_list','get_toutiao_detail','get_toutiao_next'],
+            'index'=>['index','xieyi','main','all_lecture','get_mszt','get_hydk','get_search_info','search','clear_search_history','about','get_toutiao_list','get_toutiao_detail','get_toutiao_next','get_yuedu_list'],
             //'lecture'=>['get_jiangshi','get_kecheng','get_zhuanlan'],
             'live'=>['save_video_url','baocun']
         ];
@@ -94,7 +94,7 @@ class Base extends Controller
             }
             $user = $this->check_user_redis($memberid);
             if(!$user){
-                $this->return_json(E_OP_FAIL,'请重新登录1',true,true);
+                $this->return_json(E_OP_FAIL,'请重新登录1','',true,true);
             }
             $this->user = $user;
         }
@@ -164,9 +164,10 @@ class Base extends Controller
      * @param bool $relogin  是否需要登录
      * @param bool $needRegister 是否需要注册
      */
-    protected function return_json($code = OK, $data = array(), $is_mrl = false, $relogin=false, $needRegister=false)
+    protected function return_json($code = OK,$data = array(), $count = '',$is_mrl = false, $relogin=false, $needRegister=false)
     {
         $result['code'] = $code;
+        $result['count'] = $count;
         //$result['msg'] = $msg;
         if ($code != OK) {
             if (!empty($data) && !is_array($data)) {
