@@ -124,9 +124,13 @@ class Index extends Base
         $data['daka'] = $this->get_main_daka();
         $data['mingshi'] = $this->get_mingshi();
         $yuedu = $this->get_yuedu();
-        $data['mtts'] = $yuedu[0];
-        $data['zblj'] = $yuedu[1];
-        $data['yuedu'] = $yuedu;
+        if($this->source == 'IOS'){
+            //$data['yuedu'] = ['mtts'=>$yuedu[0],'zblj'=>$yuedu[1]];
+            $data['yuedu'] = $yuedu;
+        }else{
+            $data['mtts'] = $yuedu[0];
+            $data['zblj'] = $yuedu[1];
+        }
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
         $this->return_json(OK,$data);
     }
