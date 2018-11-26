@@ -40,7 +40,6 @@ class Index extends Base
             $b = db('shenji')->insert($data[$i]);
         }
         //var_dump($data);
-
         */
         echo 'index';exit;
     }
@@ -124,6 +123,10 @@ class Index extends Base
         $ranklist =  db()->query($ranksql);*/
         $data['daka'] = $this->get_main_daka();
         $data['mingshi'] = $this->get_mingshi();
+        $yuedu = $this->get_yuedu();
+        $data['mtts'] = $yuedu[0];
+        $data['zblj'] = $yuedu[1];
+        $data['yuedu'] = $yuedu;
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
         $this->return_json(OK,$data);
     }
@@ -527,6 +530,23 @@ class Index extends Base
     {
         $data = db('famous')->field('memberid,channel_id,name,intro,intro1,intro2,img,js_memberid,fake_clicknum as clicknum')->where('ms_order <> 0 and is_main <> 0')->order('is_main','desc')->select();
         return $data;
+    }
+
+
+    /**
+     * 悦读时光
+     * @return array
+     */
+    public function get_yuedu()
+    {
+        $onlineBooksList = db('onlinebooks')->field('id,name,cover,iscopyright,orders')->where(['isshow'=>'show'])->order('orders asc,id desc')->select();
+        //
+        $copyrightList = [];
+        $noCopyrightList = [];
+        foreach ($onlineBooksList as $key => $value){
+            $value['iscopyright'] == 'yes' ? $copyrightList[] = $value : $noCopyrightList[] = $value;
+        }
+        return [$copyrightList,$noCopyrightList];
     }
 
 
