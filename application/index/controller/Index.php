@@ -127,6 +127,8 @@ class Index extends Base
         if($this->source == 'IOS'){
             //$data['yuedu'] = ['mtts'=>$yuedu[0],'zblj'=>$yuedu[1]];
             $data['yuedu'] = $yuedu;
+            $data['mtts'] = $yuedu[0];
+            $data['zblj'] = $yuedu[1];
         }else{
             $data['mtts'] = $yuedu[0];
             $data['zblj'] = $yuedu[1];
@@ -538,19 +540,39 @@ class Index extends Base
 
 
     /**
-     * 悦读时光
+     * 主页的悦读时光
      * @return array
      */
-    public function get_yuedu()
+    public function get_yuedu($field = '')
     {
-        $onlineBooksList = db('onlinebooks')->field('id,name,cover,iscopyright,orders')->where(['isshow'=>'show'])->order('orders asc,id desc')->select();
-        //
+        if(empty($field)){
+            $field = 'id,name,cover,iscopyright,orders';
+        }
+        $onlineBooksList = db('onlinebooks')->field($field)->where(['isshow'=>'show'])->order('orders asc,id desc')->select();
         $copyrightList = [];
         $noCopyrightList = [];
+        if(empty($onlineBooksList)){
+            return [0=>[],1=>[]];
+        }
         foreach ($onlineBooksList as $key => $value){
             $value['iscopyright'] == 'yes' ? $copyrightList[] = $value : $noCopyrightList[] = $value;
         }
         return [$copyrightList,$noCopyrightList];
+    }
+
+    /**
+     * 获取阅读悦读时光列表
+     * @return array
+     */
+    public function get_yuedu_list()
+    {
+        $type = (int)input('get.type');
+        $list = $this->get_yuedu('id,name,cover,iscopyright,orders,intro');
+        if($type == 1){
+            $this->return_json(OK,$list[0]);
+        }else{
+            $this->return_json(OK,$list[1]);
+        }
     }
 
 
