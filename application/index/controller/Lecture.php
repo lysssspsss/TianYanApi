@@ -948,7 +948,7 @@ class Lecture extends Base
         }
         $data['type'] = $type;
         $user = new User();
-        $data['money'] = $user->get_user_money(1);
+        $data['money'] = $user->get_user_money(2);
         $this->return_json(OK,$data,1);
     }
 

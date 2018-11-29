@@ -604,7 +604,7 @@ class User extends Base
             unset($data['sumearn']);
         }
         $data['money_list'] = [6,68,88,208,388,998];
-        if($type == 1){
+        if($type == 2){
             return $data['can_withdraw'];
         }
         $this->return_json(OK,$data);

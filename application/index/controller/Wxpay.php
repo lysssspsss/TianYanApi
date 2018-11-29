@@ -35,7 +35,7 @@ class Wxpay extends Base
         $channel_expire = input('post.expire');
         $fee = input('post.fee');
         $target = input('post.js_memberid');
-        $product = input('post.product'); // pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选  余额充值recharge
+        $product = input('post.product'); // pay_onlinebook,pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选  余额充值recharge
         wlog($this->log_path,"接收参数:课程id：$lecture_id, 专栏id：$channel_id,fee:$fee,expire:$channel_expire,用户id:$target, 内容：$product");
         $result = $this->validate(
             [
@@ -54,7 +54,7 @@ class Wxpay extends Base
                 'expire'  => 'number' ,
                 'fee'  => 'require|number' ,
                 'target'  => 'require|number' ,
-                'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter,recharge' ,
+                'product'  => 'require|in:pay_onlinebook,pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter,recharge' ,
             ]);
         if($result !== true){
             wlog($this->log_path,"参数错误");
@@ -79,26 +79,30 @@ class Wxpay extends Base
         if(empty($channel_expire)){
             $channel_expire = 12;
         }
-        $channel = $lecture = [];
+        $book = $channel = $lecture = [];
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
             if(empty($channel)){
+                wlog($this->log_path,"没有此专栏".$channel_id);
                 $this->return_json(E_OP_FAIL,'没有此专栏');
             }
             $is = db('channelpay')->field('expire,status')->where(['memberid'=>$target,'channelid'=>$channel_id])->find();
             if(!empty($is)){
                 if($is['status']=='finish' && time()<strtotime($is['expire']))
+                    wlog($this->log_path,"专栏已购买，无需重复购买".$channel_id);
                     $this->return_json(E_OP_FAIL,'专栏已购买，无需重复购买');
             }
         }
         if (!empty($lecture_id)){
             $lecture = db('course')->find($lecture_id);
             if(empty($lecture)){
+                wlog($this->log_path,"没有此课程".$lecture_id);
                 $this->return_json(E_OP_FAIL,'没有此课程');
             }
             $is = db('coursepay')->field('id,status')->where(['memberid'=>$target,'courseid'=>$lecture_id])->find();
             if(!empty($is)){
                 if($is['status']=='finish'){
+                    wlog($this->log_path,"课程已购买，无需重复购买".$lecture_id);
                     $this->return_json(E_OP_FAIL,'课程已购买，无需重复购买');
                 }
             }
@@ -110,13 +114,14 @@ class Wxpay extends Base
         if (!empty($book_id)){
             $book = db('onlinebooks')->field('id,name')->find($book_id);
             if(empty($book)){
+                wlog($this->log_path,"没有此书籍".$book_id);
                 $this->return_json(E_OP_FAIL,'没有此书籍');
             }
             $is = db('onlinebookpay')->field('id,status')->where(['memberid'=>$this->user['id'],'bookid'=>$book_id])->find();
             if(!empty($is) && $product=='pay_onlinebook'){
                 if($is['status']=='finish'){
-                    wlog($this->log_path,"课程已购买，无需重复购买");
-                    $this->return_json(E_OP_FAIL,'课程已购买，无需重复购买');
+                    wlog($this->log_path,"书籍已购买，无需重复购买");
+                    $this->return_json(E_OP_FAIL,'书籍已购买，无需重复购买');
                 }
             }
         }
@@ -158,6 +163,7 @@ class Wxpay extends Base
         //$newPara["total_fee"] = $price*100;
         $newPara["total_fee"] = (int)$fee;
         if($newPara["total_fee"]<=0){
+            wlog($this->log_path,"金额需大于零：".$newPara["total_fee"]);
             $this->return_json(E_OP_FAIL,'金额需大于零');
         }
         //终端IP
@@ -182,6 +188,7 @@ class Wxpay extends Base
         if(empty($get_data['data'])){
             $json['success'] = 0;
             $json['error'] = '支付失败(第三方返回内容为空)';
+            wlog($this->log_path,"支付失败(第三方返回内容为空)：");
             $this->return_json(OK,$json);
         }
         //返回的结果进行判断。
@@ -207,10 +214,11 @@ class Wxpay extends Base
             $json['data'] = "预支付完成";
             //预支付完成,在下方进行自己内部的业务逻辑
             /*****************************/
-            $a = $this->js_api_call($lecture_id,$channel_id,$channel_expire,$fee,$target,$product,$channel,$lecture,$out_trade_no);
+            $a = $this->js_api_call($lecture_id,$channel_id,$book_id,$channel_expire,$fee,$target,$product,$channel,$lecture,$book,$out_trade_no);
             if(!$a){
                 $json['success'] = 0;
                 $json['error'] = '支付失败(数据录入FAIL)，请等候退款';
+                wlog($this->log_path,"支付失败(数据录入FAIL)，请等候退款");
                 $this->return_json(OK,$json);
             }
             $this->return_json(OK,$json);
@@ -218,12 +226,13 @@ class Wxpay extends Base
         } else{
             $json['success'] = 0;
             $json['error'] = $get_data['data']['return_msg'];
+            wlog($this->log_path,"支付失败:".json_encode($json,JSON_UNESCAPED_UNICODE));
             $this->return_json(OK,$json);
             //return json_encode($json);
         }
     }
 
-    public function js_api_call($lecture_id,$channel_id,$channel_expire,$fee,$target,$product,$channel,$lecture,$out_trade_no)
+    public function js_api_call($lecture_id,$channel_id,$book_id,$channel_expire,$fee,$target,$product,$channel,$lecture,$book,$out_trade_no)
     {
         //$this->return_json(OK,['msg'=>'支付成功']);
         //LogController::W_P_Log("进入支付方法!");
@@ -294,6 +303,11 @@ class Wxpay extends Base
             case 'pay_channel':
                 $orderData['body'] = ($membername."支付了频道《".$channel['name']."》".$pay_amount."元");
                 $orderData['attach'] = ($membername."支付了频道《".$channel['name']."》".$pay_amount."元");
+                break;
+            case 'pay_onlinebook':
+                $orderData['body'] = ($membername."支付了在线听书《".$book['name']."》".$pay_amount."元");
+                $orderData['attach'] = ($membername."支付了在线听书《".$book['name']."》".$pay_amount."元");
+                $out_trade_no =  $product.date("YmdHis").rand(0000,9999);
                 break;
             case 'pay_register':
                 $orderData['body'] = ($membername."支付了天雁论坛会员购买".$pay_amount."元");
@@ -386,8 +400,8 @@ class Wxpay extends Base
         $orderData['paymember'] = $member['id'];
         $orderData['getmember'] = $targetmember['id'];
         $orderData['status'] = "wait";
-        db('orders')->insert($orderData); //保存订单数据
-
+        $aaaa = db('orders')->insert($orderData); //保存订单数据
+        wlog($this->log_path,$product."保存订单数据orders：".(int)$aaaa);
         switch ($product){
             case 'reward' :
                 $data['sender_id'] = $member['id'];
@@ -406,6 +420,7 @@ class Wxpay extends Base
                 //$data['out_trade_no'] = $input->GetOut_trade_no();
                 $data['out_trade_no'] = $out_trade_no;
                 $count = db('msg')->insertGetId($data); //保存消息数据
+                wlog($this->log_path,$product."保存消息数据msg：".(int)$count);
                 $data['message_id'] = $count;
                 $res['data'] = $data;
                 break;
@@ -432,8 +447,8 @@ class Wxpay extends Base
                     'addtime'=>date("Y-m-d H:i:s"),
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
-                db('coursepay')->insert($paydata);
-
+                $pppp = db('coursepay')->insert($paydata);
+                wlog($this->log_path,$product."保存课程支付数据coursepay：".(int)$pppp);
                 //处理是否加入分销推广收益
                 $popular = db("popularize")->where("lecture_id=".$lecture_id." and bpid=".$member['id'])->order("id desc")->find();
                 if (isset($popular)&&(!empty($popular))){
@@ -448,6 +463,7 @@ class Wxpay extends Base
                     $earnsDatas['remarks'] = '分销推广';
                     $earnsDatas['addtime'] = date("Y-m-d H:i:s");
                     $e = db('earns')->insertGetId($earnsDatas);//收益表添加记录
+                    wlog($this->log_path,$product."收益表加入分销推广记录earns：".(int)$e);
                     //LogController::W_P_Log("加入分销推广记录：".$e);
                     $fee = $lecture['cost']*(100-$lecture['resell_percent'])/100;
                     $pay_amount = $fee;
@@ -472,8 +488,8 @@ class Wxpay extends Base
                     'expire' => $expire ? date("Y-m-d H:i:s",strtotime("+$expire day")) : null,
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
-                db('channelpay')->insertGetId($channeldata);
-
+                $wwww = db('channelpay')->insertGetId($channeldata);
+                wlog($this->log_path,$product."保存专栏支付数据channelpay：".(int)$wwww);
                 //处理活动逻辑
                 if ($channel_id == 454){
                     $onlinebooks = array(4,12,2,29,66,15,1,3,8,9);
@@ -492,7 +508,18 @@ class Wxpay extends Base
                 }
 
                 break;
-
+            case 'pay_onlinebook':
+                $bookdata = array(
+                    'memberid'=>$member['id'],
+                    'bookid'=>$book_id,
+                    'fee'=>$fee,
+                    'status'=>'wait',
+                    'addtime'=>date("Y-m-d H:i:s"),
+                    'out_trade_no'=>$orderData['out_trade_no']
+                );
+                $aaa = db('onlinebookpay')->insert($bookdata);
+                wlog($this->log_path,"pay_onlinebook-onlinebookpay添加记录 ".$aaa);
+                break;
             case  'pay_zlhd':
                 $channel_arr = [119,155,175,154,19,174,56,80,103,85,131,135,32];
                 foreach ($channel_arr as $k => $v){
@@ -505,7 +532,8 @@ class Wxpay extends Base
                         'expire' => date("Y-m-d H:i:s",strtotime("+365 day")),
                         'out_trade_no'=>$orderData['out_trade_no']
                     );
-                    db('channelpay')->insert($channeldata);
+                    $cba = db('channelpay')->insert($channeldata);
+                    wlog($this->log_path,$product."保存专栏支付数据channelpay：".(int)$cba);
                 }
                 break;
             default:
@@ -518,7 +546,7 @@ class Wxpay extends Base
         $earnsData['paymemberid'] = $orderData['paymember'];
         $earnsData['lectureid'] = $lecture_id;
         $earnsData['channelid'] = $channel_id;
-        $earnsData['bookid'] = '';
+        $earnsData['bookid'] = $book_id;
         $earnsData['fee'] = $pay_amount;
         switch ($product){
             case 'reward' :
@@ -553,7 +581,7 @@ class Wxpay extends Base
         $earnsData['status'] = 'wait';
         $earnsData['addtime'] = date("Y-m-d H:i:s");
         $a = db('earns')->insertGetId($earnsData);//收益表添加记录
-
+        wlog($this->log_path,$product."收益表添加记录earns：".(int)$a);
         //$res['code'] = 0;
         //$this->ajaxReturn($res,'JSON');
         //$a = $this->NotifyProcess($out_trade_no,$fee);
