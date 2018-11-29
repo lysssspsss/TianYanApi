@@ -46,7 +46,7 @@ class Wxpayjiu extends Base
     {
         //$this->return_json(OK,['msg'=>'支付成功']);
         //LogController::W_P_Log("进入支付方法!");
-        if($this->source == 'ANDROID'){
+        if($this->source != 'IOS'){
             $this->return_json(OK,['msg'=>'支付成功']);
         }
         wlog($this->log_path,"jsApiCall 进入支付方法");
@@ -94,6 +94,9 @@ class Wxpayjiu extends Base
         if($product=='pay_channel' && empty($channel_id)){
             wlog($this->log_path,"缺少专栏ID");
             $this->return_json(E_ARGS,'缺少专栏ID');
+        }
+        if(empty($channel_expire)){//购买后有效期月数，默认12个月
+            $channel_expire = 12;
         }
         if(empty($this->user['id'])){
             $this->user = db('member')->where(array('openid'=>$phone_id))->find();

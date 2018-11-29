@@ -60,7 +60,7 @@ class Base extends Controller
         }
         $this->is_repeat(); /* 重放检测 */
         if(!empty(input('request.phone_id')) && empty($header['Memberid'])){
-            $phone_id = input('request.phone_id');
+            $phone_id = input('request.phone_id');//IOS 部分功能必须不登录即使用，此时需要把phone_id
             $m = db('member')->field('id')->where(['openid'=>$phone_id])->find();
             if(!empty($m)){
                 $header['Memberid'] = $m['id'];

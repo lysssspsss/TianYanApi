@@ -915,6 +915,7 @@ class Lecture extends Base
                 $channel = db('channel')->field('memberid,lecturer,is_pay_only_channel,permanent,money,price_list')->where(['id'=>$lecture['channel_id']])->find();
                 if($channel['is_pay_only_channel'] == 1){
                     $data['cost'] = $this->set_pay_money($channel);
+                    $data['channel_id'] = $lecture['channel_id'];
                     $data['msg'] = '此课程需要购买专栏';
                 }else{
                     $data['cost'] = $lecture['cost'];
@@ -945,7 +946,7 @@ class Lecture extends Base
                 $this->return_json(E_OP_FAIL,'类型错误');
                 break;
         }
-
+        $data['type'] = $type;
         $user = new User();
         $data['money'] = $user->get_user_money(1);
         $this->return_json(OK,$data,1);
