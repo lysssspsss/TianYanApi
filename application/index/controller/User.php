@@ -553,6 +553,7 @@ class User extends Base
         if($this->source == 'IOS'){
             if($this->user['title']=='lecturer'){
                 $data = $this->get_yue();
+                $data['can_withdraw'] = $data['can_withdraw'] + $this->user['money'];
                 //unset($data['sumearn']);
             }else{
                 $data['can_withdraw'] = $this->user['money'];
@@ -590,9 +591,10 @@ class User extends Base
     public function get_user_money($type = '')
     {
         $this->get_user_redis($this->user['id'],true);
-        if($this->source == 'IOS'){
+        if($this->source == 'IOS'){//IOS版和安卓版區別對待
             if($this->user['title']=='lecturer'){
                 $data = $this->get_yue();
+                $data['can_withdraw'] = $data['can_withdraw']+ $this->user['money'];
                 unset($data['sumearn']);
             }else{
                 $data['can_withdraw'] = $this->user['money'];

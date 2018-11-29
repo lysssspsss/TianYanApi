@@ -31,6 +31,7 @@ class Wxpay extends Base
         wlog($this->log_path,"jsApiCall 进入支付方法");
         $lecture_id = input('post.lecture_id');
         $channel_id =input('post.channel_id');
+        $book_id =input('post.book_id');
         $channel_expire = input('post.expire');
         $fee = input('post.fee');
         $target = input('post.js_memberid');
@@ -40,6 +41,7 @@ class Wxpay extends Base
             [
                 'lecture_id' => $lecture_id,
                 'channel_id' => $channel_id,
+                'book_id' => $book_id,
                 'expire' => $channel_expire,
                 'fee' => $fee,
                 'target' => $target,
@@ -48,27 +50,41 @@ class Wxpay extends Base
             [
                 'lecture_id'  => 'number' ,
                 'channel_id'  => 'number' ,
+                'book_id'  => 'number' ,
                 'expire'  => 'number' ,
                 'fee'  => 'require|number' ,
                 'target'  => 'require|number' ,
                 'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter,recharge' ,
             ]);
         if($result !== true){
+            wlog($this->log_path,"参数错误");
             $this->return_json(E_ARGS,'参数错误');
         }
-
         if($product=='reward' && empty($lecture_id)){
-            $this->return_json(E_ARGS,'缺少课程ID');
+            wlog($this->log_path,"缺少课程ID 1");
+            $this->return_json(E_ARGS,'缺少课程ID 1');
         }
         if($product=='pay_lecture' && empty($lecture_id)){
-            $this->return_json(E_ARGS,'缺少课程ID');
+            wlog($this->log_path,"缺少课程ID 2");
+            $this->return_json(E_ARGS,'缺少课程ID 2');
         }
         if($product=='pay_channel' && empty($channel_id)){
+            wlog($this->log_path,"缺少专栏ID");
             $this->return_json(E_ARGS,'缺少专栏ID');
+        }
+        if($product=='pay_onlinebook' && empty($book_id)){
+            wlog($this->log_path,"缺少书籍ID");
+            $this->return_json(E_ARGS,'缺少书籍ID');
+        }
+        if(empty($channel_expire)){
+            $channel_expire = 12;
         }
         $channel = $lecture = [];
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
+            if(empty($channel)){
+                $this->return_json(E_OP_FAIL,'没有此专栏');
+            }
             $is = db('channelpay')->field('expire,status')->where(['memberid'=>$target,'channelid'=>$channel_id])->find();
             if(!empty($is)){
                 if($is['status']=='finish' && time()<strtotime($is['expire']))
@@ -77,6 +93,9 @@ class Wxpay extends Base
         }
         if (!empty($lecture_id)){
             $lecture = db('course')->find($lecture_id);
+            if(empty($lecture)){
+                $this->return_json(E_OP_FAIL,'没有此课程');
+            }
             $is = db('coursepay')->field('id,status')->where(['memberid'=>$target,'courseid'=>$lecture_id])->find();
             if(!empty($is)){
                 if($is['status']=='finish'){
@@ -84,9 +103,22 @@ class Wxpay extends Base
                 }
             }
         }
-        $bookid = input('post.bookid');
+        /*$bookid = input('post.bookid');
         if (!empty($bookid)){
             $book = db('onlinebooks')->find($bookid);
+        }*/
+        if (!empty($book_id)){
+            $book = db('onlinebooks')->field('id,name')->find($book_id);
+            if(empty($book)){
+                $this->return_json(E_OP_FAIL,'没有此书籍');
+            }
+            $is = db('onlinebookpay')->field('id,status')->where(['memberid'=>$this->user['id'],'bookid'=>$book_id])->find();
+            if(!empty($is) && $product=='pay_onlinebook'){
+                if($is['status']=='finish'){
+                    wlog($this->log_path,"课程已购买，无需重复购买");
+                    $this->return_json(E_OP_FAIL,'课程已购买，无需重复购买');
+                }
+            }
         }
         $reciterid = input('post.reciterid');
         if (!empty($reciterid)){

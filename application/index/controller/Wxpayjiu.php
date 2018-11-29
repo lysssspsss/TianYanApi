@@ -53,6 +53,7 @@ class Wxpayjiu extends Base
 
         $lecture_id = input('post.lecture_id');
         $channel_id =input('post.channel_id');
+        $book_id =input('post.book_id');
         $channel_expire = input('post.expire');
         $fee = input('post.fee');
         $target = input('post.js_memberid');
@@ -64,6 +65,7 @@ class Wxpayjiu extends Base
             [
                 'lecture_id' => $lecture_id,
                 'channel_id' => $channel_id,
+                'book_id' => $book_id,
                 'expire' => $channel_expire,
                 'fee' => $fee,
                 'target' => $target,
@@ -73,11 +75,12 @@ class Wxpayjiu extends Base
             [
                 'lecture_id'  => 'number' ,
                 'channel_id'  => 'number' ,
+                'book_id'  => 'number' ,
                 'expire'  => 'number' ,
                 'fee'  => 'require|number' ,
                 'target'  => 'number' ,
                 'product'  => 'require|in:pay_lecture,reward,pay_channel,pay_onlinebook,pay_reciter,recharge',
-                'phone_id'  => 'alphaNum',
+                'phone_id'  => 'alphaDash',
             ]);
         if($result !== true){
             wlog($this->log_path,"参数错误");
@@ -94,6 +97,10 @@ class Wxpayjiu extends Base
         if($product=='pay_channel' && empty($channel_id)){
             wlog($this->log_path,"缺少专栏ID");
             $this->return_json(E_ARGS,'缺少专栏ID');
+        }
+        if($product=='pay_onlinebook' && empty($book_id)){
+            wlog($this->log_path,"缺少书籍ID");
+            $this->return_json(E_ARGS,'缺少书籍ID');
         }
         if(empty($channel_expire)){//购买后有效期月数，默认12个月
             $channel_expire = 12;
@@ -113,6 +120,9 @@ class Wxpayjiu extends Base
         }
         if (!empty($channel_id)){
             $channel = db('channel')->find($channel_id);
+            if(empty($channel)){
+                $this->return_json(E_OP_FAIL,'没有此专栏');
+            }
             $is = db('channelpay')->field('expire,status')->where(['memberid'=>$this->user['id'],'channelid'=>$channel_id])->find();
             if(!empty($is)  && $product=='pay_channel'){
                 if($is['status']=='finish' && time()<strtotime($is['expire'])){
@@ -124,6 +134,9 @@ class Wxpayjiu extends Base
         }
         if (!empty($lecture_id)){
             $lecture = db('course')->find($lecture_id);
+            if(empty($lecture)){
+                $this->return_json(E_OP_FAIL,'没有此课程');
+            }
             $is = db('coursepay')->field('id,status')->where(['memberid'=>$this->user['id'],'courseid'=>$lecture_id])->find();
             if(!empty($is) && $product=='pay_lecture'){
                 if($is['status']=='finish'){
@@ -132,10 +145,20 @@ class Wxpayjiu extends Base
                 }
             }
         }
-        $bookid = input('post.bookid');
-            if (!empty($bookid)){
-                $book = db('onlinebooks')->find($bookid);
+        if (!empty($book_id)){
+            $book = db('onlinebooks')->field('id,name')->find($book_id);
+            if(empty($book)){
+                $this->return_json(E_OP_FAIL,'没有此书籍');
+            }
+            $is = db('onlinebookpay')->field('id,status')->where(['memberid'=>$this->user['id'],'bookid'=>$book_id])->find();
+            if(!empty($is) && $product=='pay_onlinebook'){
+                if($is['status']=='finish'){
+                    wlog($this->log_path,"课程已购买，无需重复购买");
+                    $this->return_json(E_OP_FAIL,'课程已购买，无需重复购买');
+                }
+            }
         }
+
         $reciterid = input('post.reciterid');
         if (!empty($reciterid)){
             $reciter = db('reciter')->find($reciterid);
@@ -152,6 +175,14 @@ class Wxpayjiu extends Base
         }
         $pay_amount = $fee/100.00;
         $add_time = date("Y-m-d H:i:s").".".rand(000000,999999);
+
+        if($product != 'recharge'){
+            //$paymember = db('member')->field('id,sumearn,money')->find($this->user['id']);
+            $money = $this->user['money'] - $pay_amount;
+            if($money<0){
+                $this->return_json(E_OP_FAIL,'余额不足');
+            }
+        }
 
         //初始化日志
        /* $logHandler= new \CLogFileHandler("./logs/".date('Y-m-d').'.log');
@@ -411,7 +442,6 @@ class Wxpayjiu extends Base
                             'addtime'=>date("Y-m-d H:i:s"),
                             'out_trade_no'=>$orderData['out_trade_no']
                         );
-//                LogController::W_P_Log("数据为 写入:".json_encode($bookdata));
                         $ooo = db('onlinebookpay')->insert($bookdata);
                         wlog($this->log_path,"专栏支付-onlinebookpay表添加记录 ".$ooo);
                     }
@@ -422,13 +452,12 @@ class Wxpayjiu extends Base
 //                LogController::W_P_Log("before 写入onlinebookpay");
                 $bookdata = array(
                     'memberid'=>$member['id'],
-                    'bookid'=>$bookid,
+                    'bookid'=>$book_id,
                     'fee'=>$fee,
                     'status'=>'wait',
                     'addtime'=>date("Y-m-d H:i:s"),
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
-//                LogController::W_P_Log("数据为 写入:".json_encode($bookdata));
                 $aaa = db('onlinebookpay')->insert($bookdata);
                 wlog($this->log_path,"pay_onlinebook-onlinebookpay添加记录 ".$aaa);
                 break;
@@ -470,7 +499,7 @@ class Wxpayjiu extends Base
         $earnsData['paymemberid'] = $orderData['paymember'];
         $earnsData['lectureid'] = $lecture_id;
         $earnsData['channelid'] = $channel_id;
-        $earnsData['bookid'] = $bookid;
+        $earnsData['bookid'] = $book_id;
         $earnsData['fee'] = $pay_amount;
         switch ($product){
             case 'reward' :
@@ -580,11 +609,13 @@ class Wxpayjiu extends Base
 
             //var_dump($total_fee,$data['total_fee']);exit;
             //更新订单状态
-            db('orders')->where("out_trade_no='".$out_trade_no."'")->update($data);
+            $lll = db('orders')->where("out_trade_no='".$out_trade_no."'")->update($data);
+            wlog($this->log_path,"更新订单状态orders". (int)$lll);
             $data['total_fee'] = ($total_fee/100.00);
 
             //更新收益表
-            db('earns')->where("out_trade_no='".$out_trade_no."'")->setField("status",'finish');
+            $ppp = db('earns')->where("out_trade_no='".$out_trade_no."'")->setField("status",'finish');
+            wlog($this->log_path,"更新收益表earns". (int)$ppp);
             $earns = db('earns')->where("out_trade_no='".$out_trade_no."'")->find();
             //\Common\Controller\LogController::W_P_Log("earns id is:".$earns['id']);
             wlog($this->log_path,"earns id is:". $earns['id']);
@@ -594,27 +625,27 @@ class Wxpayjiu extends Base
             //更新用户收益
             $order = db("orders")->where("out_trade_no='".$out_trade_no."'")->find();
             if ($order['getmember']!=0){
-                $getmember = db('member')->field('id,sumearn,money')->find($order['getmember']);
-                $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
-                $aaaa = db('member')->where(['id'=>$getmember['id']])->setField('sumearn',$mdata['sumearn']);
-                wlog($this->log_path,"更新用户受益 sumearn：". (int)$aaaa);
-                if($type == 'recharge'){
+                $getmember = db('member')->field('id,sumearn,money')->find($order['getmember']);//充值时getmember==paymember
+                if($type == 'recharge'){//充值更新充值用户余额
                     $mdata['money'] = $getmember['money'] + ($data['total_fee']);
                     $bbbb = db('member')->where(['id'=>$getmember['id']])->setField('money',$mdata['money']);
-                    wlog($this->log_path,"更新用户受益 money：". (int)$bbbb);
-                    //var_dump($getmember['id'],$bbbb);
+                    wlog($this->log_path,"更新用户余额 money：". (int)$bbbb);
+                }else{//其他更新被付款用户总收益
+                    $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
+                    $aaaa = db('member')->where(['id'=>$getmember['id']])->setField('sumearn',$mdata['sumearn']);
+                    wlog($this->log_path,"更新用户受益 sumearn：". (int)$aaaa);
                 }
             }
 
             if($type != 'recharge'){
                 $paymember = db('member')->field('id,sumearn,money')->find($order['paymember']);
-                $sumearn = $paymember['sumearn'] - ($data['total_fee']);
+                //$sumearn = $paymember['sumearn'] - ($data['total_fee']);
                 $money = $paymember['money'] - ($data['total_fee']);
-                if($sumearn<0 || $money<0){
+                /*if($sumearn<0 || $money<0){
                     $this->return_json(E_OP_FAIL,'余额不足');
-                }
-                $ccc = db('member')->where("id=".$paymember['id'])->update(['sumearn'=>$sumearn,'money'=>$money]);
-                wlog($this->log_path,"减少用户余额 sumearn & money：". (int)$ccc);
+                }*/
+                $ccc = db('member')->where("id=".$paymember['id'])->update(['money'=>$money]);
+                wlog($this->log_path,"减少购买商品的用户余额 money：". (int)$ccc);
             }
             //更新课程表
             if ($earns['lectureid']){
@@ -704,6 +735,7 @@ class Wxpayjiu extends Base
                 if($channel){
                     //更新频道支付表
                     $paychannel = db('channelpay')->where("out_trade_no='".$out_trade_no."'")->setField("status",'finish');
+                    wlog($this->log_path,"更新频道支付表：". (int)$paychannel);
                     //更新频道收益
                     $channel_earns = $channel['earns'] + $data['total_fee'];
                     $chadata['earns'] = $channel_earns;
@@ -753,22 +785,27 @@ class Wxpayjiu extends Base
             }
             if ($type == 'pay_zlhd'){ //更新所有关联频道状态
                 $paychannel = db('channelpay')->where("out_trade_no='".$out_trade_no."'")->setField("status",'finish');
+                wlog($this->log_path,"更新所有关联频道状态：". (int)$paychannel);
             }
             if ($type == 'pay_onlinebook'){ //更新
-                $data['status'] = "finish";
+                $odata['status'] = "finish";
                 //更新订单状态
-                db('onlinebookpay')->where("out_trade_no='".$out_trade_no."'")->update($data);
-                $bookid = $earns['bookid'];
-                $book = db('onlinebooks')->find($bookid);
-                $book_sum = $book['sumearns'] + $data['total_fee'];
-                db('onlinebooks')->where("id=".$bookid)->setField("sumearns",$book_sum);
+                $pay_onlinebook = db('onlinebookpay')->where("out_trade_no='".$out_trade_no."'")->update($odata);
+                wlog($this->log_path,"更新onlinebookpay表：". (int)$pay_onlinebook);
+                $book_id = $earns['bookid'];
+                $book = db('onlinebooks')->find($book_id);
+                $book_sum = $book['sumearns'] + ($data['total_fee']*100);//这个sumearns单位是分
+                $pay_onlinebook2 = db('onlinebooks')->where("id=".$book_id)->setField("sumearns",$book_sum);
+                wlog($this->log_path,"更新onlinebooks表：$book_id | ". (int)$pay_onlinebook2);
             }
             if ($type == 'pay_reciter'){ //更新保险公益杯支付表
                 $data['status'] = "finish";
                 //更新订单状态
-                db('reciterpay')->where("out_trade_no='".$out_trade_no."'")->update($data);
+                $hhhhh = db('reciterpay')->where("out_trade_no='".$out_trade_no."'")->update($data);
+                wlog($this->log_path,"更新保险公益杯支付表reciterpay表：". (int)$hhhhh);
             }
             wlog($this->log_path,"+++++充值成功+++++");
+            $this->get_user_redis($this->user['id']);
             $this->return_json(OK,['msg'=>'success']);
             //return true;
         }else{

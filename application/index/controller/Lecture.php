@@ -939,7 +939,7 @@ class Lecture extends Base
                 $data['title'] = $book['name'];
                 $data['book_id'] = $book['id'];
                 $data['cover'] = $book['cover'];
-                $data['cost'] = $book['mode'];
+                $data['cost'] = $book['cost'];
                 $data['intro'] = $book['intro'];
                 break;
             default:

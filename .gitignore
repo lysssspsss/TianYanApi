@@ -8,3 +8,4 @@ application/log/
 .DS_Store
 .idea
 access_token.php
+public/qrcode

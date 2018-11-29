@@ -641,6 +641,11 @@ class Base extends Controller
     } /* }}} */
 
 
+    protected function get_pay_param()
+    {
+
+    }
+
     /**
      * 上傳文件
      * @param bool $bool

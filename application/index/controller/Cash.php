@@ -132,11 +132,11 @@ class Cash extends Base
             $popular = $popular[0]['sums'];
 
             //6、用户充值的金额
-            $recharge_sql = " select round(sum(fee),2) as sums from live_earns where memberid =" . $memberid . " and type='recharge' and status='finish'";
+           /* $recharge_sql = " select round(sum(fee),2) as sums from live_earns where memberid =" . $memberid . " and type='recharge' and status='finish'";
             $recharge = db()->query($recharge_sql);
-            $recharge = $recharge[0]['sums'];
+            $recharge = $recharge[0]['sums'];*/
 
-            $sum = $popular + $course_play1 + $course_pay1 + ($channel_pay * 0.5) + $course_play + $course_pay + $course_invited_sql + $recharge;
+            $sum = $popular + $course_play1 + $course_pay1 + ($channel_pay * 0.5) + $course_play + $course_pay + $course_invited_sql; //+ $recharge;
             if ($memberid==17176){
                 $sum += 32.8;
             }
