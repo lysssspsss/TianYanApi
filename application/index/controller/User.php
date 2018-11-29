@@ -587,7 +587,7 @@ class User extends Base
     /**
      * 个人中心-我的余额
      */
-    public function get_user_money()
+    public function get_user_money($type = '')
     {
         $this->get_user_redis($this->user['id'],true);
         if($this->source == 'IOS'){
@@ -602,6 +602,9 @@ class User extends Base
             unset($data['sumearn']);
         }
         $data['money_list'] = [6,68,88,208,388,998];
+        if($type == 1){
+            return $data['can_withdraw'];
+        }
         $this->return_json(OK,$data);
     }
 

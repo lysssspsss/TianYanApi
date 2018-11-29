@@ -1,6 +1,7 @@
 <?php
 namespace app\index\controller;
 use app\tools\controller\Tools;
+use app\index\controller\User;
 use think\Request;
 use think\Db;
 use think\Config;
@@ -576,21 +577,18 @@ class Lecture extends Base
         if(empty($lecture_id)){
             $lecture_id = input('get.lecture_id');
         }
-        //$type = input('get.type');
         $result = $this->validate(
             [
                 'lecture_id' => $lecture_id,
-                //'type' => $type,
             ],
             [
                 'lecture_id'  => 'require|number',
-                //'type'  => 'in:free'
             ]
         );
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        //var_dump($this->user);exit;
+
         if(empty($this->user['id'])){
             $this->user['id'] = 0;
             $this->user['remarks'] = '';
@@ -598,30 +596,14 @@ class Lecture extends Base
         }else{
             $this->get_user_redis($this->user['id'],true);
         }
-        /*$lecture = db('course')->alias('a')->join('channel b','a.channel_id = b.id')
-            ->field('a.id as lecture_id,a.memberid as lecture_memberid,a.coverimg,a.name as title,a.starttime,a.channel_id,a.intro,a.mins,a.qrcode_addtime,a.qrcode,a.live_homeid,a.clicknum,a.cost,a.is_for_vip,a.mode,a.basescrib,b.lecturer,b.is_pay_only_channel,b.name as zhuanlan,b.memberid as channel_memberid,b.roomid')
-            ->where(['a.id'=>$lecture_id,'a.isshow'=>'show'])->find();*/
-        /*$lecture = db('course')
-            ->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,basescrib')
-            ->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
-        if(!empty($lecture['channel_id'])){
-            $channel = db('channel')->field('lecturer,is_pay_only_channel,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>$lecture_id['channel_id']])->find();
-        }else{
-            $lecture['lecturer'] = '';
-            $lecture['is_pay_only_channel'] = '';
-            $lecture['lecturer'] = '';
-            $lecture['lecturer'] = '';
-            $lecture['lecturer'] = '';
-            $lecture['lecturer'] = '';
-        }*/
-        //dump($lecture);exit;
-        //if(empty($lecture)){
+
         $lecture = db('course')->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,mode,basescrib')
             ->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
         if(empty($lecture)){
             $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
-        if($lecture['mode'] == 'video' || $lecture['mode'] == 'vedio'){
+        $lecture['mode'] = $this->set_lecture_mode($lecture['mode'],$lecture_id);
+        /*if($lecture['mode'] == 'video' || $lecture['mode'] == 'vedio'){
             $lecture['mode'] = 'vedio';
             $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id,'is_app'=>'1'])->find();
             if(!empty($video)){
@@ -629,13 +611,13 @@ class Lecture extends Base
                     $lecture['mode'] = 'live';//直播类型
                 }
             }
-        }
+        }*/
         if(empty($lecture['channel_id'])){
             $lecture['channel_id'] = BANZHUREN;
         }
         $channel = db('channel')->field('lecturer,is_pay_only_channel,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>$lecture['channel_id']])->find();
         $lecture = array_merge($lecture,$channel);
-        //}
+
         $where['id'] = $lecture['lecture_memberid'];
         if(!empty($lecture['lecturer'])){
             $where['id'] = $lecture['lecturer'];
@@ -656,12 +638,7 @@ class Lecture extends Base
         }
 
         $lecture['name'] = $jiangshi['name'];
-       /* $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
-        if ($status != '进行中') {
-            $lecture['current_status'] = $status ? 'ready' : 'closed';
-        } else {
-            $lecture['current_status'] = 'started';
-        }*/
+
         if (!empty($lecture['live_homeid'])) {
             $manager = db('home_manager')->field('id')->where('homeid=' . $lecture['live_homeid'] . ' AND beinviteid=' . $this->user['id'])->find();
         }
@@ -866,6 +843,150 @@ class Lecture extends Base
         $data['lectures'] = $course;
         $data['channel_lecture_count'] = count($course);
         $this->return_json(OK,$data);
+    }
+
+    /**
+     * 获取专栏/课程/听书 支付信息 新版
+     */
+    public function get_pay_info_new()
+    {
+        $channel_id = input('get.channel_id');
+        $lecture_id = input('get.lecture_id');
+        $book_id = input('get.book_id');
+        $type = input('get.type');
+        $result = $this->validate(
+            [
+                'channel_id' => $channel_id,
+                'lecture_id' => $lecture_id,
+                'book_id' => $book_id,
+                'type' => $type,
+            ],
+            [
+                'channel_id'  => 'number',
+                'lecture_id'  => 'number',
+                'book_id'  => 'number',
+                'type'  => 'require|in:pay_channel,pay_lecture,pay_onlinebook'
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
+        if(empty($channel_id) && $type== 'pay_channel'){
+            $this->return_json(E_ARGS,'channel_id为空');
+        }
+        if(empty($lecture_id) && $type== 'pay_lecture'){
+            $this->return_json(E_ARGS,'lecture_id为空');
+        }
+        if(empty($book_id) && $type== 'pay_onlinebook'){
+            $this->return_json(E_ARGS,'book_id为空');
+        }
+        $data['wxcode'] = $this->user['wxcode'];
+        $data['tel'] = empty($this->user['tel'])?'未绑定':$this->user['tel'];
+        $data['coupon'] = '暂无优惠券';
+        $data['cost'] = 0;
+        $data['intro'] = $data['js_memberid'] = $data['msg'] = $data['lecture_id'] = $data['book_id'] = $data['channel_id'] = $data['mode'] = '';
+        switch ($type){
+            case 'pay_channel':
+                $channel = db('channel')->field('id,name,money,price_list,is_pay_only_channel,permanent,type,cover_url as cover,memberid,lecturer')->where(['id'=>$channel_id,'isshow'=>'show'])->find();
+                if(empty($channel)){
+                    $this->return_json(E_OP_FAIL,'找不到该专栏');
+                }
+                $data['cost'] = $this->set_pay_money($channel);
+                $data['title'] = $channel['name'];
+                $data['channel_id'] = $channel['id'];
+                $data['cover'] = $channel['cover'];
+                $data['intro'] = '天雁优秀专栏';
+                //$data['type'] = $channel['type'];
+                if($channel['memberid'] == BANZHUREN){
+                    $data['js_memberid'] = empty($channel['lecturer']) ? BANZHUREN : $channel['lecturer'];
+                }else{
+                    $data['js_memberid'] = $channel['memberid'];
+                }
+                break;
+            case 'pay_lecture':
+                $lecture = db('course')->field('id,name,cost,coverimg as cover,mode,type,channel_id')->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
+                if(empty($lecture)){
+                    $this->return_json(E_OP_FAIL,'找不到对应课程');
+                }
+                $lecture['mode'] = $this->set_lecture_mode($lecture['mode'],$lecture_id);
+                if(empty($lecture['channel_id'])){
+                    $lecture['channel_id'] = BANZHUREN;
+                }
+                $channel = db('channel')->field('memberid,lecturer,is_pay_only_channel,permanent,money,price_list')->where(['id'=>$lecture['channel_id']])->find();
+                if($channel['is_pay_only_channel'] == 1){
+                    $data['cost'] = $this->set_pay_money($channel);
+                    $data['msg'] = '此课程需要购买专栏';
+                }else{
+                    $data['cost'] = $lecture['cost'];
+                }
+                $data['title'] = $lecture['name'];
+                $data['lecture_id'] = $lecture['id'];
+                $data['cover'] = $lecture['cover'];
+                //$data['type'] = $lecture['type'];
+                $data['mode'] = $lecture['mode'];
+                if($channel['memberid'] == BANZHUREN){
+                    $data['js_memberid'] = empty($channel['lecturer']) ? BANZHUREN : $channel['lecturer'];
+                }else{
+                    $data['js_memberid'] = $channel['memberid'];
+                }
+                break;
+            case 'pay_onlinebook':
+                $book = db('onlinebooks')->field('id,name,intro,cover,truncate(fee/100,2) as cost')->where(['id'=>$book_id,'isshow'=>'show'])->find();
+                if(empty($book)){
+                    $this->return_json(E_OP_FAIL,'找不到对应课程');
+                }
+                $data['title'] = $book['name'];
+                $data['book_id'] = $book['id'];
+                $data['cover'] = $book['cover'];
+                $data['cost'] = $book['mode'];
+                $data['intro'] = $book['intro'];
+                break;
+            default:
+                $this->return_json(E_OP_FAIL,'类型错误');
+                break;
+        }
+
+        $user = new User();
+        $data['money'] = $user->get_user_money(1);
+        $this->return_json(OK,$data,1);
+    }
+
+    /**
+     * 设置支付金额
+     * @param $content
+     * @return mixed
+     */
+    private function set_pay_money($content)
+    {
+        if(!empty($content['money'])){
+            $data['cost'] = $content['money'];
+        } elseif(empty($content['money']) && !empty($content['price_list'])){
+            $price_list = json_decode($content['price_list'],true);
+            $data['cost'] = $price_list[0]['money'];
+        }else{
+            $data['cost'] = 0;
+        }
+        return $data['cost'];
+    }
+
+    /**
+     * 设置课程的mode
+     * @param $mode
+     * @param $lecture_id
+     * @return string
+     */
+    private function set_lecture_mode($mode,$lecture_id)
+    {
+        if($mode == 'video' || $mode == 'vedio'){
+            $mode = 'vedio';//统一为vedio
+            $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id,'is_app'=>'1'])->find();
+            if(!empty($video)){
+                if(strstr($video['video'],'rtmp')){
+                    $mode = 'live';//直播类型
+                }
+            }
+        }
+        return $mode;
     }
 
     /**

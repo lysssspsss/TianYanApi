@@ -585,7 +585,6 @@ class Index extends Base
             }
             $value['iscopyright'] == 'yes' ? $copyrightList[] = $value : $noCopyrightList[] = $value;
         }
-
         if($type == 1){
             $this->return_json(OK,$copyrightList,$count);
         }else{
