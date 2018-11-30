@@ -170,11 +170,13 @@ class Wxpayjiu extends Base
         }
         if ($product!='pay_onlinebook'&&$product!='pay_reciter'&&$product!='pay_wuhan'&&$product!='pay_register'&&$product!='pay_zlhd'){
             $targetmember = db('member')->find($target);
+            $out_trade_no = $product.date("YmdHis").rand(100000,999999);
         }else{ //当支付类型为pay_onlinebook时，支付的目标用户为系统，则$targetmember['id'] = 0
             $targetmember['id'] = 0;
+            $out_trade_no = $product.date("YmdHis").rand(1000,9999);
         }
         $pay_amount = $fee/100.00;
-        $add_time = date("Y-m-d H:i:s").".".rand(100000,999999);
+        $add_time = date("Y-m-d H:i:s").".".rand(000000,999999);
 
         if($product != 'recharge'){
             //$paymember = db('member')->field('id,sumearn,money')->find($this->user['id']);
@@ -205,7 +207,7 @@ class Wxpayjiu extends Base
             $membername = $member['nickname'];
         }
 
-        $out_trade_no = $product.date("YmdHis").rand(000000,999999);
+
         /*switch ($product){
             case 'reward' :
                 try{
