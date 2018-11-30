@@ -174,7 +174,7 @@ class Wxpayjiu extends Base
             $targetmember['id'] = 0;
         }
         $pay_amount = $fee/100.00;
-        $add_time = date("Y-m-d H:i:s").".".rand(000000,999999);
+        $add_time = date("Y-m-d H:i:s").".".rand(100000,999999);
 
         if($product != 'recharge'){
             //$paymember = db('member')->field('id,sumearn,money')->find($this->user['id']);

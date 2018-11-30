@@ -142,7 +142,7 @@ class Wxpay extends Base
         }
         //$pay_amount = $fee/100.00;//费用
         //$add_time = date("Y-m-d H:i:s").".".rand(000000,999999);//时间
-        $out_trade_no = $product.date("YmdHis").rand(000000,999999);//订单号
+        $out_trade_no = $product.date("YmdHis").rand(100000,999999);//订单号
 
 
         $json = array();
