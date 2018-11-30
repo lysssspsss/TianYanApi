@@ -341,8 +341,15 @@ class Wxpayjiu extends Base
         $orderData['paymember'] = $member['id'];
         $orderData['getmember'] = $targetmember['id'];
         $orderData['status'] = "wait";
-        db('orders')->insert($orderData); //保存订单数据
-        wlog($this->log_path,"课程已购买，无需重复购买");
+
+        Db::startTrans();
+        $jl = db('orders')->insertGetId($orderData); //保存订单数据
+        if(empty($jl)){
+            Db::rollback();
+            wlog($this->log_path,"保存订单数据失败");
+            $this->return_json(E_OP_FAIL,'保存订单数据失败');
+        }
+        wlog($this->log_path,"保存订单数据成功");
         switch ($product){
             case 'reward' :
                 $data['sender_id'] = $member['id'];
@@ -361,6 +368,11 @@ class Wxpayjiu extends Base
                 //$data['out_trade_no'] = $input->GetOut_trade_no();
                 $data['out_trade_no'] = $out_trade_no;
                 $count = db('msg')->insertGetId($data); //保存消息数据
+                if(empty($count)){
+                    Db::rollback();
+                    wlog($this->log_path,"打赏msg表新增数据失败");
+                    $this->return_json(E_OP_FAIL,'打赏msg表新增数据失败');
+                }
                 $data['message_id'] = $count;
                 $res['data'] = $data;
                 wlog($this->log_path,"打赏msg表新增数据".$count);
@@ -388,7 +400,12 @@ class Wxpayjiu extends Base
                     'addtime'=>date("Y-m-d H:i:s"),
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
-                $bb = db('coursepay')->insert($paydata);
+                $bb = db('coursepay')->insertGetId($paydata);
+                if(empty($bb)){
+                    Db::rollback();
+                    wlog($this->log_path,"课程支付coursepay表新增数据失败");
+                    $this->return_json(E_OP_FAIL,'课程支付coursepay表新增数据失败');
+                }
                 wlog($this->log_path,"课程支付coursepay表新增数据".$bb);
                 //处理是否加入分销推广收益
                 $popular = db("popularize")->where("lecture_id=".$lecture_id." and bpid=".$member['id'])->order("id desc")->find();
@@ -404,6 +421,11 @@ class Wxpayjiu extends Base
                     $earnsDatas['remarks'] = '分销推广';
                     $earnsDatas['addtime'] = date("Y-m-d H:i:s");
                     $e = db('earns')->insertGetId($earnsDatas);//收益表添加记录
+                    if(empty($e)){
+                        Db::rollback();
+                        wlog($this->log_path,"课程支付-收益表添加记录失败");
+                        $this->return_json(E_OP_FAIL,'课程支付-收益表添加记录失败');
+                    }
                     wlog($this->log_path,"课程支付-收益表添加记录".$e);
                     //LogController::W_P_Log("加入分销推广记录：".$e);
                     $fee = $lecture['cost']*(100-$lecture['resell_percent'])/100;
@@ -430,6 +452,11 @@ class Wxpayjiu extends Base
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
                 $a = db('channelpay')->insertGetId($channeldata);
+                if(empty($a)){
+                    Db::rollback();
+                    wlog($this->log_path,"专栏支付-收益表添加记录失败");
+                    $this->return_json(E_OP_FAIL,'专栏支付-收益表添加记录失败');
+                }
                 wlog($this->log_path,"专栏支付-收益表添加记录 ".$a);
                 //处理活动逻辑
                 if ($channel_id == 454){
@@ -444,13 +471,17 @@ class Wxpayjiu extends Base
                             'out_trade_no'=>$orderData['out_trade_no']
                         );
                         $ooo = db('onlinebookpay')->insert($bookdata);
+                        if(empty($ooo)){
+                            Db::rollback();
+                            wlog($this->log_path,"专栏支付-onlinebookpay表添加记录失败");
+                            $this->return_json(E_OP_FAIL,'专栏支付-onlinebookpay表添加记录失败');
+                        }
                         wlog($this->log_path,"专栏支付-onlinebookpay表添加记录 ".$ooo);
                     }
                 }
 
                 break;
             case 'pay_onlinebook':
-//                LogController::W_P_Log("before 写入onlinebookpay");
                 $bookdata = array(
                     'memberid'=>$member['id'],
                     'bookid'=>$book_id,
@@ -460,6 +491,11 @@ class Wxpayjiu extends Base
                     'out_trade_no'=>$orderData['out_trade_no']
                 );
                 $aaa = db('onlinebookpay')->insert($bookdata);
+                if(empty($aaa)){
+                    Db::rollback();
+                    wlog($this->log_path,"pay_onlinebook-onlinebookpay添加记录失败");
+                    $this->return_json(E_OP_FAIL,'pay_onlinebook-onlinebookpay添加记录失败');
+                }
                 wlog($this->log_path,"pay_onlinebook-onlinebookpay添加记录 ".$aaa);
                 break;
             case 'pay_reciter':
@@ -535,7 +571,13 @@ class Wxpayjiu extends Base
         $earnsData['status'] = 'wait';
         $earnsData['addtime'] = date("Y-m-d H:i:s");
         $a = db('earns')->insertGetId($earnsData);//收益表添加记录
+        if(empty($a)){
+            Db::rollback();
+            wlog($this->log_path,"last - 收益表添加记录失败");
+            $this->return_json(E_OP_FAIL,'last - 收益表添加记录失败');
+        }
         wlog($this->log_path,"last - 收益表添加记录".$a);
+        Db::commit();
         //$res['code'] = 0;
         //$this->ajaxReturn($res,'JSON');
         //$a = $this->NotifyProcess($out_trade_no,$fee);

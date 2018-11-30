@@ -974,13 +974,20 @@ class User extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         if($type==1){//课程购买记录
-            $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,c.mode,c.type,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("addtime desc")->select();
-        }else{//专栏购买记录
-            $data['channelpay'] = db('channelpay')->alias('p')->join('live_channel c','p.channelid=c.id')->field("c.name,c.cover_url,p.*,p.fee/100 as fee")->where("p.status='finish' and p.memberid=".$this->user['id']." and ((unix_timestamp(p.expire)>unix_timestamp(now())) or ( p.expire is null))")->order("addtime desc")->select();
+            $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,c.mode,c.type,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("p.addtime desc")->select();
+        }elseif($type==2){//专栏购买记录
+            $data['channelpay'] = db('channelpay')->alias('p')->join('live_channel c','p.channelid=c.id')->field("c.name,c.cover_url,p.*,p.fee/100 as fee")->where("p.status='finish' and p.memberid=".$this->user['id']." and ((unix_timestamp(p.expire)>unix_timestamp(now())) or ( p.expire is null))")->order("p.addtime desc")->select();
             foreach($data['channelpay'] as $k => $v){
                 $sub_title = db('course')->field('name')->where(['channel_id'=>$v['channelid']])->order('clicknum','desc')->limit(2)->select();
                 $data['channelpay'][$k]['sub_title1'] = empty($sub_title[0]['name'])?'天雁商学院特级讲师':$sub_title[0]['name'];
                 $data['channelpay'][$k]['sub_title2'] = empty($sub_title[1]['name'])?'天雁商学院特级讲师':$sub_title[1]['name'];
+            }
+        }else{
+            $data['onlinebookpay']  = db('onlinebookpay')->alias('p')->join('live_onlinebooks c','p.bookid=c.id')->field("c.name,c.cover as cover_url,c.intro as sub_title1,detail as sub_title2,c.type,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("p.addtime desc")->select();
+            foreach($data['onlinebookpay'] as $k => $v){
+                //$data['onlinebookpay'][$k]['sub_title1'] = substr($v['sub_title1'],0,10).'..';
+                //$data['onlinebookpay'][$k]['sub_title2'] = substr($v['sub_title2'],0,10).'..';
+                $data['onlinebookpay'][$k]['fee'] = $v['fee']/100;
             }
         }
         $data['memberid'] = $this->user['id'];

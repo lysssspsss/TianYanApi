@@ -346,52 +346,8 @@ class Wxpay extends Base
                 break;
             default:
                 wlog($this->log_path,$product.":支付类型未定义,支付用户为：".$member['id'].":".$membername);
-            //LogController::W_H_Log($product.":支付类型未定义,支付用户为：".$member['id'].":".$membername);
         }
 
-        //LogController::W_P_Log("body参数为：".$input->GetBody());
-        /*wlog($this->log_path,"body参数为：".$input->GetBody());
-        $input->SetOut_trade_no($out_trade_no);
-        $input->SetTotal_fee($fee);
-        $input->SetTime_start(date("YmdHis"));
-        $input->SetTime_expire(date("YmdHis", time() + 600));
-        $input->SetGoods_tag($product);
-        $input->SetNotify_url(Config::get('WxPayConf_pub.NOTIFY_URL'));
-        wlog($this->log_path,"body参数为：".$input->GetBody());*/
-        //LogController::W_P_Log("支付类型为：".$_SESSION['thirdparty']);
-        /*if (!empty($_SESSION['thirdparty'])){
-            $input->SetTrade_type("MWEB");
-            $res['thirdparty']= 1;
-        }else{
-            $input->SetTrade_type("JSAPI");
-        }
-        $input->SetOpenid($openId);*/
-        /*if(input('post.Trade_type') =='NATIVE'){
-            wlog($this->log_path,"调用扫码支付");
-            //LogController::W_P_Log("调用扫码支付！");
-            $input->SetTrade_type("NATIVE");
-            $input->SetProduct_id($input->GetOut_trade_no());
-            $notify = new \NativePay();
-            $result = $notify->GetPayUrl($input);
-            $url = $result["code_url"];
-            wlog($this->log_path,"调用扫码支付!URL为：".$url);
-            //LogController::W_P_Log("调用扫码支付！URL为：".$url);
-            $res['url'] = $url;
-        }else{
-            $order = \WxPayApi::unifiedOrder($input);
-            $res['mweb_url'] = $order['mweb_url'];
-            wlog($this->log_path,"中间页为：".$res['mweb_url']);
-            wlog($this->log_path,"统一下单支付单信息");
-//            LogController::W_P_Log("订单号：".$input->getOut_trade_no());
-            foreach($order as $key=>$value){
-                //LogController::W_P_Log("$key:::$value");
-                wlog($this->log_path,"$key:::$value");
-            }
-            $jsApiParameters = $tools->GetJsApiParameters($order);
-            $jsApiParameters = json_decode($jsApiParameters);
-            $res['params'] = $jsApiParameters;
-        }*/
-        //$orderData = $input->GetValues();
         $orderData['total_fee'] = $fee;
         $orderData['time_start'] = date('YmdHis',time());
         $orderData['trade_type'] = 'APPPAY';
@@ -402,6 +358,8 @@ class Wxpay extends Base
         $orderData['paymember'] = $member['id'];
         $orderData['getmember'] = $targetmember['id'];
         $orderData['status'] = "wait";
+
+
         $aaaa = db('orders')->insert($orderData); //保存订单数据
         wlog($this->log_path,$product."保存订单数据orders：".(int)$aaaa);
         switch ($product){
