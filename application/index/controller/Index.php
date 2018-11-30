@@ -674,6 +674,22 @@ class Index extends Base
     }
 
     /**
+     * 知识头条分享
+     * @return mixed
+     */
+    public function book_share(){
+        $id = (int)input('get.id');
+        $table = db('onlinebooks');
+        $already = $table->field('id,name as title,intro as descip')->where(['id'=>$id])->find();
+        if(empty($already)){
+            $this->return_json(E_OP_FAIL,'该书籍不存在');
+        }
+        $already['url'] = FENXIANG_BOOK_URL.$id;
+        $already['img'] = OSS_URL.'/Public/img/132.jpg';
+        $this->return_json(OK,$already);
+    }
+
+    /**
      * 获取前二章节ID
      * @param $bookid
      * @return mixed

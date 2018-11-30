@@ -126,6 +126,10 @@ const FENXIANG_URL = 'https://tianyan199.com/index.php/Home/Lecture/index?id=';
  * 头条分享公众号链接
  */
 const FENXIANG_TT_URL = 'https://tianyan199.com/index.php/Home/FrontPage/detail?id=';
+/**
+ * 书籍分享公众号链接
+ */
+const FENXIANG_BOOK_URL = 'https://tianyan199.com/index.php/Home/OnlineBook/details?id=';
 
 /**
  * 七牛云 相关
