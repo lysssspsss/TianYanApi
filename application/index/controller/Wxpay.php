@@ -88,9 +88,10 @@ class Wxpay extends Base
             }
             $is = db('channelpay')->field('expire,status')->where(['memberid'=>$target,'channelid'=>$channel_id])->find();
             if(!empty($is)){
-                if($is['status']=='finish' && time()<strtotime($is['expire']))
+                if($is['status']=='finish' && time()<(int)strtotime($is['expire'])){
                     wlog($this->log_path,"专栏已购买，无需重复购买".$channel_id);
                     $this->return_json(E_OP_FAIL,'专栏已购买，无需重复购买');
+                }
             }
         }
         if (!empty($lecture_id)){

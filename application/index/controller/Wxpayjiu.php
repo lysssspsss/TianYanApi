@@ -125,7 +125,7 @@ class Wxpayjiu extends Base
             }
             $is = db('channelpay')->field('expire,status')->where(['memberid'=>$this->user['id'],'channelid'=>$channel_id])->find();
             if(!empty($is)  && $product=='pay_channel'){
-                if($is['status']=='finish' && time()<strtotime($is['expire'])){
+                if($is['status']=='finish' && time()<(int)strtotime($is['expire'])){
                     wlog($this->log_path,"专栏已购买，无需重复购买");
                     $this->return_json(E_OP_FAIL,'专栏已购买，无需重复购买');
                 }
