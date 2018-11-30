@@ -204,13 +204,13 @@ class Wxpaynotify
                     wlog($this->log_path,"更新所有关联频道状态channelpay：".$paychannel);
                 }
                 if ($type == 'pay_onlinebook'){ //更新
-                    $data['status'] = "finish";
+                    $odata['status'] = "finish";
                     //更新订单状态
-                    $aaaaa = db('onlinebookpay')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                    $aaaaa = db('onlinebookpay')->where(['out_trade_no'=>$out_trade_no])->update($odata);
                     wlog($this->log_path,"更新订单状态onlinebookpay：".$aaaaa);
                     $bookid = $earns['bookid'];
                     $book = db('onlinebooks')->find($bookid);
-                    $book_sum = $book['sumearns'] + $data['total_fee'];
+                    $book_sum = $book['sumearns'] + ($data['total_fee']*100);
                     $ccck = db('onlinebooks')->where(['id'=>$bookid])->setField("sumearns",$book_sum);
                     wlog($this->log_path,"更新onlinebooks：".$ccck);
                 }
