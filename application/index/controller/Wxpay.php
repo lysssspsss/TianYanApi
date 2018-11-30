@@ -36,7 +36,7 @@ class Wxpay extends Base
         $fee = input('post.fee');
         $target = input('post.js_memberid');
         $product = input('post.product'); // pay_onlinebook,pay_lecture 支付课程 reward 打赏讲师  pay_channel支付频道 pay_onlinebook支付在线听书 pay_reciter 最美保险声音评选  余额充值recharge
-        wlog($this->log_path,"接收参数:课程id：$lecture_id, 专栏id：$channel_id,fee:$fee,expire:$channel_expire,用户id:$target, 内容：$product");
+        wlog($this->log_path,"接收参数:课程id：$lecture_id, 专栏id：$channel_id,书id：$book_id,fee:$fee,expire:$channel_expire,用户id:$target, 内容：$product");
         $result = $this->validate(
             [
                 'lecture_id' => $lecture_id,
@@ -309,7 +309,7 @@ class Wxpay extends Base
             case 'pay_onlinebook':
                 $orderData['body'] = ($membername."支付了在线听书《".$book['name']."》".$pay_amount."元");
                 $orderData['attach'] = ($membername."支付了在线听书《".$book['name']."》".$pay_amount."元");
-                $out_trade_no =  $product.date("YmdHis").rand(0000,9999);
+                //$out_trade_no =  $product.date("YmdHis").rand(0000,9999);
                 break;
             case 'pay_register':
                 $orderData['body'] = ($membername."支付了天雁论坛会员购买".$pay_amount."元");

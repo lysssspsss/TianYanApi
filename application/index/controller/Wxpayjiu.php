@@ -245,7 +245,6 @@ class Wxpayjiu extends Base
             case 'pay_onlinebook':
                 $orderData['body'] = ($membername."支付了在线听书《".$book['name']."》".$pay_amount."元");
                 $orderData['attach'] = ($membername."支付了在线听书《".$book['name']."》".$pay_amount."元");
-                $out_trade_no =  $product.date("YmdHis").rand(0000,9999);
                 break;
             case 'pay_register':
                 $orderData['body'] = ($membername."支付了天雁论坛会员购买".$pay_amount."元");

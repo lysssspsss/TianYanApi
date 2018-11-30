@@ -28,7 +28,7 @@ class Wxpaynotify
                 //当该订单状态已经更新后再次调用时则直接返回
                 $cpay = db('orders')->field('status')->where(['out_trade_no'=>$out_trade_no])->find();
                 if (!empty($cpay)){
-                    wlog($this->log_path,'查询是否有该订单号'.json_encode($cpay));
+                    wlog($this->log_path,'回调查询是否有该订单号'.json_encode($cpay));
                     if ($cpay['status'] == 'finish'){
                         echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
                     }
@@ -38,52 +38,59 @@ class Wxpaynotify
 
                 //var_dump($total_fee,$data['total_fee']);exit;
                 //更新订单状态
-                db('orders')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                $o = db('orders')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                wlog($this->log_path,'回调更新订单状态orders：'.$o);
                 $data['total_fee'] = ($total_fee/100.00);
                 //更新用户收益
                 $order = db("orders")->where(['out_trade_no'=>$out_trade_no])->find();
                 if ($order['getmember']!=0){
                     $getmember = db("member")->find($order['getmember']);
                     $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
-                    db('member')->where("id=".$getmember['id'])->setField("sumearn",$mdata['sumearn']);
+                    $s = db('member')->where("id=".$getmember['id'])->setField("sumearn",$mdata['sumearn']);
+                    wlog($this->log_path,'回调更新用户收益member：'.$s);
                 }
 
                 //更新收益表
-                db('earns')->where(['out_trade_no'=>$out_trade_no])->setField("status",'finish');
+                $e = db('earns')->where(['out_trade_no'=>$out_trade_no])->setField("status",'finish');
+                wlog($this->log_path,'回调更新收益表earns：'.$e);
                 $earns = db('earns')->where(['out_trade_no'=>$out_trade_no])->find();
                 //\Common\Controller\LogController::W_P_Log("earns id is:".$earns['id']);
-                wlog($this->log_path,"earns id is:". $earns['id']);
+                wlog($this->log_path,"回调earns id is:". $earns['id']);
                 //更新课程表
                 $type = $earns['type'];
                 if ($earns['lectureid']){
                     $lecture = db('course')->find($earns['lectureid']);
                     $sum = $lecture['sumearns'] + ($data['total_fee']);
                     $lecdata['sumearns'] = $sum;
-                    db('course')->where(['id'=>$earns['lectureid']])->update($lecdata);
+                    $ll = db('course')->where(['id'=>$earns['lectureid']])->update($lecdata);
+                    wlog($this->log_path,"回调更新课程表1 ". $ll);
                     //"out_trade_no='".$out_trade_no."' and lecture_id=".$earns['lectureid']
                     //更新消息表
                     $msg = db('msg')->where(['out_trade_no'=>$out_trade_no,'lecture_id'=>$earns['lectureid']])->order('message_id','desc')->find();
                     if ($msg){
-                        db('msg')->where(['message_id'=>$msg['message_id']])->setField("isshow","show");
+                        $mm = db('msg')->where(['message_id'=>$msg['message_id']])->setField("isshow","show");
+                        wlog($this->log_path,"回调更新消息表". $mm);
                         $msg['isshow'] = 'show';
                         //Tools::
                         Tools::publish_msg(0,$earns['lectureid'],WORKERMAN_PUBLISH_URL,$this->tranfer($msg));
                     }
                     //\Common\Controller\LogController::W_P_Log("earns type is：".$type);
-                    wlog($this->log_path,"earns type is：". $type);
+                    wlog($this->log_path,"回调earns type is：". $type);
                     if($type == 'play'){
                         $num = $lecture['playearns']+$data['total_fee'];
                         $lecdata['playearns'] = $num;
-                        db('course')->where(['id'=>$earns['lectureid']])->update($lecdata);
+                        $sss = db('course')->where(['id'=>$earns['lectureid']])->update($lecdata);
+                        wlog($this->log_path,"回调更新课程表2 ". $sss);
                     }else if ($type=='pay'){
 
                         //更新课程支付表
                         $paycount = db('coursepay')->where(['out_trade_no'=>$out_trade_no])->setField("status",'finish');
                         //\Common\Controller\LogController::W_P_Log("更新课程支付表：".$paycount);
-                        wlog($this->log_path,"更新课程支付表：".$paycount);
+                        wlog($this->log_path,"回调更新课程支付表：".$paycount);
                         $num = $lecture['payearns']+$data['total_fee'];
                         $lecdata['payearns'] = $num;
-                        db('course')->where(['id'=>$earns['lectureid']])->update($lecdata);
+                        $ppp = db('course')->where(['id'=>$earns['lectureid']])->update($lecdata);
+                        wlog($this->log_path,"回调更新课程表3 ". $ppp);
                         $lecturer = db('earns')->where(['out_trade_no'=>$out_trade_no])->where('remarks is null')->find();
                         if(!empty($lecturer)){
                             //推送获得收益模板消息给讲师
@@ -118,9 +125,9 @@ class Wxpaynotify
                             if($lecture['reseller_enabled']){
                                 $pmember = db("member")->find($e['memberid']);
                                 $sumearns  = $pmember['sumearn'] + $e['fee'];
-                                db('member')->where(['id'=>$e['memberid']])->setField("sumearn",$sumearns);
+                                $aaab=db('member')->where(['id'=>$e['memberid']])->setField("sumearn",$sumearns);
                                 //\Common\Controller\LogController::W_P_Log("添加分销推广人".$pmember['nickname']."佣金：".$e['fee']);
-                                wlog($this->log_path,"添加分销推广人".$pmember['nickname']."佣金：".$e['fee']);
+                                wlog($this->log_path,"添加分销推广人".$pmember['nickname']."佣金：".$e['fee'].'是否成功'.$aaab);
                                 //推送获得收益模板消息给分销推广人
                                 $member['openid'] = db('member')->where(['id'=>$e['memberid']])->value('openid');
                                 $member['paymember'] = db('member')->where(['id'=>$e['memberid']])->value('nickname');
@@ -143,6 +150,7 @@ class Wxpaynotify
                     if($channel){
                         //更新频道支付表
                         $paychannel = db('channelpay')->where(['out_trade_no'=>$out_trade_no])->setField("status",'finish');
+                        wlog($this->log_path,"更新频道支付表channelpay：".$paychannel);
                         //更新频道收益
                         $channel_earns = $channel['earns'] + $data['total_fee'];
                         $chadata['earns'] = $channel_earns;
@@ -185,27 +193,32 @@ class Wxpaynotify
 
                         //处理送书逻辑
                         if ($earns['channelid'] == 454){
-                            db('onlinebookpay')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                            $payc = db('onlinebookpay')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                            wlog($this->log_path,"处理送书逻辑更新onlinebookpay：".$payc);
                         }
 
                     }
                 }
                 if ($type == 'pay_zlhd'){ //更新所有关联频道状态
                     $paychannel = db('channelpay')->where(['out_trade_no'=>$out_trade_no])->setField("status",'finish');
+                    wlog($this->log_path,"更新所有关联频道状态channelpay：".$paychannel);
                 }
                 if ($type == 'pay_onlinebook'){ //更新
                     $data['status'] = "finish";
                     //更新订单状态
-                    db('onlinebookpay')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                    $aaaaa = db('onlinebookpay')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                    wlog($this->log_path,"更新订单状态onlinebookpay：".$aaaaa);
                     $bookid = $earns['bookid'];
                     $book = db('onlinebooks')->find($bookid);
                     $book_sum = $book['sumearns'] + $data['total_fee'];
-                    db('onlinebooks')->where(['id'=>$bookid])->setField("sumearns",$book_sum);
+                    $ccck = db('onlinebooks')->where(['id'=>$bookid])->setField("sumearns",$book_sum);
+                    wlog($this->log_path,"更新onlinebooks：".$ccck);
                 }
                 if ($type == 'pay_reciter'){ //更新保险公益杯支付表
                     $data['status'] = "finish";
                     //更新订单状态
-                    db('reciterpay')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                    $cacck = db('reciterpay')->where(['out_trade_no'=>$out_trade_no])->update($data);
+                    wlog($this->log_path,"更新reciterpay：".$cacck);
                 }
             } else {
                 //$this->errorLog('微信支付返回结果签名验证失败',$data);
