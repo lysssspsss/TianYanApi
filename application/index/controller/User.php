@@ -576,7 +576,11 @@ class User extends Base
      */
     private function get_yue()
     {
-        $data['sumearn'] = Cash::memberEarnings($this->user['id']);
+        $data['sumearn'] = $this->redis->hget('memberEarnings',$this->user['id']);
+        if(empty($data['sumearn'])){
+            $data['sumearn'] = Cash::memberEarnings($this->user['id']);
+            $this->redis->hset('memberEarnings',$this->user['id'],$data['sumearn']);
+        }
         //$data['sumearn'] = $this->user['sumearn'];
         $data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
         $data['sumearn'] =  $this->floor_down($data['sumearn']);

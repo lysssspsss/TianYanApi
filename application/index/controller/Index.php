@@ -696,7 +696,6 @@ class Index extends Base
      */
    /* public function _first_two_id($bookid)
     {
-
         $where = array(
             'bookid' => $bookid
         );
