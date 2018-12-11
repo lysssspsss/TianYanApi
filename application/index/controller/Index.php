@@ -112,7 +112,7 @@ class Index extends Base
             $data['lunbo'] = array_values($lunbo);
         }
         $data['toutiao'] = $this->toutiao();
-        $data['jingxuan'] = db('course')->field('id,name,clicknum,coverimg,mode,type,memberid,channel_id')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit(4)->select();
+        $data['jingxuan'] = $this->get_jingxuan();
         $data['jingxuan'] = $this->check_js_member_id($data['jingxuan']);
         $data['todaylive'] = db('course')->field('id,name,sub_title,coverimg,mode,type,starttime,memberid,channel_id')
             ->where(['isshow'=>'show','show_on_page'=>1])
@@ -128,6 +128,18 @@ class Index extends Base
         $data['zblj'] = $yuedu[1];
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
         $this->return_json(OK,$data);
+    }
+
+    /**
+     * 获取首页每日精选
+     * @return mixed
+     */
+    private function get_jingxuan()
+    {
+        $w = date("w");
+        $rows = $w * 4;
+        $jingxuan =  db('course')->field('id,name,clicknum,coverimg,mode,type,memberid,channel_id')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit($rows,4)->select();
+        return $jingxuan;
     }
 
     /**

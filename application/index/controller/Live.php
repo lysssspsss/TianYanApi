@@ -1310,8 +1310,15 @@ class Live extends Base
         // 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName=live.aliyunlive.com&AppName=aliyuntest&StreamName=xxx&StartTime=xxx&EndTime=xxx&<公共请求参数>';
     }
 
+
+    /**
+     * 保存录播地址自动任务
+     * * * * * * /usr/bin/curl http://111.230.238.183:9527/api.php/index/live/baocun?sign=996998
+     * * * * * /usr/bin/curl https://api.tianyan199.com/api.php/index/live/baocun?sign=996998
+     */
     public function baocun()
     {
+
         $save_video_url = $this->redis->hGetAll('save_video_url');
         $url = "https://live.aliyuncs.com/?";
         if(!empty($save_video_url)){
@@ -1319,7 +1326,7 @@ class Live extends Base
             foreach($save_video_url as $key => $value){
                 $arr = json_decode($value,true);
                 $obj = new Signature($arr,$url);
-                $res = $obj->callInterface();
+                $res = $obj->callInterface();//获取阿里云录播信息
                 $str = '';
                 if(empty($res['status'])){
                     //$this->return_json(E_OP_FAIL,$res['msg']);
@@ -1333,8 +1340,9 @@ class Live extends Base
                     wlog($this->log_path, "没有找到录制的视频".$key);
                     continue;
                 }
-                $oss_obj = $oss_arr['RecordIndexInfoList']['RecordIndexInfo'][0]['OssObject'];
-                $video_url = Tools::get_oss_url_sign($oss_obj,OSS_LUZHI_TIMEOUT);
+                $count = count($oss_arr['RecordIndexInfoList']['RecordIndexInfo']);
+                $oss_obj = $oss_arr['RecordIndexInfoList']['RecordIndexInfo'][$count-1]['OssObject'];//取最后一个视频
+                $video_url = Tools::get_oss_url_sign($oss_obj,OSS_LUZHI_TIMEOUT);//获取视频地址
                 $videoinfo = ['video' => $video_url];
                 $vid = db('video')->where(['lecture_id'=>$key])->update($videoinfo);
                 if ($vid) {

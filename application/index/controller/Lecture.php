@@ -233,8 +233,8 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        if(strtotime($starttime) <= (time()+60)){
-            $this->return_json(E_ARGS,'开课时间至少要在1分钟之后');
+        if(strtotime($starttime) <= time()){
+            $this->return_json(E_ARGS,'开课时间不能在过去');
         }
         if($type == 'password_lecture'){
             if(empty($pass)){
@@ -1182,7 +1182,7 @@ class Lecture extends Base
         if(empty($starttime)){
             $starttime = date('Ymd');
         }
-        $yxqtime = strtotime($starttime)+86400;//推/拉流地址有效期
+        $yxqtime = strtotime($starttime)+86400;//推/拉流地址有效期 为讲师设置的开始时间加一天
         //$rand = time().rand(100,999);
         $rand = 0;
         $StreamName = LIVE_STREAMNAME_LEFT.$cid.rand(100,999);
