@@ -114,10 +114,7 @@ class Index extends Base
         $data['toutiao'] = $this->toutiao();
         $data['jingxuan'] = $this->get_jingxuan();
         $data['jingxuan'] = $this->check_js_member_id($data['jingxuan']);
-        $data['todaylive'] = db('course')->field('id,name,sub_title,coverimg,mode,type,starttime,memberid,channel_id')
-            ->where(['isshow'=>'show','show_on_page'=>1])
-            ->where('UNIX_TIMESTAMP(starttime) > '.strtotime(date('Ymd')))
-            ->order('starttime','desc')->limit(4)->select();
+        $data['todaylive'] = $this->get_todaylive();
         $data['todaylive'] = $this->check_js_member_id($data['todaylive']);
         /*$ranksql = "select * from live_teacherrank t inner join live_member m on t.memberid=m.id and  t.isshow=1 order by t.rank limit 8";
         $ranklist =  db()->query($ranksql);*/
@@ -131,11 +128,40 @@ class Index extends Base
     }
 
     /**
+     * 获取首页今日直播
+     * @return mixed
+     */
+    private function get_todaylive()
+    {
+        $data = db('course')->field('id,name,sub_title,coverimg,mode,type,starttime,memberid,channel_id')
+            ->where(['isshow'=>'show','show_on_page'=>1])
+            ->where('UNIX_TIMESTAMP(starttime) > '.strtotime(date('Ymd')))
+            ->order('starttime','desc')->limit(4)->select();
+        $data2 = [];
+        if(empty($data)){
+            return [];
+        }
+        foreach($data as $k => $v){
+            if(strtotime($v['starttime']) <= $_SERVER['REQUEST_TIME']){
+                $data[$k]['starttime'] = '正在直播';
+                $data2[] = $data[$k];
+                unset($data[$k]);
+            }
+        }
+        if(empty($data)){
+            return $data2;
+        }
+        $data = array_merge($data2,(array)$data);
+        return $data;
+    }
+
+    /**
      * 获取首页每日精选
      * @return mixed
      */
     private function get_jingxuan()
     {
+        //$w = date("w");
         $w = date("w");
         $rows = $w * 4;
         $jingxuan =  db('course')->field('id,name,clicknum,coverimg,mode,type,memberid,channel_id')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit($rows,4)->select();

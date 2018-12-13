@@ -233,7 +233,7 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        if(strtotime($starttime) <= time()){
+        if(strtotime($starttime)+120 <= time()){
             $this->return_json(E_ARGS,'开课时间不能在过去');
         }
         if($type == 'password_lecture'){
