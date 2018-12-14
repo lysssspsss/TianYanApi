@@ -46,24 +46,7 @@ class Index extends Base
 
     public function stock()
     {
-        /*$appkey ='';
-        $url = "http://web.juhe.cn:8080/finance/stock/hs";
-        $params = array(
-            "gid" => "",//股票编号，上海股市以sh开头，深圳股市以sz开头如：sh601009
-            "key" => $appkey,//APP Key
-        );
-        $paramstring = http_build_query($params);
-        $content = juhecurl($url,$paramstring);
-        $result = json_decode($content,true);
-        if($result){
-            if($result['error_code']=='0'){
-                print_r($result);
-            }else{
-                echo $result['error_code'].":".$result['reason'];
-            }
-        }else{
-            echo "请求失败";
-        }*/
+
     }
 
 
@@ -161,11 +144,24 @@ class Index extends Base
      */
     private function get_jingxuan()
     {
-        //$w = date("w");
         $w = date("w");
         $rows = $w * 4;
         $jingxuan =  db('course')->field('id,name,clicknum,coverimg,mode,type,memberid,channel_id')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit($rows,4)->select();
         return $jingxuan;
+    }
+
+
+    /**
+     * 查询用户是否加V认证
+     */
+    public function check_vip()
+    {
+        $verify = db('verify')->where(['memberid'=>$this->user['id'],'status'=> 'sucess'])->find();
+        if(empty($verify)){
+            $this->return_json(OK,['msg'=>'no']);
+        }else{
+            $this->return_json(OK,['msg'=>'yes']);
+        }
     }
 
     /**

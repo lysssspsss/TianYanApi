@@ -476,44 +476,11 @@ class User extends Base
         $liveroom = db('home');
         $liveroom = $liveroom->where(['memberid'=>$member['id']])->find();
         if(empty($liveroom)){
-            $homedata = array(
-                'name'=>$member['name']?$member['name']:$member['nickname'],
-                'memberid'=>$member['id'],
-                'description'=>$member['intro'],
-                'avatar_url'=>$member['headimg'],
-                'attentionnum'=>0,
-                'listennum'=>0,
-                'liveroom_qrcode_url'=>LIVEROOM_QRCODE_URL,
-                'qrcode_addtime'=>date('Y-m-d H:i:s'),
-                'addtime'=>date('Y-m-d H:i:s'),
-                'showstatus'=>"show"
-            );
-            $mcount = db("home")->insertGetId($homedata);
-            if(empty($mcount)){
+            $lecture = new Lecture();
+            $st = $lecture->add_room($member);
+            if(!empty($st['msg'])){
                 Db::rollback();
-                wlog($this->log_path,'user_update 添加直播间数据失败:'.$this->user['id']);
-                $this->return_json(E_OP_FAIL,'添加直播间数据失败');
-            }
-            //设置课程二维码
-            //插入场景
-            $expend = array(
-                'type'=>'sub_room',
-                'memberid'=>$member['id'],
-                'eventid'=>$mcount
-            );
-            $expendid = db("expend")->insertGetId($expend);
-            if(empty($expendid)){
-                Db::rollback();
-                wlog($this->log_path,'user_update 插入场景数据失败:'.$this->user['id']);
-                $this->return_json(E_OP_FAIL,'插入场景数据失败');
-            }
-            //设置二维码
-            $lecture = Factory::create_obj('lecture');
-            $b = $lecture->setqrcode($mcount,$expendid,'');
-            if(empty($b[0]) ||  empty($b[1])){
-                Db::rollback();
-                wlog($this->log_path,'user_update 设置二维码失败:'.$this->user['id']);
-                $this->return_json(E_OP_FAIL,'设置二维码失败');
+                $this->return_json(E_OP_FAIL,$st['msg']);
             }
         }else{
             $homedata = array(
@@ -532,6 +499,8 @@ class User extends Base
         Db::commit();
         $this->return_json(OK,$this->user);
     }
+
+
 
     /**
      * 获取个人信息(个人中心)

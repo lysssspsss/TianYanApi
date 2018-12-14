@@ -29,6 +29,15 @@ class Lecture extends Base
     }
 
     /**
+     * 添加课程或专栏：快速获取封面图片列表
+     */
+    public function get_fast_cover()
+    {
+        $num = mt_rand(1,20);
+        return SERVER_URL . "/public/images/cover/cover" . $num . ".jpg";
+    }
+
+    /**
      * 获取专栏信息
      */
     public function channel_view()
@@ -71,24 +80,38 @@ class Lecture extends Base
     /**
      * 添加或编辑专栏/频道
      */
-    public function channel_add_edit(){
+    public function channel_add_edit($fast = []){
         /*$a[0] = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/cover/cover1.jpg';
         $a[1] = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/cover/cover2.jpg';
         $a[2] = 'http://livehomefile.oss-cn-shenzhen.aliyuncs.com/Public/img/cover/cover3.jpg';
         var_dump(json_encode($a));exit;*/
         $member = $this->user;
-        $channel_id = input('post.channel_id');//频道ID
-        $money = input('post.money');//固定收费
-        $expire = input('post.expire');//收费后期限（单位月）
-        $year_money = input('post.year_money');//按时收费
-        //$roomid = input('post.liveroom_id');//房间ID
-        $name = input('post.name');//专栏标题
-        $channel_type = input('post.channel_type');//专栏类型：pay_channel 或 open_channel
-        $description = input('post.description');//专栏介绍
-        $js_img = input('post.js_img');//专栏介绍的图片
-        $cover_url = input('post.cover_url');//专栏封面
-        //$permanent = input('post.permanent');//
-        $priority = input('post.priority');
+        if(empty($fast)){
+            $channel_id = input('post.channel_id');//频道ID
+            $money = input('post.money');//固定收费
+            $expire = input('post.expire');//收费后期限（单位月）
+            $year_money = input('post.year_money');//按时收费
+            //$roomid = input('post.liveroom_id');//房间ID
+            $name = input('post.name');//专栏标题
+            $channel_type = input('post.channel_type');//专栏类型：pay_channel 或 open_channel
+            $description = input('post.description');//专栏介绍
+            $js_img = input('post.js_img');//专栏介绍的图片
+            $cover_url = input('post.cover_url');//专栏封面
+            //$permanent = input('post.permanent');//
+            $priority = input('post.priority');
+        }else{
+            $channel_id = '';
+            $money = $fast['money'];//固定收费
+            $expire = $fast['expire'];//收费后期限（单位月）
+            $year_money = $fast['year_money'];//按时收费
+            $name = $fast['name'];//专栏标题
+            $channel_type = $fast['channel_type'];//专栏类型：pay_channel 或 open_channel
+            $description = $fast['description'];//专栏介绍
+            $js_img = $fast['js_img'];//专栏介绍的图片
+            $cover_url = $fast['cover_url'];//专栏封面
+            $priority = $fast['priority'];
+        }
+
         $price_list = '';
         $is_pay_only_channel = 0;
         $permanent = 0;
@@ -176,6 +199,9 @@ class Lecture extends Base
         }else{
             $id = db('channel')->insertGetId($data);
         }
+        if(!empty($fast)){
+            return $id;
+        }
         if($id){
             $res['channel_id'] = $id;
             if(!empty($channel_id)){
@@ -190,25 +216,81 @@ class Lecture extends Base
         }
     }
 
+    /**
+     * 快速添加专栏
+     */
+    private function fast_channel_add()
+    {
+        $fast['money'] = 0;//固定收费
+        $fast['expire'] = '';//收费后期限（单位月）
+        $fast['year_money'] = '';//按时收费
+        $fast['name'] = $this->user['name'].'的专栏'.date('dH');//专栏标题
+        $fast['channel_type'] = 'open_channel';//专栏类型：pay_channel 或 open_channel
+        $fast['description'] = '';//专栏介绍
+        $fast['js_img']='';//专栏介绍的图片
+        $fast['cover_url'] = $this->get_fast_cover();
+        $fast['priority'] = '';
+        $id = $this->channel_add_edit($fast);
+        return $id;
+    }
+
+    /**
+     * 快速添加课程
+     */
+    public function fast_lecture_add()
+    {
+        $fast['name'] = input('post.name');//课程标题
+        $fast['coverimg'] = !empty(input('post.coverimg'))?input('post.coverimg'):$this->get_fast_cover();//课程封面
+        $fast['starttime'] = date('Y-m-d H:i:s',$_SERVER['REQUEST_TIME']);//开始时间
+        $fast['type'] = 'open_lecture';
+        $fast['pass'] = '';
+        $fast['cost'] = '0.00';
+        $fast['mode'] = 'vedio';
+        $channel = $cover = db('channel')->field('id')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'] ." and type = 'open_channel'" )->order('id','desc')->find();
+        if(empty($channel)){
+            $fast['channel_id'] = $this->fast_channel_add();
+        }else{
+            $fast['channel_id'] = $channel['id'];
+        }
+        $this->lecture_add($fast);
+    }
+
+
 
 
     /**
      * 添加课程
      */
-    public function lecture_add()
+    public function lecture_add($fast = [])
     {
         wlog($this->log_path,"add_lecture 进入保存课程方法");
-        $name = input('post.name');//课程标题
-        $starttime = input('post.starttime');//开始时间
-        $type = input('post.type');//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
-        $pass = input('post.pass');//课程密码
-        $cost = input('post.cost');//课程费用
-        $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
-        $channel_id = input('post.channel_id');
-        $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
-        $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
-        $tag = input('post.tag');
-        $labels = input('post.labels');
+        if(empty($fast)){
+            $name = input('post.name');//课程标题
+            $starttime = input('post.starttime');//开始时间
+            $type = input('post.type');//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
+            $pass = input('post.pass');//课程密码
+            $cost = input('post.cost');//课程费用
+            $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
+            $channel_id = input('post.channel_id');
+            $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
+            $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
+            $tag = input('post.tag');
+            $labels = input('post.labels');
+            $coverimg = $this->get_fast_cover();
+        }else{
+            $name = $fast['name'];//课程标题
+            $starttime = $fast['starttime'];//开始时间
+            $type = $fast['type'];//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
+            $pass = $fast['pass'];//课程密码
+            $cost = $fast['cost'];//课程费用
+            $mode = $fast['mode'];//课程模式：picture图文模式，video视频模式，ppt模式
+            $channel_id = $fast['channel_id'];
+            $coverimg = $fast['coverimg'];
+            $reseller_enabled = 0;
+            $resell_percent = 0;
+            $tag = '';
+            $labels = '';
+        }
         //数据验证
         $result = $this->validate(
             [
@@ -249,11 +331,12 @@ class Lecture extends Base
         if(empty($channel_id)){
             $channel_id = BANZHUREN;
         }
-        $livehome = db('home')->field('id')->where(['memberid'=>$this->user['id']])->find();
 
-        if(empty($livehome)){
-            $this->return_json(E_OP_FAIL,'请先在 我的-编辑资料 完善个人信息');
+        $verify = db('verify')->where(['memberid'=>$this->user['id'],'status'=> 'sucess'])->find();
+        if(empty($verify) && $this->user['isauth'] == 'wait'){
+            $this->return_json(E_OP_FAIL,'请先加V认证再新建课程');
         }
+
         //$member = $this->user;
         //$livehome = db('home')->field('id')->where(['memberid' => $this->user['id']])->find();
         $channel = db('channel')->field("id,category,is_pay_only_channel")->where("id=".$channel_id)->find();
@@ -264,7 +347,19 @@ class Lecture extends Base
         if($channel['category'] == 'businesscollege' || $channel['category'] == 'air'){
             $show_on_page = 0;
         }
-
+        //开启事务
+        Db::startTrans();
+        $livehome = db('home')->field('id')->where(['memberid'=>$this->user['id']])->find();
+        if(empty($livehome)){
+            //$this->return_json(E_OP_FAIL,'请先在 我的-编辑资料 完善个人信息');
+            $st = $this->add_room($this->user);
+            if(!empty($st['msg'])){
+                Db::rollback();
+                $this->return_json(E_OP_FAIL,$st['msg']);
+            }else{
+                $livehome['id'] = $st;
+            }
+        }
         $data = array(
             'memberid' => $this->user['id'],
             'live_homeid' => $livehome['id'],
@@ -283,7 +378,7 @@ class Lecture extends Base
             'pass' => $pass,
             'cost' => $cost ? $cost : 0,
             'channel_id' => $channel_id,
-            'coverimg' => SERVER_URL. "/public/images/cover1.jpg",
+            'coverimg' => $coverimg,
             'reseller_enabled' => empty($reseller_enabled)?0:$reseller_enabled,
             'resell_percent' => empty($resell_percent)?0:$resell_percent,
             'tag' => $tag,
@@ -293,12 +388,12 @@ class Lecture extends Base
         $exist_courses = db('course')->where(['name'=>$data['name']])->select();
         //判断该课程是否已建，已建的不再新建
 
-        //开启事务
-        Db::startTrans();
+
         //try {
             if (!$exist_courses) {
                 $cid = Db::name('course')->insertGetId($data);
             } else {
+                Db::rollback();
                 $this->return_json(E_OP_FAIL, '已存在同名课程！');
             }
             if ($cid) {
@@ -1107,6 +1202,58 @@ class Lecture extends Base
                 }
             }
         }
+    }
+
+    /**
+     * 添加home表的直播间信息
+     * @param $member
+     * @return array|bool
+     */
+    public function add_room($member = [])
+    {
+        $homedata = array(
+            'name'=>$member['name']?$member['name']:$member['nickname'],
+            'memberid'=>$member['id'],
+            'description'=>$member['intro'],
+            'avatar_url'=>$member['headimg'],
+            'attentionnum'=>0,
+            'listennum'=>0,
+            'liveroom_qrcode_url'=>LIVEROOM_QRCODE_URL,
+            'qrcode_addtime'=>date('Y-m-d H:i:s'),
+            'addtime'=>date('Y-m-d H:i:s'),
+            'showstatus'=>"show"
+        );
+        $mcount = db("home")->insertGetId($homedata);
+        if(empty($mcount)){
+            //Db::rollback();
+            wlog($this->log_path,'user_update 添加直播间数据失败:'.$this->user['id']);
+            return ['status'=>'error','msg'=>'添加直播间数据失败'];
+            //$this->return_json(E_OP_FAIL,'添加直播间数据失败');
+        }
+        //设置课程二维码
+        //插入场景
+        $expend = array(
+            'type'=>'sub_room',
+            'memberid'=>$member['id'],
+            'eventid'=>$mcount
+        );
+        $expendid = db("expend")->insertGetId($expend);
+        if(empty($expendid)){
+            //Db::rollback();
+            wlog($this->log_path,'user_update 插入场景数据失败:'.$this->user['id']);
+            return ['status'=>'error','msg'=>'插入场景数据失败'];
+            //$this->return_json(E_OP_FAIL,'插入场景数据失败');
+        }
+        //设置二维码
+        //$lecture = Factory::create_obj('lecture');
+        $b = $this->setqrcode($mcount,$expendid,'');
+        if(empty($b[0]) ||  empty($b[1])){
+            //Db::rollback();
+            wlog($this->log_path,'user_update 设置二维码失败:'.$this->user['id']);
+            return ['status'=>'error','msg'=>'设置二维码失败'];
+            //$this->return_json(E_OP_FAIL,'设置二维码失败');
+        }
+        return $mcount;
     }
 
 
