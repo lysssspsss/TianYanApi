@@ -1,6 +1,7 @@
 <?php
 namespace app\index\controller;
 use app\tools\controller\Tools;
+use app\index\controller\Live;
 use app\index\controller\User;
 use think\Request;
 use think\Db;
@@ -503,8 +504,9 @@ class Lecture extends Base
         }*/
         if($this->is_live){
             //unset($_POST);
+            sleep(2);
             $live = new Live();
-            $live->classroom($cid);//直接返回直播间信息
+            $live->classroom($cid);
         }
         $this->return_json(OK,$data);
     }
