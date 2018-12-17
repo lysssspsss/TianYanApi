@@ -418,8 +418,9 @@ class Base extends Controller
 
     /**
      * 生成用户redis
-     * @param $url
-     * @return string
+     * @param $memberid 用户ID
+     * @param bool $refresh 是否刷新redis缓存
+     * @return bool
      */
     protected function get_user_redis($memberid,$refresh = false)
     {

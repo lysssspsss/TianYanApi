@@ -156,8 +156,9 @@ class Index extends Base
      */
     public function check_vip()
     {
+        $this->get_user_redis($this->user['id']);
         $verify = db('verify')->where(['memberid'=>$this->user['id'],'status'=> 'sucess'])->find();
-        if(empty($verify)){
+        if(empty($verify) && $this->user['isauth']=='wait'){
             $this->return_json(OK,['msg'=>'no']);
         }else{
             $this->return_json(OK,['msg'=>'yes']);
