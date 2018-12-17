@@ -241,8 +241,17 @@ class Lecture extends Base
     public function fast_lecture_add()
     {
         $fast['name'] = input('post.name');//课程标题
-        $this->is_live = empty(input('post.is_live')) ? 0 : 1;//返回数据类型 1.返回直播间信息 2.返回课程信息
-        $fast['coverimg'] = !empty(input('post.coverimg'))?input('post.coverimg'):$this->get_fast_cover();//课程封面
+        $this->is_live = input('post.is_live');//返回数据类型 1.返回直播间信息 2.返回课程信息
+        if(!empty($this->is_live)){
+            $this->is_live = 1;
+        }else{
+            $this->is_live = 0;
+        }
+        //$fast['coverimg'] = !empty(input('post.coverimg'))?input('post.coverimg'):$this->get_fast_cover();//课程封面
+        $fast['coverimg'] = input('post.coverimg');//课程封面
+        if(empty($fast['coverimg'])){
+            $fast['coverimg'] = $this->get_fast_cover();
+        }
         $fast['starttime'] = date('Y-m-d H:i:s',$_SERVER['REQUEST_TIME']);//开始时间
         $fast['type'] = 'open_lecture';
         $fast['pass'] = '';
@@ -493,7 +502,7 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'创建新课程失败 已回滚');
         }*/
         if($this->is_live){
-            unset($_POST);
+            //unset($_POST);
             $live = new Live();
             $live->classroom($cid);//直接返回直播间信息
         }

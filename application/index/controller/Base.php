@@ -623,7 +623,9 @@ class Base extends Controller
             //return false;
         }
 
-        if (!defined('CLIENT_IP')) { define('CLIENT_IP', getenv('HTTP_X_FORWARDED_FOR') ? getenv('HTTP_X_FORWARDED_FOR') : getenv('REMOTE_ADDR')); }
+        if (!defined('CLIENT_IP')) {
+            define('CLIENT_IP', getenv('HTTP_X_FORWARDED_FOR') ? getenv('HTTP_X_FORWARDED_FOR') : getenv('REMOTE_ADDR'));
+        }
         //$chk_string = CLIENT_IP.':'.$_SERVER['REQUEST_URI'];
         $chk_string = CLIENT_IP.':'.$_SERVER['REQUEST_URI'].':'.$post_string;
         $redis_key = 'api-repeat:'.md5($chk_string);
