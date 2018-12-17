@@ -10,6 +10,8 @@ class Factory
                 return new WeChat();
             case 'lecture':
                 return new Lecture();
+            case 'live':
+                return new Live();
             default:
                 throw new Exception('type error!');
         }
