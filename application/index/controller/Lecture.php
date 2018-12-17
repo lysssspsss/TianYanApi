@@ -493,6 +493,7 @@ class Lecture extends Base
             $this->return_json(E_OP_FAIL,'创建新课程失败 已回滚');
         }*/
         if($this->is_live){
+            unset($_POST);
             $live = new Live();
             $live->classroom($cid);//直接返回直播间信息
         }
