@@ -504,8 +504,10 @@ class Lecture extends Base
         }*/
         if($this->is_live){
             //unset($_POST);
-            sleep(2);
+            /*sleep(2);
             $live = new Live();
+            $live->classroom($cid);*/
+            $live = controller('Live');
             $live->classroom($cid);
         }
         $this->return_json(OK,$data);
