@@ -64,19 +64,26 @@ class Lecture extends Base
     /**
      * 获取用户所有专栏列表
      */
-    public function get_member_channel()
+    public function get_member_channel($is = 0,$memberid = '')
     {
         /*$memberid = input('get.js_memberid');
         $result = $this->validate(['memberid' => $memberid],['memberid'  => 'require|number']);
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }*/
-        $data = db('channel')->field('id as channel_id,name')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
+        if(empty($memberid)){
+            $memberid = $this->user['id'];
+        }
+        $data = db('channel')->field('id as channel_id,name')->where('memberid='.$memberid.' or '.'lecturer='.$memberid)->select();
         if(empty($data)){
             $data[0]['channel_id'] = BANZHUREN;
             $data[0]['name'] = '天雁商学院';
         }
-        $this->return_json(OK,$data);
+        if($is){
+            return $data;
+        }else{
+            $this->return_json(OK,$data);
+        }
     }
 
     /**
@@ -504,11 +511,11 @@ class Lecture extends Base
         }*/
         if($this->is_live){
             //unset($_POST);
-            sleep(2);
+            /*sleep(2);
             $live = new Live();
-            $live->classroom($cid);
-           /* $live = controller('Live');
             $live->classroom($cid);*/
+            $live = controller('Live');
+            $live->classroom($cid);
         }
         $this->return_json(OK,$data);
     }
@@ -717,16 +724,13 @@ class Lecture extends Base
         if(empty($lecture)){
             $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
-        $lecture['mode'] = $this->set_lecture_mode($lecture['mode'],$lecture_id);
-        /*if($lecture['mode'] == 'video' || $lecture['mode'] == 'vedio'){
-            $lecture['mode'] = 'vedio';
-            $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id,'is_app'=>'1'])->find();
-            if(!empty($video)){
-                if(strstr($video['video'],'rtmp')){
-                    $lecture['mode'] = 'live';//直播类型
-                }
-            }
-        }*/
+        $mode = $this->set_lecture_mode($lecture['mode'],$lecture_id);
+        $lecture['mode'] = $mode[0];
+        if($lecture['mode'] == 'vedio'){
+            $lecture['push_url'] = $mode[1]['push_url'];
+            $lecture['pull_url'] = $mode[1]['pull_url'];
+        }
+
         if(empty($lecture['channel_id'])){
             $lecture['channel_id'] = BANZHUREN;
         }
@@ -754,6 +758,11 @@ class Lecture extends Base
 
         $lecture['name'] = $jiangshi['name'];
 
+        $starttimes = strtotime($lecture['starttime']);
+        $lecture['countdown'] = $starttimes - time();//倒计时
+        if($lecture['countdown']<0){
+            $lecture['countdown'] = 0;
+        }
         if (!empty($lecture['live_homeid'])) {
             $manager = db('home_manager')->field('id')->where('homeid=' . $lecture['live_homeid'] . ' AND beinviteid=' . $this->user['id'])->find();
         }
@@ -814,6 +823,7 @@ class Lecture extends Base
         }else{
             $shareTitle = $lecture['title'];
         }
+
         $result['shareTitle'] = $shareTitle;
         $this->return_json(OK,$result);
     }
@@ -931,6 +941,7 @@ class Lecture extends Base
             $shareTitle = $channel['title'];
         }
         $result['shareTitle'] = $shareTitle;
+        $result['ct_list'] = $this->get_member_channel(1,$jiangshi['js_memberid']);//获取该专栏的讲师的其他专栏
         $this->return_json(OK,$result);
     }
 
@@ -1024,6 +1035,7 @@ class Lecture extends Base
                     $this->return_json(E_OP_FAIL,'找不到对应课程');
                 }
                 $lecture['mode'] = $this->set_lecture_mode($lecture['mode'],$lecture_id);
+                $lecture['mode'] = $lecture['mode'][0];
                 if(empty($lecture['channel_id'])){
                     $lecture['channel_id'] = BANZHUREN;
                 }
@@ -1089,20 +1101,21 @@ class Lecture extends Base
      * 设置课程的mode
      * @param $mode
      * @param $lecture_id
-     * @return string
+     * @return array
      */
     private function set_lecture_mode($mode,$lecture_id)
     {
+        $video = [];
         if($mode == 'video' || $mode == 'vedio'){
             $mode = 'vedio';//统一为vedio
-            $video = db('video')->field('video')->where(['lecture_id'=>$lecture_id,'is_app'=>'1'])->find();
+            $video = db('video')->field('video as pull_url,push_url')->where(['lecture_id'=>$lecture_id,'is_app'=>'1'])->find();
             if(!empty($video)){
-                if(strstr($video['video'],'rtmp')){
+                if(strstr($video['pull_url'],'rtmp')){
                     $mode = 'live';//直播类型
                 }
             }
         }
-        return $mode;
+        return [$mode,$video];
     }
 
     /**

@@ -91,7 +91,6 @@ class Live extends Base
         if ($lecture['mode']=='video' || $lecture['mode']=='vedio'){
             $lecture['mode'] = 'vedio';
             $vedio = db('video')->where(['lecture_id'=>$lecture_id,'isshow'=>'show'])->select();
-            //var_dump($vedio);exit;
             if(!empty($vedio)){
                 foreach($vedio as $k => $v){
                     if(strstr($v['video'],'rtmp')){
@@ -208,14 +207,22 @@ class Live extends Base
             $data['lecture_id'] = $lecture['id'];
             Tools::publish_msg(0,$lecture['id'],WORKERMAN_PUBLISH_URL,json_encode($data));*/
         }
-        $img = empty($this->user['img'])?$this->user['headimg']:$this->user['img'];
-        $this->redis->set(REDIS_LIVE_PEOPLE.':'.$lecture['id'].':'.$this->user['id'],$img,1200);//纪录当前在线人员
 
-        //获取所有在线人员
-        $keys = $this->redis->keys(REDIS_LIVE_PEOPLE.':'.$lecture['id'].'*');
-        //$img_arr = $this->redis->mget($keys);
-        $result['live_people'] = $this->redis->mget($keys);
+        $result['live_people'] = $this->get_live_people($lecture_id);
         $this->return_json(OK,$result);
+    }
+
+    /**
+     * 获取所有在线人员
+     * @param $lecture_id
+     * @return array
+     */
+    public function get_live_people($lecture_id)
+    {
+        $img = empty($this->user['img'])?$this->user['headimg']:$this->user['img'];
+        $this->redis->set(REDIS_LIVE_PEOPLE.':'.$lecture_id.':'.$this->user['id'],$img,1200);//纪录当前在线人员
+        $keys = $this->redis->keys(REDIS_LIVE_PEOPLE.':'.$lecture_id.'*');
+        return $this->redis->mget($keys);
     }
 
 
@@ -595,7 +602,7 @@ class Live extends Base
                     'desired_count'  => 'number',
                     'reverse'  => 'in:0,1',
                     'js_memberid'  => 'require|number',
-                    'type'  => 'require|in:1,2',
+                    'type'  => 'require|in:1,2,3',
                     'page'  => 'number',
                 ]
             );
@@ -723,7 +730,7 @@ class Live extends Base
                     }
                 }
                 $listmsg = array_values($listmsg_bak);
-            }else{
+            }elseif($type == 2){
                 foreach($listmsg as $key=> $value){
                     if(in_array($value['sender_id'],$js_arr)){
                         unset($listmsg[$key]);
@@ -742,6 +749,7 @@ class Live extends Base
             $listmsg = array_values($listmsg);
         }
         $res['data'] = $listmsg;
+        $res['live_people'] = $this->get_live_people($lecture_id);
         $res['mark'] = $start_date;
         $res['count'] = $allcount;
         $this->return_json(OK,$res);
