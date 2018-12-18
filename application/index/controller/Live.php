@@ -194,8 +194,9 @@ class Live extends Base
         //$this->assign("invetelist", $arr_invete);
         $result['invetelist'] = $arr_invete;
         //更新人气
-        $cmember = $this->user;
-        if ($cmember['id'] != $lecture['memberid']) {
+        //$cmember = $this->user;
+
+        if ($this->user['id'] != $lecture['memberid']) {
             $lecdata = array(
                 'clicknum' => $lecture['clicknum'] + 1,
             );
@@ -207,6 +208,13 @@ class Live extends Base
             $data['lecture_id'] = $lecture['id'];
             Tools::publish_msg(0,$lecture['id'],WORKERMAN_PUBLISH_URL,json_encode($data));*/
         }
+        $img = empty($this->user['img'])?$this->user['headimg']:$this->user['img'];
+        $this->redis->set(REDIS_LIVE_PEOPLE.':'.$lecture['id'].':'.$this->user['id'],$img,1200);//纪录当前在线人员
+
+        //获取所有在线人员
+        $keys = $this->redis->keys(REDIS_LIVE_PEOPLE.':'.$lecture['id'].'*');
+        //$img_arr = $this->redis->mget($keys);
+        $result['live_people'] = $this->redis->mget($keys);
         $this->return_json(OK,$result);
     }
 

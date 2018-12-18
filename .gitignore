@@ -9,3 +9,5 @@ application/log/
 .idea
 access_token.php
 public/qrcode
+public/video
+public/audio

@@ -115,6 +115,7 @@ const REDIS_EXPIRE_1H = 3600;          // 过期时间 1 小时
 const REDIS_EXPIRE_1D = 86400;        // 过期时间 1 天
 const REDIS_EXPIRE_2D = 172800;       // 过期时间 2 天
 const REDIS_YZM_KEY = 'verify_code'; //验证码键值
+const REDIS_LIVE_PEOPLE = 'live_people'; //验证码键值
 
 
 

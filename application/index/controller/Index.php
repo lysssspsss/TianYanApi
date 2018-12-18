@@ -781,6 +781,10 @@ class Index extends Base
         return $result;
     }
 
+    /**
+     * 获取阅读时光的死数据
+     * @return array
+     */
     private function get_yuedu_die_data()
     {
         $groom = array(
