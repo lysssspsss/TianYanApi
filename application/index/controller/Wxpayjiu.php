@@ -230,8 +230,9 @@ class Wxpayjiu extends Base
                 }
                 //$input->SetBody(($membername)."打赏了 ".$tmembername." ".$pay_amount."元红包");
                 //$input->SetAttach(($membername)."打赏了 ".$tmembername." ".$pay_amount."元红包");
-                $orderData['body'] = ($membername)."打赏了 ".$tmembername." ".$pay_amount."元红包";
-                $orderData['attach'] = ($membername)."打赏了 ".$tmembername." ".$pay_amount."元红包";
+                /*$orderData['body'] = ($membername)."打赏了 ".$tmembername." ".$pay_amount."元红包";
+                $orderData['attach'] = ($membername)."打赏了 ".$tmembername." ".$pay_amount."元红包";*/
+                $orderData['attach'] = $orderData['body'] = $this->get_pay_param($membername,$tmembername,$pay_amount);
                 break;
             case 'recharge':
                 $orderData['body'] = ($membername)."充值了".$pay_amount."个天雁币";

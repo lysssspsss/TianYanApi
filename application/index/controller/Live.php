@@ -325,7 +325,7 @@ class Live extends Base
             if(in_array(0,$b)){
                 $this->return_json(E_OP_FAIL,'取消关注失败');
             }
-            $this->return_json(OK,['cmemberid'=>$this->user['id'],'isattention'=>0,'msg'=>'取消关注成功']);
+            $this->return_json(OK,['cmemberid'=>$this->user['id'], 'isattention' => 0, 'msg'=>'取消关注成功']);
         }
     }
 
@@ -567,6 +567,40 @@ class Live extends Base
     }
 
 
+    /**
+     * 获取送礼物记录
+     */
+    public function get_reward_messages()
+    {
+        $lecture_id = (int)input('get.lecture_id'); //课程id
+        $field = 'message_id,content';
+        $listmsg = db('msg')->field($field)->where(['lecture_id'=>$lecture_id,'isshow'=>'show','lecture_id'=>$lecture_id,'message_type'=>'reward'])->order("message_id desc")->select();
+        $data['count'] = 0;
+        $data['people'] = 0;
+        if(empty($listmsg)){
+            $data['msg'] = '还没有人给讲师送礼物喔';
+            $data['list'] = [];
+        }else{
+            foreach($listmsg as $key => $value){
+                $cc = explode(' ',$value['content']);
+                $pattern = '/(\d+)\.(\d+)/is';
+                //preg_match_all($pattern, end($cc), $match);
+                preg_match($pattern,end($cc),$arr);//提取出带小数的数字
+                if(empty($arr)){
+                    preg_match('/\d+/',end($cc),$arr2);//没有带小数的数字，提取出整型
+                    $arr = $arr2;
+                }
+                if(empty($arr[0])){
+                    $arr[0] = 0;
+                }
+                $data['count'] += (int)$arr[0];//累加金额
+            }
+            $data['people'] = count($listmsg);//人数
+            $data['msg'] = '';//消息
+            $data['list'] = $listmsg;//送礼物记录列表
+        }
+       $this->return_json(OK,$data);
+    }
 
     /**
      * 获取初始聊天信息
@@ -849,7 +883,7 @@ class Live extends Base
 
 
 
-    //发送文件相关的消息：包括语音，图片，视频
+    //发送文件相关的消息：包括语音，图片，视频 此函数暂时没用
     public function send_file_message()
     {
         $member = $this->user;
@@ -1328,7 +1362,7 @@ class Live extends Base
 
 
     /**
-     * 保存录播地址自动任务
+     * 保存录播地址crontab自动任务
      * * * * * * /usr/bin/curl http://111.230.238.183:9527/api.php/index/live/baocun?sign=996998
      * * * * * /usr/bin/curl https://api.tianyan199.com/api.php/index/live/baocun?sign=996998
      */
@@ -1369,7 +1403,6 @@ class Live extends Base
                     continue;
                     //$this->return_json(E_OP_FAIL, '修改视频信息失败');
                 }
-               
             }
             $this->return_json(OK,['msg' => '完成']);
         }else{

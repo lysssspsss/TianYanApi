@@ -644,9 +644,24 @@ class Base extends Controller
     } /* }}} */
 
 
-    protected function get_pay_param()
+    /**
+     * 获取打赏文字信息
+     * @param $membername
+     * @param $tmembername
+     * @param $pay_amount
+     * @return string
+     */
+    protected function get_pay_param($membername,$tmembername,$pay_amount)
     {
-
+        switch ($pay_amount){
+            case 2: return $membername.'送了'.$tmembername.'一颗闪亮星星 '.$pay_amount.'天雁币';break;
+            case 6: return $membername.'送了'.$tmembername.'一个怦然心动 '.$pay_amount.'天雁币';break;
+            case 9: return $membername.'送了'.$tmembername.'一座黄金屋 '.$pay_amount.'天雁币';break;
+            case 66: return $membername.'送了'.$tmembername.'一枚真爱火箭 '.$pay_amount.'天雁币';break;
+            case 88: return $membername.'送了'.$tmembername.'一枚颗永恒钻石'.$pay_amount.'天雁币';break;
+            case 520: return $membername.'送了'.$tmembername.'一顶无冕冠军 '.$pay_amount.'天雁币';break;
+            default: return $membername.'打赏了'.$tmembername.$pay_amount.'元红包';break;
+        }
     }
 
     /**
