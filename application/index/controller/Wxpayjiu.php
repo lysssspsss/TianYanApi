@@ -137,11 +137,11 @@ class Wxpayjiu extends Base
             if(empty($lecture)){
                 $this->return_json(E_OP_FAIL,'没有此课程');
             }
-            if(($lecture['cost']*100) != $fee){
-                $this->return_json(E_OP_FAIL,'支付的费用与课程价格不匹配');
-            }
             $is = db('coursepay')->field('id,status')->where(['memberid'=>$this->user['id'],'courseid'=>$lecture_id])->find();
             if(!empty($is) && $product=='pay_lecture'){
+                if(($lecture['cost']*100) != $fee){
+                    $this->return_json(E_OP_FAIL,'支付的费用与课程价格不匹配');
+                }
                 if($is['status']=='finish'){
                     wlog($this->log_path,"课程已购买，无需重复购买");
                     $this->return_json(E_OP_FAIL,'课程已购买，无需重复购买');
