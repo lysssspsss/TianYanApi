@@ -225,6 +225,24 @@ class Live extends Base
         return $this->redis->mget($keys);
     }
 
+    /**
+     * 提前开播，修改开始时间
+     */
+    public function set_starttime()
+    {
+        $lecture_id = (int)input('post.lecture_id');
+        if(empty($lecture_id)){
+            $this->return_json(E_ARGS,'lecture_id为空');
+        }
+        $lecdata['starttime'] = date('Y-m-d H:i');
+        $a = db('course')->where(['id'=>$lecture_id])->update($lecdata);
+        if($a){
+            $this->return_json(OK,['countdown'=>'0']);
+        }else{
+            $this->return_json(E_OP_FAIL,'修改开课时间失败');
+        }
+    }
+
 
     /**
      * 设置直播间
