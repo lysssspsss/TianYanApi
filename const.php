@@ -1,7 +1,7 @@
 <?php
 const MY_CHANNEL_NAME = "TD_CHANNEL_ID";
 const FING_TAG = 0;//发现fragment控制标示
-
+const VERSION = '1.4.0';//APP版本
 
 /**
  * 网络请求端口
