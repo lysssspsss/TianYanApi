@@ -727,10 +727,9 @@ class Lecture extends Base
         $mode = $this->set_lecture_mode($lecture['mode'],$lecture_id);
         $lecture['mode'] = $mode[0];
         if($lecture['mode'] == 'vedio'){
-            $lecture['push_url'] = $mode[1]['push_url'];
-            $lecture['pull_url'] = $mode[1]['pull_url'];
+            $lecture['push_url'] = empty($mode[1]['push_url']) ? 0 :$mode[1]['push_url'];
+            $lecture['pull_url'] = empty($mode[1]['pull_url']) ? 0 :$mode[1]['pull_url'];
         }
-
         if(empty($lecture['channel_id'])){
             $lecture['channel_id'] = BANZHUREN;
         }
