@@ -107,6 +107,7 @@ class Index extends Base
         $data['mtts'] = $yuedu[0];
         $data['zblj'] = $yuedu[1];
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
+        $data['version'] = '1.3.0';
         $this->return_json(OK,$data);
     }
 
@@ -846,9 +847,9 @@ class Index extends Base
     public function about()
     {
         if($this->source == 'ANDROID'){
-            $banben = '1.0.4';
+            $banben = '1.3.0';
         }else{
-            $banben = '1.0.5';
+            $banben = '1.3.0';
         }
         $content = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>关于我们</title></head><body style="background-color:#fa4649 ;position:relative;"><div style="width: 100%; height: auto;"><img src="'.SERVER_URL.'/public/images/about.png" style="width: 100%;"></div><div style="width: 100%; height: 5%;position:fixed;left:0;padding-bottom:10px;bottom:26%;"><p style="float: left; margin-left: 5%;margin-bottom: 1%; color: white;font-family:\'黑体\';font-size:1.2rem;">当前版本 '.$banben.'<br/></p></div><div style="background-color:white;width:100%; height: 22%; position:fixed; left:0; bottom:0;color: #fa4649; "><p style="margin: 15% auto auto 5%;font-size: 1rem;">天雁商学院会员协议 </p><p style="margin: auto auto auto 5%;font-size: 1rem;">Copyright © 2017 www.tianyan.cn ALL Rights Reserved.</p></div></body></html>';
         //echo $content;
