@@ -567,7 +567,7 @@ class User extends Base
         if($this->source == 'IOS'){//IOS版和安卓版區別對待
             if($this->user['title']=='lecturer' || $this->user['isauth'] == 'pass'){
                 $data = $this->get_yue();
-                $data['can_withdraw'] = $data['can_withdraw']+ $this->user['money'];
+                $data['can_withdraw'] = $this->user['money'];
                 unset($data['sumearn']);
             }else{
                 $data['can_withdraw'] = $this->user['money'];
