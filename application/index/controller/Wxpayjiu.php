@@ -363,7 +363,7 @@ class Wxpayjiu extends Base
                 $data['message_type'] = $product;
                 $data['sender_nickname'] = $member['nickname'];
                 $data['add_time'] = $add_time;
-                $data['content'] = ($membername)."打赏了 " . ($tmembername). " ".$pay_amount . "元红包";
+                $data['content'] = $this->get_pay_param($membername,$tmembername,$pay_amount);
                 $data['length'] = 0;
                 //$data['ppt_id'] = null;
                 $data['ppt_url'] = null;
