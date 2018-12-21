@@ -680,6 +680,7 @@ class Wxpayjiu extends Base
                 }else{//其他更新被付款用户总收益
                     $mdata['sumearn'] = $getmember['sumearn'] + ($data['total_fee']);
                     $aaaa = db('member')->where(['id'=>$getmember['id']])->setField('sumearn',$mdata['sumearn']);
+                    //$aaaa = db('member')->where("id=".$getmember['id'])->update(['sumearn'=>$mdata['sumearn']]);
                     wlog($this->log_path,"更新用户受益 sumearn：". (int)$aaaa);
                 }
             }
@@ -688,9 +689,6 @@ class Wxpayjiu extends Base
                 $paymember = db('member')->field('id,sumearn,money')->find($order['paymember']);
                 //$sumearn = $paymember['sumearn'] - ($data['total_fee']);
                 $money = $paymember['money'] - ($data['total_fee']);
-                /*if($sumearn<0 || $money<0){
-                    $this->return_json(E_OP_FAIL,'余额不足');
-                }*/
                 $ccc = db('member')->where("id=".$paymember['id'])->update(['money'=>$money]);
                 wlog($this->log_path,"减少购买商品的用户余额 money：". (int)$ccc);
             }
@@ -852,7 +850,10 @@ class Wxpayjiu extends Base
                 wlog($this->log_path,"更新保险公益杯支付表reciterpay表：". (int)$hhhhh);
             }
             wlog($this->log_path,"+++++充值成功+++++");
-            $this->get_user_redis($this->user['id']);
+            $this->get_user_redis($order['paymember']);
+            $this->get_user_redis($order['getmember']);
+            $this->redis->hdel('memberEarnings',$order['paymember']);
+            $this->redis->hdel('memberEarnings',$order['getmember']);
             $this->return_json(OK,['msg'=>'success']);
             //return true;
         }else{

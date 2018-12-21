@@ -520,9 +520,9 @@ class User extends Base
         //$data['sumearn'] = Cash::memberEarnings($this->user['id']);
         //$data['can_withdraw'] = $data['sumearn'] - $this->user['useearn'] - $this->user['unpassnum'];
         if($this->source == 'IOS'){
-            if($this->user['title']=='lecturer'){
+            if($this->user['title']=='lecturer' || $this->user['isauth'] == 'pass'){
                 $data = $this->get_yue();
-                $data['can_withdraw'] = $data['can_withdraw'] + $this->user['money'];
+                $data['can_withdraw'] = $this->user['money'];
                 //unset($data['sumearn']);
             }else{
                 $data['can_withdraw'] = $this->user['money'];
@@ -565,7 +565,7 @@ class User extends Base
     {
         $this->get_user_redis($this->user['id'],true);
         if($this->source == 'IOS'){//IOS版和安卓版區別對待
-            if($this->user['title']=='lecturer'){
+            if($this->user['title']=='lecturer' || $this->user['isauth'] == 'pass'){
                 $data = $this->get_yue();
                 $data['can_withdraw'] = $data['can_withdraw']+ $this->user['money'];
                 unset($data['sumearn']);

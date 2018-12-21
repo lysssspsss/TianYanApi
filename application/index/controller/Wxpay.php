@@ -556,7 +556,7 @@ class Wxpay extends Base
     }
 
     /**
-     * 回调函数
+     * 回调函数 暂时没用 目前正在使用的回调函数在 Wxpaynotify
      * @param string $out_trade_no
      * @param string $total_fee
      * @param string $return_code
