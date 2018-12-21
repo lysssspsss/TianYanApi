@@ -726,7 +726,7 @@ class Lecture extends Base
         }
         $mode = $this->set_lecture_mode($lecture['mode'],$lecture_id);
         $lecture['mode'] = $mode[0];
-        if($lecture['mode'] == 'vedio'){
+        if($lecture['mode'] == 'vedio' || $lecture['mode'] == 'live'){
             $lecture['push_url'] = empty($mode[1]['push_url']) ? 0 :$mode[1]['push_url'];
             $lecture['pull_url'] = empty($mode[1]['pull_url']) ? 0 :$mode[1]['pull_url'];
         }
