@@ -226,18 +226,40 @@ class Live extends Base
     }
 
     /**
-     * 提前开播，修改开始时间
+     * 修改直播开始时间
      */
     public function set_starttime()
     {
         $lecture_id = (int)input('post.lecture_id');
+        $starttime = input('post.starttime');
+        $result = $this->validate(
+            [
+                'lecture_id'  => $lecture_id,
+                'starttime' => $starttime,
+            ],
+            [
+                'lecture_id'  => 'require|number',
+                'starttime'  => 'date',
+            ]
+        );
+        if($result !== true){
+            $this->return_json(E_ARGS,'参数错误');
+        }
         if(empty($lecture_id)){
             $this->return_json(E_ARGS,'lecture_id为空');
         }
-        $lecdata['starttime'] = date('Y-m-d H:i');
+        if(empty($starttime)){
+            $lecdata['starttime'] = date('Y-m-d H:i');
+        }else{
+            $lecdata['starttime'] = date('Y-m-d H:i',strtotime($starttime));
+        }
         $a = db('course')->where(['id'=>$lecture_id])->update($lecdata);
         if($a){
-            $this->return_json(OK,['countdown'=>'0']);
+            $countdown = strtotime($lecdata['starttime']) - $_SERVER['REQUEST_TIME'];
+            if($countdown < 0){
+                $countdown = 0;
+            }
+            $this->return_json(OK,['countdown'=>$countdown]);
         }else{
             $this->return_json(E_OP_FAIL,'修改开课时间失败');
         }
