@@ -160,9 +160,9 @@ class Index extends Base
         $this->get_user_redis($this->user['id']);
         $verify = db('verify')->where(['memberid'=>$this->user['id'],'status'=> 'sucess'])->find();
         if(empty($verify) && $this->user['isauth']=='wait'){
-            $this->return_json(OK,['msg'=>'no']);
+            $this->return_json(OK,['msg'=>'no','version'=>'9']);
         }else{
-            $this->return_json(OK,['msg'=>'yes']);
+            $this->return_json(OK,['msg'=>'yes','version'=>'9']);
         }
     }
 
