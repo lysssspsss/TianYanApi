@@ -778,12 +778,14 @@ class Lecture extends Base
             db('course')->where(['id'=>$lecture['lecture_id']])->update($lecdata);
         }
 
-        //是否是vip会员
-        if($lecture['is_for_vip']){
-            $verifyMember = $this->verifyMember($this->user['unionid']);
-            $is_vip = $verifyMember['result'];
+        if(!empty($this->user['unionid'])){
+            //是否是vip会员
+            if($lecture['is_for_vip']){
+                $verifyMember = $this->verifyMember($this->user['unionid']);
+                $is_vip = $verifyMember['result'];
+            }
+            !empty($is_vip)?$result['is_vip'] = 'true':$result['is_vip'] = 'false';
         }
-        !empty($is_vip)?$result['is_vip'] = 'true':$result['is_vip'] = 'false';
 
         //判断是否已关注
         $result['isattention'] =  $this->is_attention($this->user['id'],$lecture['channel_id']);
