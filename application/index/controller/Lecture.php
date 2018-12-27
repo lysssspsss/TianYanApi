@@ -735,7 +735,7 @@ class Lecture extends Base
             $this->get_user_redis($this->user['id'],true);
         }
 
-        $lecture = db('course')->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,mode,basescrib')
+        $lecture = db('course')->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,mode,basescrib,pass')
             ->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
         if(empty($lecture)){
             $this->return_json(E_OP_FAIL,'找不到对应课程');
@@ -759,13 +759,13 @@ class Lecture extends Base
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息
 
         if($lecture['channel_id']==BANZHUREN){
-            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
+            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode,pass')//对应专栏相关课程列表
             ->where(['isshow'=>'show','memberid'=>$jiangshi['js_memberid']])
                 ->order('id desc')//,priority desc,clicknum desc
                 ->limit(50)
                 ->select();
         }else{
-            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')//对应专栏相关课程列表
+            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode,pass')//对应专栏相关课程列表
             ->where(['isshow'=>'show','channel_id'=>$lecture['channel_id']])
                 ->order('id desc')
                 ->select();
@@ -920,7 +920,7 @@ class Lecture extends Base
                 ->order('priority desc,clicknum desc')->limit(2)->select();
         }else{*/
             $where = ['isshow'=>'show','channel_id'=>$channel['channel_id']];
-            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')
+            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode,pass')
                 ->where($where)
                 ->order('id desc')->select();
         //}
