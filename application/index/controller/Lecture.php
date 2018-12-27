@@ -102,10 +102,13 @@ class Lecture extends Base
             $year_money = input('post.year_money');//按时收费
             //$roomid = input('post.liveroom_id');//房间ID
             $name = input('post.name');//专栏标题
+            $this->edit_msg($name,'专栏标题');
             $channel_type = input('post.channel_type');//专栏类型：pay_channel 或 open_channel
+            $this->edit_msg($channel_type,'专栏类型');
             $description = input('post.description');//专栏介绍
             $js_img = input('post.js_img');//专栏介绍的图片
             $cover_url = input('post.cover_url');//专栏封面
+            $this->edit_msg($cover_url,'专栏封面');
             //$permanent = input('post.permanent');//
             $priority = input('post.priority');
         }else{
