@@ -502,7 +502,7 @@ class Base extends Controller
      * @param $url
      * @return string
      */
-    protected function get_user_token($memberid,$refresh = false)
+    /*protected function get_user_token($memberid,$refresh = false)
     {
         $idtotoken = $this->usertoken_rediskey.'_id:'.$memberid;//用戶token索引
         $time = TOKEN_USER_LIVE_15DAY * 3600;
@@ -527,14 +527,14 @@ class Base extends Controller
         $this->redis->setex($idtotoken,$time,$token);
         $this->redis->setex($tokentokey,$time,json_encode($user));
         return $token;
-    }
+    }*/
 
     /**
      * 删除用户token
      * @param $uid
      * @return bool
      */
-    protected function del_user_token($uid)
+    /*protected function del_user_token($uid)
     {
         $idtotoken = $this->usertoken_rediskey.'_id:'.$uid;//用戶token索引
         $token_old = $this->redis->get($idtotoken);
@@ -545,7 +545,7 @@ class Base extends Controller
         $this->redis->del($idtotoken);
         $this->redis->del($tokentokey);
         return true;
-    }
+    }*/
 
 
     /**
@@ -553,7 +553,7 @@ class Base extends Controller
      * @param $uid
      * @return bool|string
      */
-    protected function check_user_token($token)
+   /* protected function check_user_token($token)
     {
         //dump($token);exit;
         if(empty($token)){
@@ -565,14 +565,14 @@ class Base extends Controller
             return false;
         }
         return json_decode($user,true);
-    }
+    }*/
 
     /**
      * 检查用户token,需要用户ID
      * @param $uid
      * @return bool|string
      */
-    protected function check_user_token_by_memberid($uid)
+    /*protected function check_user_token_by_memberid($uid)
     {
         if(empty($uid)){
             return false;
@@ -589,14 +589,14 @@ class Base extends Controller
             return false;
         }
         return json_decode($user,true);
-    }
+    }*/
 
     /**
      * 获取请求的token
      * @param $url
      * @return string
      */
-    protected function check_token($header_token,$url)
+    /*protected function check_token($header_token,$url)
     {
         $token = md5(strtolower($url).date('Y-m-d').USER_TOKEN_KEY);
         //var_dump($token);exit;
@@ -604,7 +604,7 @@ class Base extends Controller
             return true;
         }
         return false;
-    }
+    }*/
 
     /**
      * @brief 防重放攻击

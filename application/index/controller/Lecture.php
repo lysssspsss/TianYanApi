@@ -521,6 +521,12 @@ class Lecture extends Base
     }
 
 
+    private function edit_msg($parem,$msg)
+    {
+        if(empty($parem)){
+            $this->return_json(E_ARGS,$msg.'不能为空');
+        }
+    }
 
     /**
      * 编辑课程
@@ -528,17 +534,24 @@ class Lecture extends Base
     public function lecture_edit()
     {
         $cid = input('post.lecture_id');//课程id
+        $this->edit_msg($cid,'课程id');
         $name = input('post.name');//课程标题
+        $this->edit_msg($name,'课程标题');
         $starttime = input('post.starttime');//开始时间
+        $this->edit_msg($starttime,'开始时间');
         $type = input('post.type');//课程类型普通课程，加密课程，付费课程（open_lecture,password_lecture,pay_lecture）
+        $this->edit_msg($type,'课程类型');
         $pass = input('post.pass');//课程密码
         $cost = input('post.cost');//课程费用
         $coverimg = input('post.coverimg');//课程封面
         $intro = input('post.intro');//课程介绍
         $js_img = input('post.js_img');//课程介绍的图片
         $priority = (int)input('post.priority');//课程优先级
+        $this->edit_msg($priority,'课程优先级');
         $mode = input('post.mode');//课程模式：picture图文模式，vedio视频模式，ppt模式
+        $this->edit_msg($mode,'课程模式');
         $channel_id = !empty(input('post.channel'))?input('post.channel'):input('post.channel_id');//课程所属专栏ID
+        $this->edit_msg($channel_id,'课程所属专栏ID');
         $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
         $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
         $tag = input('post.tag');
