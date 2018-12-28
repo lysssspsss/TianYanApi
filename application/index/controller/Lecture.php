@@ -559,6 +559,7 @@ class Lecture extends Base
         $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
         $tag = input('post.tag');
         $labels = input('post.labels');
+
         //数据验证
         $result = $this->validate(
             [
