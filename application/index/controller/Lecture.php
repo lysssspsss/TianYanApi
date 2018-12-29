@@ -746,6 +746,9 @@ class Lecture extends Base
         //if($lecture['mode'] == 'vedio' || $lecture['mode'] == 'live'){
         $lecture['push_url'] = empty($mode[1]['push_url']) ? 0 :$mode[1]['push_url'];
         $lecture['pull_url'] = empty($mode[1]['pull_url']) ? 0 :$mode[1]['pull_url'];
+        if($this->source == 'ANDROID') {
+            $lecture['pass'] = empty($lecture['pass']) ? '0' : $lecture['pass'];
+        }
         //}
         if(empty($lecture['channel_id'])){
             $lecture['channel_id'] = BANZHUREN;
@@ -771,6 +774,14 @@ class Lecture extends Base
                 ->order('id desc')
                 ->select();
         }
+        if($this->source == 'ANDROID'){
+            foreach($lecture_list as $key => $value){
+                if(empty($value['pass'])){
+                    $lecture_list[$key]['pass'] = '0';
+                }
+            }
+        }
+
 
         $lecture['name'] = $jiangshi['name'];
 
@@ -925,7 +936,13 @@ class Lecture extends Base
                 ->where($where)
                 ->order('id desc')->select();
         //}
-
+        if($this->source == 'ANDROID'){
+            foreach($lecture_list as $key => $value){
+                if(empty($value['pass'])){
+                    $lecture_list[$key]['pass'] = '0';
+                }
+            }
+        }
       /*  $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode')
             ->where($where)
             ->order('priority desc,clicknum desc')->select();*/
