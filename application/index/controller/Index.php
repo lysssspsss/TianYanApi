@@ -108,6 +108,7 @@ class Index extends Base
         $data['zblj'] = $yuedu[1];
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
         $data['version'] = VERSION;
+        $data['update_content'] = "更新内容\n";
         $this->return_json(OK,$data);
     }
 
