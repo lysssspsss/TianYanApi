@@ -72,7 +72,7 @@ class Base extends Controller
                     goto KJ;
                 }
             }
-            if($this_class == 'index' && in_array($this_method,['main','get_toutiao_detail','get_toutiao_next'])){
+            if($this_class == 'index' && in_array($this_method,['main','get_toutiao_detail','get_toutiao_next','search'])){
                 //治外法权:在不需要登录权限的方法当中，如果有需要用到用户ID的地方，需要这个步骤
                 if(!empty($header['Memberid'])){
                     goto KJ;

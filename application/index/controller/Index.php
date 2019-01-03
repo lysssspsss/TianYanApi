@@ -333,10 +333,11 @@ class Index extends Base
             $this->user['id'] = 0;
         }
         $a = db('searchhistory')->field('id')->where(['memberid'=>$this->user['id'],'content'=>$input])->find();
-        if(empty($a['id'])){
+        if(empty($a['id']) && !empty($this->user['id'])){
             $sdata['content'] = $input;
             $sdata['memberid'] = $this->user['id'];
             $sdata['time'] = date('Y-m-d H:i');
+            $sdata['isshow'] = 'show';
             db('searchhistory')->insertGetId($sdata);
         }else{
             $sdata['time'] = date('Y-m-d H:i');
