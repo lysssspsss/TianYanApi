@@ -123,7 +123,7 @@ class Live extends Base
         //检测直播状态
         $lecture['live_status'] = $this->check_live_status($lecture_id);
 
-        $result['lectgure'] = $lecture;
+        $result['lecture'] = $lecture;
         $result['dvideo'] = $d_video;
         $result['js_member'] = $member;
         $currentMember = $this->user;

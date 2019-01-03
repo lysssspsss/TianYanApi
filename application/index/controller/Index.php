@@ -95,6 +95,7 @@ class Index extends Base
             $data['lunbo'] = array_values($lunbo);
         }
         $data['toutiao'] = $this->toutiao();
+        $data['toutiao_update_shu'] = '4';
         $data['jingxuan'] = $this->get_jingxuan();
         $data['jingxuan'] = $this->check_js_member_id($data['jingxuan']);
         $data['todaylive'] = $this->get_todaylive();
