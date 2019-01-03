@@ -155,6 +155,25 @@ class Base extends Controller
         }
     }
 
+    /**
+     * 检测直播状态
+     */
+    protected function check_live_status($lecture_id,$countdown = '')
+    {
+        $live_status = $this->redis->get(REDIS_LIVE_STATUS.':'.$lecture_id);
+        if(empty($live_status)){
+            /*if($countdown>0){
+                $live_status = 'wait';
+            }else{
+                $live_status = 'start';
+            }*/
+            $live_status = 'start';//暂时就2个状态
+        }else{
+            $live_status = 'stop';
+        }
+        return $live_status;
+    }
+
 
     /**
      * json格式返回数据

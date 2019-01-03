@@ -74,7 +74,7 @@ class Lecture extends Base
         if(empty($memberid)){
             $memberid = $this->user['id'];
         }
-        $data = db('channel')->field('id as channel_id,name')->where('memberid='.$memberid.' or '.'lecturer='.$memberid)->select();
+        $data = db('channel')->field('id as channel_id,name')->where('memberid='.$memberid.' or '.'lecturer='.$memberid.' and isshow='."'show'")->select();
         if(empty($data)){
             $data[0]['channel_id'] = BANZHUREN;
             $data[0]['name'] = '天雁商学院';
@@ -781,10 +781,7 @@ class Lecture extends Base
                 }
             }
         }
-
-
         $lecture['name'] = $jiangshi['name'];
-
         $starttimes = strtotime($lecture['starttime']);
         $lecture['countdown'] = $starttimes - time();//倒计时
         if($lecture['countdown']<0){
@@ -794,6 +791,10 @@ class Lecture extends Base
             $manager = db('home_manager')->field('id')->where('homeid=' . $lecture['live_homeid'] . ' AND beinviteid=' . $this->user['id'])->find();
         }
         $result = [];
+
+        //检测直播状态
+        $lecture['live_status'] = $this->check_live_status($lecture_id);
+
         $result['lecture'] = $lecture;
         $result['jiangshi'] = $jiangshi;
         $result['lecture_list'] = $lecture_list;

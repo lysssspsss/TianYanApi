@@ -2,6 +2,8 @@
 const MY_CHANNEL_NAME = "TD_CHANNEL_ID";
 const FING_TAG = 0;//发现fragment控制标示
 const VERSION = '1.4.0';//APP版本
+const ANDROID_VERSION = '1.4.0';//APP版本
+const IOS_VERSION = '1.3.1';//APP版本
 
 /**
  * 网络请求端口
@@ -116,6 +118,8 @@ const REDIS_EXPIRE_1D = 86400;        // 过期时间 1 天
 const REDIS_EXPIRE_2D = 172800;       // 过期时间 2 天
 const REDIS_YZM_KEY = 'verify_code'; //验证码键值
 const REDIS_LIVE_PEOPLE = 'live_people'; //验证码键值
+const REDIS_VIDEO_URL = 'save_video_url'; //验证码键值
+const REDIS_LIVE_STATUS = 'live_status'; //验证码键值
 
 
 

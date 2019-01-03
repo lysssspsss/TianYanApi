@@ -119,7 +119,11 @@ class Live extends Base
 
         }
         //$d_video['pull_url'] = urlencode($d_video['pull_url']);
-        $result['lecture'] = $lecture;
+
+        //检测直播状态
+        $lecture['live_status'] = $this->check_live_status($lecture_id);
+
+        $result['lectgure'] = $lecture;
         $result['dvideo'] = $d_video;
         $result['js_member'] = $member;
         $currentMember = $this->user;
@@ -1391,7 +1395,8 @@ class Live extends Base
         ignore_user_abort();
         sleep(200);*/
         $jsons = json_encode($arr);
-        $this->redis->hSet('save_video_url',$lecture_id,$jsons);
+        $this->redis->hSet(REDIS_VIDEO_URL,$lecture_id,$jsons);
+        $this->redis->Set(REDIS_LIVE_STATUS.':'.$lecture_id,'stop',240);
         $this->return_json(OK,['msg'=>'已结束直播，请等候三分钟即可保存录播文件']);
         //var_dump($stearmname);exit;
         /*$url = 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName='.LIVE_VHOST.'&AppName='.LIVE_APPNAME.'&StreamName='
@@ -1409,7 +1414,7 @@ class Live extends Base
     public function baocun()
     {
 
-        $save_video_url = $this->redis->hGetAll('save_video_url');
+        $save_video_url = $this->redis->hGetAll(REDIS_VIDEO_URL);
         $url = "https://live.aliyuncs.com/?";
         if(!empty($save_video_url)){
             $video_url = '';
@@ -1436,10 +1441,10 @@ class Live extends Base
                 $videoinfo = ['video' => $video_url];
                 $vid = db('video')->where(['lecture_id'=>$key])->update($videoinfo);
                 if ($vid) {
-                    wlog($this->log_path, "save_video_url 修改课程id为：" . $key . "的video字段信息成功");
-                    $this->redis->hDel('save_video_url',$key);
+                    wlog($this->log_path, REDIS_VIDEO_URL." 修改课程id为：" . $key . "的video字段信息成功");
+                    $this->redis->hDel(REDIS_VIDEO_URL,$key);
                 } else {
-                    wlog($this->log_path, "save_video_url 修改课程id为：" . $key . "的video字段信息失败");
+                    wlog($this->log_path, REDIS_VIDEO_URL." 修改课程id为：" . $key . "的video字段信息失败");
                     continue;
                     //$this->return_json(E_OP_FAIL, '修改视频信息失败');
                 }
