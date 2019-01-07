@@ -168,7 +168,11 @@ class Lecture extends Base
         }
         $roomid = db('home')->field('id')->where(['memberid'=>$member['id']])->find();
         if(empty($roomid)){
-            $this->return_json(E_OP_FAIL,'请先完善个人信息');
+            //$this->return_json(E_OP_FAIL,'请先完善个人信息');
+            $this->add_room($this->user);
+            if(!empty($st['msg'])){
+                $this->return_json(E_OP_FAIL,$st['msg']);
+            }
         }
         if($channel_type=='pay_channel'){
             if(!empty($money) && empty($expire) && empty($year_money)){//固定收费

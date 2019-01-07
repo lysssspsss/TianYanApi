@@ -95,7 +95,6 @@ class Index extends Base
             $data['lunbo'] = array_values($lunbo);
         }
         $data['toutiao'] = $this->toutiao();
-        $data['toutiao_update_shu'] = '4';
         $data['jingxuan'] = $this->get_jingxuan();
         $data['jingxuan'] = $this->check_js_member_id($data['jingxuan']);
         $data['todaylive'] = $this->get_todaylive();
@@ -110,6 +109,7 @@ class Index extends Base
         $data['fufei'] = db('course')->field('id,name,clicknum,coverimg,mode,cost')->where(['isshow'=>'show','show_on_page'=>1,'type'=>'pay_lecture'])->order('clicknum','desc')->limit(4)->select();
         $data['version'] = $this->source == 'IOS'?IOS_VERSION:ANDROID_VERSION;
         $data['update_content'] = "1. 修复已知Bug \n2.新增直播讲课功能 \n3.改版讲师直播间UI样式";
+        $data['toutiao_update_shu'] = '4';
         $this->return_json(OK,$data);
     }
 
