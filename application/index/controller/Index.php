@@ -161,10 +161,13 @@ class Index extends Base
     {
         $this->get_user_redis($this->user['id']);
         $verify = db('verify')->where(['memberid'=>$this->user['id'],'status'=> 'sucess'])->find();
+        $verify_wait = db('verify')->where(['memberid'=>$this->user['id'],'status'=> 'wait'])->find();
         if(empty($verify) && $this->user['isauth']=='wait'){
-            $this->return_json(OK,['msg'=>'no','version'=>'9']);
-        }else{
-            $this->return_json(OK,['msg'=>'yes','version'=>'9']);
+            $this->return_json(OK,['msg'=>'no','version'=>'10']);//尚未加V认证
+        }elseif(empty($verify) && !empty($verify_wait) && $this->user['isauth']=='wait' && $this->source == 'ANDROID'){
+            $this->return_json(OK,['msg'=>'wait','version'=>'10']);//审核中
+        }elseif(!empty($verify) || $this->user['isauth']=='pass'){
+            $this->return_json(OK,['msg'=>'yes','version'=>'10']);//已经加V认证
         }
     }
 
