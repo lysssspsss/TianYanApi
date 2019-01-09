@@ -924,7 +924,7 @@ class Lecture extends Base
         if(empty($channel)){
             $this->return_json(E_OP_FAIL,'找不到对应专栏');
         }
-        $data = $this->check_channel_type($channel);
+        $channel = $this->check_channel_type($channel);
         $where['id'] = $channel['channel_memberid'];
         if($channel['channel_memberid']== BANZHUREN && $channel['roomid']==24 && $channel['lecturer']) {
             $where['id'] = $channel['lecturer'];

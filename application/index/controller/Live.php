@@ -48,7 +48,7 @@ class Live extends Base
             if(empty($channel['lecturer'])){
                 $channel['lecturer'] = BANZHUREN;
             }
-            $channel = $this->check_channel_type($channel);
+            //$channel = $this->check_channel_type($channel);
         }
         $status = Tools::timediff(strtotime($lecture['starttime']), time(), $lecture['mins']);
         $lecture['starttimes'] = strtotime($lecture['starttime']);
