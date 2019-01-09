@@ -58,6 +58,7 @@ class Lecture extends Base
             $data['memberid'] = $data['lecturer'];
             $data['memberid_bak'] = BANZHUREN;
         }
+        $data = $this->check_channel_type($data);
         $this->return_json(OK,$data);
     }
 
@@ -272,7 +273,7 @@ class Lecture extends Base
         $fast['pass'] = '';
         $fast['cost'] = '0.00';
         $fast['mode'] = 'vedio';
-        $channel = $cover = db('channel')->field('id')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'] ." and type = 'open_channel'" )->order('id','desc')->find();
+        $channel = $cover = db('channel')->field('id')->where(' (memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'] .") and type in ('open_channel','open')" )->order('id','desc')->find();
         if(empty($channel)){
             $fast['channel_id'] = $this->fast_channel_add();
         }else{
@@ -923,6 +924,7 @@ class Lecture extends Base
         if(empty($channel)){
             $this->return_json(E_OP_FAIL,'找不到对应专栏');
         }
+        $data = $this->check_channel_type($channel);
         $where['id'] = $channel['channel_memberid'];
         if($channel['channel_memberid']== BANZHUREN && $channel['roomid']==24 && $channel['lecturer']) {
             $where['id'] = $channel['lecturer'];
@@ -995,7 +997,7 @@ class Lecture extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        $channel = db('channel')->where('id='.$channel_id)->find();
+        $channel = db('channel')->field('money')->where('id='.$channel_id)->find();
         $course = db('course')->field('id,name,cost')->where('channel_id='.$channel_id)->select();
         if(empty($course)){
             $this->return_json(E_OP_FAIL,'课程为空');
@@ -1057,6 +1059,7 @@ class Lecture extends Base
                 if(empty($channel)){
                     $this->return_json(E_OP_FAIL,'找不到该专栏');
                 }
+                $channel = $this->check_channel_type($channel);
                 $data['cost'] = $this->set_pay_money($channel);
                 $data['title'] = $channel['name'];
                 $data['channel_id'] = $channel['id'];

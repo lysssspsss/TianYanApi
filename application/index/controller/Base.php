@@ -174,6 +174,19 @@ class Base extends Controller
         return $live_status;
     }
 
+    /**
+     * 统一专栏type字段
+     * @param $data
+     * @return mixed
+     */
+    protected  function check_channel_type($data)
+    {
+        if($data['type']=='open' || $data['type']=='open_channel'){
+            $data['type'] = 'open_channel';
+        }
+        return $data;
+    }
+
 
     /**
      * json格式返回数据
