@@ -663,11 +663,17 @@ class User extends Base
      */
     public function vip()
     {
+        $lecture_obj = Factory::create_obj('lecture');
         $tel = input('post.tel');
+        $lecture_obj->edit_msg($tel,'手机号码');
         $wxcode = input('post.wxcode');
+        $lecture_obj->edit_msg($tel,'微信号');
         $name = input('post.name');
+        $lecture_obj->edit_msg($tel,'名字');
         $company = input('post.company');
+        $lecture_obj->edit_msg($tel,'公司');
         $intro = input('post.intro');
+        $lecture_obj->edit_msg($tel,'介绍');
         $result = $this->validate(
             [
                 'tel'  => $tel,

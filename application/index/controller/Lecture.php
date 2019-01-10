@@ -529,7 +529,7 @@ class Lecture extends Base
     }
 
 
-    private function edit_msg($parem,$msg)
+    public function edit_msg($parem,$msg)
     {
         if(empty($parem)){
             $this->return_json(E_ARGS,$msg.'不能为空');
