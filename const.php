@@ -63,7 +63,7 @@ const LIVEROOM_QRCODE_URL = "/public/images/qrcode_ty.jpg"; //直播间默认二
 /**
  * workerman
  */
-const WORKERMAN_PUBLISH_URL = 'http://webmsg.tianyan199.com:2121/';//最新地址
+const WORKERMAN_PUBLISH_URL = 'http://129.204.179.211:2121/';//最新地址
 //const WORKERMAN_PUBLISH_URL = 'http://tianyan199.com:2121/';
 //const WORKERMAN_PUBLISH_URL = 'http://119.29.136.97:2121/';
 //const WORKERMAN_PUBLISH_URL = 'http://www.webmsg.com:2121/';//本地测试
