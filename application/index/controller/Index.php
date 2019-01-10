@@ -80,7 +80,7 @@ class Index extends Base
                     $lunbo[$key]['id'] = $id;
                     $lunbo[$key]['url'] = '';
                     $lunbo[$key]['remark'] = '根据id跳转到对应课程';
-                }elseif(strpos($value['url'],'eqxiu.com')){
+                }elseif(strpos($value['url'],'eqxiu.com') || strpos($value['url'],'mp.weixin.qq.com') || strpos($value['url'],'risevip.com')){
                     $lunbo[$key]['type'] = 'url';
                     $lunbo[$key]['id'] = '0';
                     $lunbo[$key]['remark'] = '跳转到一个网页地址';
