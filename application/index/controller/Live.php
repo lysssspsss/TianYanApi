@@ -333,7 +333,7 @@ class Live extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         if(!empty($js_memberid)){
-            $cidarr = db('channel')->field('id')->where('memberid='.$js_memberid.' or lecturer='.$js_memberid)->where(['isshow'=>'show'])->select();
+            $cidarr = db('channel')->field('id')->where("(memberid=$js_memberid  or lecturer=$js_memberid) and isshow='show' and category='channel'")->select();
             //var_dump($cidarr);exit;
             $cidarr  = array_column($cidarr,'id');
         }else{

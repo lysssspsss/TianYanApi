@@ -75,7 +75,7 @@ class Lecture extends Base
         if(empty($memberid)){
             $memberid = $this->user['id'];
         }
-        $data = db('channel')->field('id as channel_id,name')->where('memberid='.$memberid.' or '.'lecturer='.$memberid.' and isshow='."'show'")->select();
+        $data = db('channel')->field('id as channel_id,name')->where("(memberid=$memberid or lecturer=$memberid) and isshow='show' and category='channel'")->select();
         if(empty($data)){
             $data[0]['channel_id'] = BANZHUREN;
             $data[0]['name'] = '天雁商学院';
@@ -273,7 +273,7 @@ class Lecture extends Base
         $fast['pass'] = '';
         $fast['cost'] = '0.00';
         $fast['mode'] = 'vedio';
-        $channel = $cover = db('channel')->field('id')->where(' (memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'] .") and type in ('open_channel','open')" )->order('id','desc')->find();
+        $channel = $cover = db('channel')->field('id')->where(' (memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'] .") and type in ('open_channel','open') and isshow='show' and category='channel'" )->order('id','desc')->find();
         if(empty($channel)){
             $fast['channel_id'] = $this->fast_channel_add();
         }else{
@@ -695,7 +695,7 @@ class Lecture extends Base
         if(empty($jiangshi['name'])){
             $jiangshi['name'] = $jiangshi['nickname'];
         }
-        $cover = db('channel')->field('id,cover_url')->where('memberid='.$js_memberid.' or '.'lecturer='.$js_memberid)->select();
+        $cover = db('channel')->field('id,cover_url')->where("(memberid=$js_memberid or lecturer=$js_memberid) and category='channel' and isshow='show'")->select();
         if(empty($cover)){
             $jiangshi['cover_url'] = OSS_REMOTE_PATH. "/public/images/cover14.jpg";
             $jiangshi['lecture'] = [];
