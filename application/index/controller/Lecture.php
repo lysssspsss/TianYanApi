@@ -860,6 +860,18 @@ class Lecture extends Base
         }
 
         $result['shareTitle'] = $shareTitle;
+
+        //增加人气
+        $lecdata = array(
+            'clicknum' => $lecture['clicknum'] + mt_rand(5,25),
+        );
+        db('course')->where(["id"=>$lecture['id']])->update($lecdata);
+
+            //推送给用户
+            //推送消息给用户
+            /*$data['popular'] = $lecdata['clicknum'];
+            $data['lecture_id'] = $lecture['id'];
+            Tools::publish_msg(0,$lecture['id'],WORKERMAN_PUBLISH_URL,json_encode($data));*/
         $this->return_json(OK,$result);
     }
 
@@ -1218,7 +1230,7 @@ class Lecture extends Base
         }else{
             $data['code'] = 1;
         }
-        $sql = "select * from live_channelpay c inner join live_member m on c.memberid=m.id and m.unionid='".$unionid."' and  c.status='finish' and c.fee=19900 ";
+        $sql = "select * from live_channelpay c inner join live_member m on c.memberid=m.id and m.unionid='".$unionid."' and  c.status='finish' and c.fee=19900";
 
         $paylist = db()->query($sql);
         if (isset($paylist)&&(!empty($paylist))){

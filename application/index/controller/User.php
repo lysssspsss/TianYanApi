@@ -989,7 +989,7 @@ class User extends Base
                 ->where(['isshow'=>'show'])->where(['memberid'=>$this->user['id']])->order('addtime','desc')->select();
                 //->where('name','like', '%'.$jiangshi['name'].'%')
         }else{//专栏
-            $data = db('channel')->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
+            $data = db('channel')->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->order('create_time','desc')->select();
             if(!empty($data)){
                 foreach($data as $key => $value){
                     $data[$key] = $this->check_channel_type($value);

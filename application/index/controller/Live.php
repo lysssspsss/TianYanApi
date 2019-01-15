@@ -1372,7 +1372,7 @@ class Live extends Base
         if(empty($lecture)){
             $this->return_json(E_OP_FAIL,'找不到对应课程');
         }
-        $starttime = strtotime($lecture['starttime']);//暂时用addtime,上线后用starttime
+        $ststamp = $starttime = strtotime($lecture['starttime']);//暂时用addtime,上线后用starttime
         $endtime = $starttime+86400;
         $rtmp_arr = parse_url($video['video']);
         $stearm = explode('/',$rtmp_arr['path']);
@@ -1398,6 +1398,11 @@ class Live extends Base
         $jsons = json_encode($arr);
         $this->redis->hSet(REDIS_VIDEO_URL,$lecture_id,$jsons);
         $this->redis->Set(REDIS_LIVE_STATUS.':'.$lecture_id,'stop',240);
+        $mins = (time()-$ststamp)/60;//计算正确的播放时长
+        if($mins<0){
+            $mins = 60;
+        }
+        db('course')->where(['id'=>$lecture_id])->update(['mins'=>(int)$mins]);
         $this->return_json(OK,['msg'=>'已结束直播，请等候三分钟即可保存录播文件']);
         //var_dump($stearmname);exit;
         /*$url = 'https://live.aliyuncs.com/?Action=DescribeLiveStreamRecordContent&DomainName='.LIVE_VHOST.'&AppName='.LIVE_APPNAME.'&StreamName='
