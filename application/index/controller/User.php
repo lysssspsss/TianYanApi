@@ -957,7 +957,7 @@ class User extends Base
         }elseif($type==2){//专栏购买记录
             $data['channelpay'] = db('channelpay')->alias('p')->join('live_channel c','p.channelid=c.id')->field("c.name,c.cover_url,p.*,p.fee/100 as fee")->where("p.status='finish' and p.memberid=".$this->user['id']." and ((unix_timestamp(p.expire)>unix_timestamp(now())) or ( p.expire is null))")->order("p.addtime desc")->select();
             foreach($data['channelpay'] as $k => $v){
-                $sub_title = db('course')->field('name')->where(['channel_id'=>$v['channelid']])->order('clicknum','desc')->limit(2)->select();
+                $sub_title = db('course')->field('name')->where(['channel_id'=>$v['channelid'],'isshow'=>'show'])->order('clicknum','desc')->limit(2)->select();
                 $data['channelpay'][$k]['sub_title1'] = empty($sub_title[0]['name'])?'天雁商学院特级讲师':$sub_title[0]['name'];
                 $data['channelpay'][$k]['sub_title2'] = empty($sub_title[1]['name'])?'天雁商学院特级讲师':$sub_title[1]['name'];
             }

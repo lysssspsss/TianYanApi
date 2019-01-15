@@ -370,10 +370,10 @@ class Lecture extends Base
         if($channel['is_pay_only_channel']==1 && $type=='pay_lecture'){
             $this->return_json(E_OP_FAIL,'该课程所属专栏设置了固定收费(仅付费专栏)，因此无法添加付费课程。');
         }
-        $show_on_page = 1;
-        if($channel['category'] == 'businesscollege' || $channel['category'] == 'air'){
+        $show_on_page = 0;
+        /*if($channel['category'] == 'businesscollege' || $channel['category'] == 'air'){
             $show_on_page = 0;
-        }
+        }*/
         //开启事务
         Db::startTrans();
         $livehome = db('home')->field('id')->where(['memberid'=>$this->user['id']])->find();
@@ -412,7 +412,7 @@ class Lecture extends Base
             'labels' => $labels,
             'show_on_page'=>$show_on_page
         );
-        $exist_courses = db('course')->where(['name'=>$data['name']])->select();
+        $exist_courses = db('course')->where(['name'=>$data['name'],'isshow'=>'show'])->select();
         //判断该课程是否已建，已建的不再新建
 
 

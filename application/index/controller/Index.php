@@ -239,7 +239,7 @@ class Index extends Base
             $course->where('type="pay_lecture"');
             $course2->where('type="pay_lecture"');
         }
-        $data = $course->order('clicknum','desc')->limit($limit-1,$leng)->select();
+        $data = $course->order('addtime','desc')->limit($limit-1,$leng)->select();
         $count = $course2->count();
         if(empty($data)) {
             $this->return_json(E_OP_FAIL,'查询失败请重试');
@@ -257,8 +257,8 @@ class Index extends Base
     {
         $data = db('famous')->field('channel_id,memberid,room_id,name,img,cost,intro,intro1,intro2,js_memberid')->where('ms_order <> 0')->order('ms_order','desc')->select();
         foreach($data as $key => $value){
-            $course = db('course')->field('sum(clicknum) as clicknum,count(id) as count')->where(['channel_id'=>$value['channel_id']])->find();
-            $top1 = db('course')->field('name as tuijian')->where(['channel_id'=>$value['channel_id']])->order('clicknum','desc')->find();
+            $course = db('course')->field('sum(clicknum) as clicknum,count(id) as count')->where(['channel_id'=>$value['channel_id'],'isshow'=>'show'])->find();
+            $top1 = db('course')->field('name as tuijian')->where(['channel_id'=>$value['channel_id'],'isshow'=>'show'])->order('clicknum','desc')->find();
             $data[$key]['clicknum'] = $course['clicknum'];
             $data[$key]['count'] = $course['count'];
             $data[$key]['tuijian'] = $top1['tuijian'];
