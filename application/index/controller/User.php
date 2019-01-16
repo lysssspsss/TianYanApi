@@ -985,8 +985,9 @@ class User extends Base
         if($type==1){//课程
             //$channel = db('channel')->field('id')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->select();
             //$cidlist = implode(',',array_column($channel,'channel_id'));
-            $data = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type,starttime,cost')
+            $data = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,mode,type,starttime,cost,channel_id')
                 ->where(['isshow'=>'show'])->where(['memberid'=>$this->user['id']])->order('addtime','desc')->select();
+            $data = $this->check_pay_type($data);
                 //->where('name','like', '%'.$jiangshi['name'].'%')
         }else{//专栏
             $data = db('channel')->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')->where('memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'])->order('create_time','desc')->select();

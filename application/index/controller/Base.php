@@ -179,10 +179,42 @@ class Base extends Controller
      * @param $data
      * @return mixed
      */
-    protected  function check_channel_type($data)
+    protected function check_channel_type($data)
     {
         if($data['type']=='open' || $data['type']=='open_channel'){
             $data['type'] = 'open_channel';
+        }
+        return $data;
+    }
+
+    /**
+     * 检测课程所属专栏是否免费
+     * @param $data
+     * @return mixed
+     */
+    protected function check_pay_type($data)
+    {
+        if(empty($data)){
+            return [];
+        }
+        if(empty($data[0])){//单个
+            if(empty($data['channel_id'])){
+                $data['channel_id'] = BANZHUREN;
+            }
+            $type = db('channel')->where(['id'=>$data['channel_id']])->value('type');
+            if($type=='pay_channel'){
+                $data['type'] = 'pay_lecture';
+            }
+        }else{//多个
+            foreach($data as $key => $value){
+                if(empty($value['channel_id'])){
+                    $value['channel_id'] = BANZHUREN;
+                }
+                $type = db('channel')->where(['id'=>$value['channel_id']])->value('type');
+                if($type=='pay_channel'){
+                    $data[$key]['type'] = 'pay_lecture';
+                }
+            }
         }
         return $data;
     }

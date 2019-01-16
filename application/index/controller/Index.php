@@ -128,6 +128,7 @@ class Index extends Base
             ->where(['isshow'=>'show','show_on_page'=>1])
             ->where('UNIX_TIMESTAMP(starttime) > '.strtotime(date('Ymd')))
             ->order('starttime','desc')->limit(4)->select();
+        $data = $this->check_pay_type($data);
         $data2 = [];
         if(empty($data)){
             return [];
@@ -155,6 +156,7 @@ class Index extends Base
         $w = date("w");
         $rows = $w * 4;
         $jingxuan =  db('course')->field('id,name,clicknum,coverimg,mode,type,memberid,channel_id')->where(['isshow'=>'show','show_on_page'=>1])->order('clicknum','desc')->limit($rows,4)->select();
+        $jingxuan = $this->check_pay_type($jingxuan);
         return $jingxuan;
     }
 
@@ -168,11 +170,11 @@ class Index extends Base
         $verify = db('verify')->where(['memberid'=>$this->user['id'],'status'=> 'sucess'])->find();
         $verify_wait = db('verify')->where(['memberid'=>$this->user['id'],'status'=> 'wait'])->find();
         if(empty($verify) && !empty($verify_wait) && $this->user['isauth']=='wait' && $this->source == 'ANDROID'){
-            $this->return_json(OK,['msg'=>'wait','version'=>'10']);//审核中
+            $this->return_json(OK,['msg'=>'wait','version'=>MVERSION]);//审核中
         }elseif(empty($verify) && $this->user['isauth']=='wait'){
-            $this->return_json(OK,['msg'=>'no','version'=>'10']);//尚未加V认证
+            $this->return_json(OK,['msg'=>'no','version'=>MVERSION]);//尚未加V认证
         }elseif(!empty($verify) || $this->user['isauth']=='pass'){
-            $this->return_json(OK,['msg'=>'yes','version'=>'10']);//已经加V认证
+            $this->return_json(OK,['msg'=>'yes','version'=>MVERSION]);//已经加V认证
         }
     }
 
@@ -229,23 +231,55 @@ class Index extends Base
         $leng = 20;
         $course = db('course');
         $course2 = db('course');
-        $course->field('id,name,sub_title,coverimg,mode,type,cost,clicknum,starttime');
+        $course->field('id,name,sub_title,coverimg,mode,type,cost,clicknum,starttime,channel_id');
         $course->where(['isshow'=>'show','show_on_page'=>1]);
         $course2->where(['isshow'=>'show','show_on_page'=>1]);
-        if($type=='open_lecture'){
-            $course->where('type!="pay_lecture"');
-            $course2->where('type!="pay_lecture"');
-        }else{
-            $course->where('type="pay_lecture"');
-            $course2->where('type="pay_lecture"');
+        $count_sql = $sql = '';
+        $offest = ($limit - 1) * $leng;
+        if($offest<0){
+            $offest = 0;
         }
-        $data = $course->order('addtime','desc')->limit($limit-1,$leng)->select();
-        $count = $course2->count();
+        if($type=='open_lecture'){
+            /*$course->where('type!="pay_lecture"');
+            $course2->where('type!="pay_lecture"');*/
+            $sql = "select a.id,a.name,a.sub_title,a.coverimg,a.mode,a.type,a.cost,a.clicknum,a.starttime,a.channel_id,b.type as channel_type 
+                    from live_course a inner join live_channel b on IF(a.channel_id=0,294,a.channel_id)=b.id 
+                    where a.show_on_page = 1 and a.isshow = 'show' and a.type != 'pay_lecture' and b.type !='pay_channel' ORDER BY a.addtime desc limit $leng OFFSET $offest";
+            $count_sql = "select count(a.id) as count from live_course a inner join live_channel b on IF(a.channel_id=0,294,a.channel_id)=b.id 
+                          where a.show_on_page = 1 and a.isshow = 'show' and a.type != 'pay_lecture' and b.type !='pay_channel'";
+            //M()->query($tsql);
+        }else{
+            /*$course->where('type="pay_lecture"');
+            $course2->where('type="pay_lecture"');*/
+            $sql = "select a.id,a.name,a.sub_title,a.coverimg,a.mode,a.type,a.cost,a.clicknum,a.starttime,a.channel_id,b.type as channel_type 
+                    from live_course a inner join live_channel b on IF(a.channel_id=0,294,a.channel_id)=b.id 
+                    where a.show_on_page = 1 and a.isshow = 'show' and (a.type = 'pay_lecture' or b.type ='pay_channel') ORDER BY a.addtime desc limit $leng OFFSET $offest";
+            $count_sql = "select count(a.id) as count from live_course a inner join live_channel b on IF(a.channel_id=0,294,a.channel_id)=b.id 
+                          where a.show_on_page = 1 and a.isshow = 'show' and (a.type = 'pay_lecture' or b.type ='pay_channel')";
+        }
+        /*$data = $course->order('addtime','desc')->limit($limit-1,$leng)->select();
+        $count = $course2->count();*/
+        $data = $course->query($sql);
+        $count = $course2->query($count_sql);
         if(empty($data)) {
             $this->return_json(E_OP_FAIL,'查询失败请重试');
         }
+        /*if($type=='open_lecture'){
+            //$data = $this->check_pay_type($data);
+            foreach($data as $key => $value){
+                if(empty($value['channel_id'])){
+                    $value['channel_id'] = BANZHUREN;
+                }
+                $type = db('channel')->where(['id'=>$value['channel_id']])->value('type');
+                if($type=='pay_channel'){
+                    //$data[$key]['type'] = 'pay_lecture';
+                    unset($data[$key]);
+                }
+            }
+            $data = array_values($data);
+        }*/
         $res['limit'] = $limit;
-        $res['count'] = $count;
+        $res['count'] = $count[0]['count'];
         $res['list'] = $data;
         $this->return_json(OK,$res);
     }
