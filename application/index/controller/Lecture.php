@@ -865,7 +865,7 @@ class Lecture extends Base
         $lecdata = array(
             'clicknum' => $lecture['clicknum'] + mt_rand(5,25),
         );
-        db('course')->where(["id"=>$lecture['id']])->update($lecdata);
+        db('course')->where(["id"=>$lecture['lecture_id']])->update($lecdata);
 
             //推送给用户
             //推送消息给用户
