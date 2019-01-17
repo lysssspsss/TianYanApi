@@ -245,7 +245,7 @@ class Base extends Controller
             exit(json_encode($result, JSON_UNESCAPED_UNICODE));
         }
         if (!empty($data)) {
-            $result['data'] = arr_val_tran_str($data);//数组内所有值转成字符类型
+            $result['data'] = arr_val_tran_str($data,$this->source);//数组内所有值转成字符类型
             $result['sign'] = encode_private_sign($result['data']);//返回数据用私钥加密
         }
         if($is_mrl === true){
@@ -794,7 +794,7 @@ class Base extends Controller
      */
     public function tranfer($data)
     {
-        $data = arr_val_tran_str($data);
+        $data = arr_val_tran_str($data,$this->source);
         $data = json_encode($data,JSON_UNESCAPED_UNICODE);
         return $data;
     }

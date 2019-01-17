@@ -282,7 +282,7 @@ class Wxpaynotify
      */
     private function tranfer($data)
     {
-        $data = arr_val_tran_str($data);
+        $data = arr_val_tran_str($data,'APP');
         $data = json_encode($data,JSON_UNESCAPED_UNICODE);
         return $data;
     }

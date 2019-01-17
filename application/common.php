@@ -204,14 +204,18 @@ if (!function_exists('arr_val_tran_str')) {
     /**
      * 将多维数组中所有的数值转换成字符串
      */
-    function arr_val_tran_str($result = array())
+    function arr_val_tran_str($result = array(),$source = 'ANDROID')
     {
         foreach($result as $key => $value)
         {
             if(is_array($value)){
                 $result[$key] = arr_val_tran_str($value);
             }else{
-                $result[$key] = (string)$value;
+                if($source == 'ANDROID' && empty($value)){
+                    $result[$key] = '0';
+                }else{
+                    $result[$key] = (string)$value;
+                }
             }
         }
         return $result;

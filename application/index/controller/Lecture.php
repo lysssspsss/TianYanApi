@@ -273,16 +273,25 @@ class Lecture extends Base
         $fast['pass'] = '';
         $fast['cost'] = '0.00';
         $fast['mode'] = 'vedio';
+        $fast['channel_id'] = $this->check_user_channel();
+        $this->lecture_add($fast);
+    }
+
+
+    /**
+     * 检测用户是否有专栏
+     * @return int|mixed|string
+     */
+    private function check_user_channel()
+    {
         $channel = $cover = db('channel')->field('id')->where(' (memberid='.$this->user['id'].' or '.'lecturer='.$this->user['id'] .") and type in ('open_channel','open') and isshow='show' and category='channel'" )->order('id','desc')->find();
         if(empty($channel)){
             $fast['channel_id'] = $this->fast_channel_add();
         }else{
             $fast['channel_id'] = $channel['id'];
         }
-        $this->lecture_add($fast);
+        return $fast['channel_id'];
     }
-
-
 
 
     /**
@@ -299,6 +308,9 @@ class Lecture extends Base
             $cost = input('post.cost');//课程费用
             $mode = input('post.mode');//课程模式：picture图文模式，video视频模式，ppt模式
             $channel_id = input('post.channel_id');
+            if(empty($channel_id)){
+                $channel_id = $this->check_user_channel();
+            }
             $reseller_enabled = input('post.reseller_enabled')?input('post.reseller_enabled'):0;
             $resell_percent = input('post.resell_percent')?input('post.resell_percent'):0;
             $tag = input('post.tag');
