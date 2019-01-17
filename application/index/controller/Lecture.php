@@ -780,9 +780,12 @@ class Lecture extends Base
         $jiangshi = db('member')->field('id as js_memberid,name,headimg,intro')->where($where)->find();//讲师信息
 
         if($lecture['channel_id']==BANZHUREN){
-            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode,pass')//对应专栏相关课程列表
-            ->where(['isshow'=>'show','memberid'=>$jiangshi['js_memberid']])
-                ->order('id desc')//,priority desc,clicknum desc
+            $lecture_list = db('course')//对应专栏相关课程列表
+                ->alias('a')
+                ->join('live_channel b','IF(a.channel_id=0,294,a.channel_id)=b.id')
+                ->field('a.id as lecture_id,a.live_homeid as live_homeid,a.coverimg,a.name,a.sub_title,a.type,a.clicknum,a.mode,a.pass,b.is_pay_only_channel,b.type as channel_type')
+                ->where(['a.isshow'=>'show','a.memberid'=>$jiangshi['js_memberid']])
+                ->order('a.id desc')//,priority desc,clicknum desc
                 ->limit(50)
                 ->select();
         }else{
@@ -791,13 +794,11 @@ class Lecture extends Base
                 ->order('id desc')
                 ->select();
         }
-        if($this->source == 'ANDROID'){
+        //if($this->source == 'ANDROID'){
             foreach($lecture_list as $key => $value){
-                if(empty($value['pass'])){
-                    $lecture_list[$key]['pass'] = '0';
-                }
+                $data[$key]['cost'] = 'pay_lecture';
             }
-        }
+        //}
         $lecture['name'] = $jiangshi['name'];
         $starttimes = strtotime($lecture['starttime']);
         $lecture['countdown'] = $starttimes - time();//倒计时
@@ -1089,7 +1090,7 @@ class Lecture extends Base
                 }elseif($channel['permanent'] == 1){//固定收费
                     $data['cost'] = $channel['money'];
                 }else{
-                    $data['cost'] = $this->set_pay_money($channel);
+                    $data['cost'] = $this->get_price_list_money($channel);
                 }
                 $data['title'] = $channel['name'];
                 $data['channel_id'] = $channel['id'];
@@ -1122,7 +1123,7 @@ class Lecture extends Base
                         $data['channel_id'] = $lecture['channel_id'];
                         $data['msg'] = '此课程需要购买专栏';
                     }elseif($channel['is_pay_only_channel'] == 1){//限时收费
-                        $data['cost'] = $this->set_pay_money($channel);
+                        $data['cost'] = $this->get_price_list_money($channel);
                         $data['channel_id'] = $lecture['channel_id'];
                         $data['msg'] = '此课程需要购买专栏';
                     }else{
@@ -1162,23 +1163,7 @@ class Lecture extends Base
         $this->return_json(OK,$data,1);
     }
 
-    /**
-     * 设置支付金额
-     * @param $content
-     * @return mixed
-     */
-    private function set_pay_money($content)
-    {
-        if(!empty($content['money'])){
-            $data['cost'] = $content['money'];
-        } elseif(empty($content['money']) && !empty($content['price_list'])){
-            $price_list = json_decode($content['price_list'],true);
-            $data['cost'] = $price_list[0]['money'];
-        }else{
-            $data['cost'] = 0;
-        }
-        return $data['cost'];
-    }
+
 
     /**
      * 设置课程的mode

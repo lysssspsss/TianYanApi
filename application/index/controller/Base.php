@@ -219,6 +219,42 @@ class Base extends Controller
         return $data;
     }
 
+    /**
+     * 获取price_list中的支付金额
+     * @param $content
+     * @return mixed
+     */
+    protected function get_price_list_money($content)
+    {
+        /*if(!empty($content['money'])){
+            $data['cost'] = $content['money'];
+        } else*/
+        if(!empty($content['price_list'])){
+            $price_list = json_decode($content['price_list'],true);
+            $data['cost'] = $price_list[0]['money'];
+        }else{
+            $data['cost'] = 0;
+        }
+        return $data['cost'];
+    }
+
+    /**
+     * 设置显示到前端的金额
+     * @param $value  专栏/课程信息数组
+     * @param $cost   课程价格
+     * @param $money  专栏固定收费价格
+     * @return mixed
+     */
+    protected function set_show_pay_money($value,$cost)
+    {
+        if($value['is_pay_only_channel'] == 1 && $value['permanent']==1){
+            $cost = $value['money'];
+        }elseif($value['is_pay_only_channel'] == 1){
+            $cost = $this->get_price_list_money($value);
+        }
+        return $cost;
+    }
+
 
     /**
      * json格式返回数据

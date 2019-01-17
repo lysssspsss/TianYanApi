@@ -251,7 +251,7 @@ class Index extends Base
         }else{
             /*$course->where('type="pay_lecture"');
             $course2->where('type="pay_lecture"');*/
-            $sql = "select a.id,a.name,a.sub_title,a.coverimg,a.mode,a.type,a.cost,a.clicknum,a.starttime,a.channel_id,b.type as channel_type 
+            $sql = "select a.id,a.name,a.sub_title,a.coverimg,a.mode,a.type,a.cost,a.clicknum,a.starttime,a.channel_id,b.type as channel_type,b.is_pay_only_channel,b.permanent,b.money as money,b.price_list as price_list 
                     from live_course a inner join live_channel b on IF(a.channel_id=0,294,a.channel_id)=b.id 
                     where a.show_on_page = 1 and a.isshow = 'show' and (a.type = 'pay_lecture' or b.type ='pay_channel') ORDER BY a.addtime desc limit $leng OFFSET $offest";
             $count_sql = "select count(a.id) as count from live_course a inner join live_channel b on IF(a.channel_id=0,294,a.channel_id)=b.id 
@@ -264,20 +264,13 @@ class Index extends Base
         if(empty($data)) {
             $this->return_json(E_OP_FAIL,'查询失败请重试');
         }
-        /*if($type=='open_lecture'){
-            //$data = $this->check_pay_type($data);
+
+        if($type=='pay_lecture'){
             foreach($data as $key => $value){
-                if(empty($value['channel_id'])){
-                    $value['channel_id'] = BANZHUREN;
-                }
-                $type = db('channel')->where(['id'=>$value['channel_id']])->value('type');
-                if($type=='pay_channel'){
-                    //$data[$key]['type'] = 'pay_lecture';
-                    unset($data[$key]);
-                }
+                $data[$key]['cost'] = $this->set_show_pay_money($value,$value['cost']);
+                $data[$key]['cost'] = 'pay_lecture';
             }
-            $data = array_values($data);
-        }*/
+        }
         $res['limit'] = $limit;
         $res['count'] = $count[0]['count'];
         $res['list'] = $data;
