@@ -3,7 +3,7 @@ const MY_CHANNEL_NAME = "TD_CHANNEL_ID";
 const FING_TAG = 0;//发现fragment控制标示
 const VERSION = '1.4.1';//APP版本
 const ANDROID_VERSION = '1.4.1';//APP版本
-const MVERSION = '11';//机器版本号
+const MVERSION = '12';//机器版本号
 const IOS_VERSION = '1.3.2';//APP版本
 
 /**
