@@ -770,7 +770,7 @@ class Lecture extends Base
         if(empty($lecture['channel_id'])){
             $lecture['channel_id'] = BANZHUREN;
         }
-        $channel = db('channel')->field('lecturer,is_pay_only_channel,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>$lecture['channel_id']])->find();
+        $channel = db('channel')->field('lecturer,is_pay_only_channel,permanent,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>$lecture['channel_id']])->find();
         $lecture = array_merge($lecture,$channel);
 
         $where['id'] = $lecture['lecture_memberid'];
@@ -875,7 +875,7 @@ class Lecture extends Base
 
         //增加人气
         $lecdata = array(
-            'clicknum' => $lecture['clicknum'] + mt_rand(5,25),
+            'clicknum' => $lecture['clicknum'] + mt_rand(1,5),
         );
         db('course')->where(["id"=>$lecture['lecture_id']])->update($lecdata);
 
