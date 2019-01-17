@@ -208,7 +208,7 @@ class Lecture extends Base
             'lecturer' => $member['id'],//专栏关联讲师
             'reseller_enabled' => $reseller_enabled,//是否开启分销
             'resell_percent' => $resell_percent,//分销比例
-            'category' => 'air',
+            'category' => 'channel',
         );
 
         if(!empty($channel_id)){
