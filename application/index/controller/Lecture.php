@@ -1084,7 +1084,13 @@ class Lecture extends Base
                     $this->return_json(E_OP_FAIL,'找不到该专栏');
                 }
                 $channel = $this->check_channel_type($channel);
-                $data['cost'] = $this->set_pay_money($channel);
+                if($channel['type'] == 'open_channel' || $channel['type'] == 'open'){
+                    $data['cost'] = 0;
+                }elseif($channel['permanent'] == 1){//固定收费
+                    $data['cost'] = $channel['money'];
+                }else{
+                    $data['cost'] = $this->set_pay_money($channel);
+                }
                 $data['title'] = $channel['name'];
                 $data['channel_id'] = $channel['id'];
                 $data['cover'] = $channel['cover'];
@@ -1106,14 +1112,24 @@ class Lecture extends Base
                 if(empty($lecture['channel_id'])){
                     $lecture['channel_id'] = BANZHUREN;
                 }
-                $channel = db('channel')->field('memberid,lecturer,is_pay_only_channel,permanent,money,price_list')->where(['id'=>$lecture['channel_id']])->find();
-                if($channel['is_pay_only_channel'] == 1){
-                    $data['cost'] = $this->set_pay_money($channel);
-                    $data['channel_id'] = $lecture['channel_id'];
-                    $data['msg'] = '此课程需要购买专栏';
+                $channel = db('channel')->field('memberid,type,lecturer,is_pay_only_channel,permanent,money,price_list')->where(['id'=>$lecture['channel_id']])->find();
+                if($channel['type'] == 'open_channel' || $channel['type'] == 'open'){
+                    $data['cost'] = 0;
+                    $data['msg'] = '此专栏免费';
                 }else{
-                    $data['cost'] = $lecture['cost'];
+                    if($channel['is_pay_only_channel'] == 1 && $channel['permanent'] == 1){//固定收费
+                        $data['cost'] = $channel['money'];
+                        $data['channel_id'] = $lecture['channel_id'];
+                        $data['msg'] = '此课程需要购买专栏';
+                    }elseif($channel['is_pay_only_channel'] == 1){//限时收费
+                        $data['cost'] = $this->set_pay_money($channel);
+                        $data['channel_id'] = $lecture['channel_id'];
+                        $data['msg'] = '此课程需要购买专栏';
+                    }else{
+                        $data['cost'] = $lecture['cost'];
+                    }
                 }
+
                 $data['title'] = $lecture['name'];
                 $data['lecture_id'] = $lecture['id'];
                 $data['cover'] = $lecture['cover'];
