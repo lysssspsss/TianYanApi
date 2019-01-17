@@ -800,6 +800,7 @@ class Live extends Base
                     }
                     if ($value['message_type'] == 'reward'){
                         $listmsg_bak[$key] = $listmsg[$key];
+                        $listmsg_bak[$key]['message_type'] = 'text';
                     }
                     if ($value['message_type'] == 'reply_text' || $value['message_type'] == 'reply_audi') {
                         $replyarr = explode(':', $value['reply']);
@@ -816,6 +817,7 @@ class Live extends Base
                     }
                     if ($value['message_type'] == 'reward'){
                         unset($listmsg[$key]);
+                        //$listmsg[$key]['message_type'] = 'text';
                     }
                     if ($value['message_type'] == 'reply_text' || $value['message_type'] == 'reply_audi') {
                         $replyarr = explode(':', $value['reply']);
