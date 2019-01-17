@@ -268,7 +268,7 @@ class Index extends Base
         if($type=='pay_lecture'){
             foreach($data as $key => $value){
                 $data[$key]['cost'] = $this->set_show_pay_money($value,$value['cost']);
-                $data[$key]['cost'] = 'pay_lecture';
+                $data[$key]['type'] = 'pay_lecture';
             }
         }
         $res['limit'] = $limit;
