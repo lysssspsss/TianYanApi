@@ -190,12 +190,20 @@ class Base extends Controller
     /**
      * 检测课程所属专栏是否免费
      * @param $data
-     * @return mixed
+     * @param string $is_selected
+     * @return array|string
      */
-    protected function check_pay_type($data)
+    protected function check_pay_type($data,$is_selected='')
     {
         if(empty($data)){
             return [];
+        }
+        if($is_selected){
+            if($data['is_pay_only_channel']==1){
+                return 'pay_lecture';
+            }else{
+                return $data['type'];
+            }
         }
         if(empty($data[0])){//单个
             if(empty($data['channel_id'])){

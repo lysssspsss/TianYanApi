@@ -753,7 +753,8 @@ class Lecture extends Base
             $this->get_user_redis($this->user['id'],true);
         }
 
-        $lecture = db('course')->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,mode,basescrib,pass')
+        $lecture = db('course')
+            ->field('id as lecture_id,memberid as lecture_memberid,coverimg,name as title,starttime,channel_id,intro,mins,qrcode_addtime,qrcode,live_homeid,clicknum,cost,is_for_vip,mode,basescrib,pass')
             ->where(['id'=>$lecture_id,'isshow'=>'show'])->find();
         if(empty($lecture)){
             $this->return_json(E_OP_FAIL,'找不到对应课程');
@@ -770,7 +771,7 @@ class Lecture extends Base
         if(empty($lecture['channel_id'])){
             $lecture['channel_id'] = BANZHUREN;
         }
-        $channel = db('channel')->field('lecturer,is_pay_only_channel,permanent,name as zhuanlan,memberid as channel_memberid,roomid')->where(['id'=>$lecture['channel_id']])->find();
+        $channel = db('channel')->field('lecturer,is_pay_only_channel,permanent,name as zhuanlan,memberid as channel_memberid,roomid,type as channel_type,money,price_list')->where(['id'=>$lecture['channel_id']])->find();
         $lecture = array_merge($lecture,$channel);
 
         $where['id'] = $lecture['lecture_memberid'];
@@ -789,15 +790,19 @@ class Lecture extends Base
                 ->limit(50)
                 ->select();
         }else{
-            $lecture_list = db('course')->field('id as lecture_id,live_homeid,coverimg,name,sub_title,type,clicknum,mode,pass')//对应专栏相关课程列表
-            ->where(['isshow'=>'show','channel_id'=>$lecture['channel_id']])
-                ->order('id desc')
+            $lecture_list = db('course')
+                ->alias('a')
+                ->join('live_channel b','IF(a.channel_id=0,294,a.channel_id)=b.id')
+                ->field('a.id as lecture_id,a.live_homeid,a.coverimg,a.name,a.sub_title,a.type,a.clicknum,a.mode,a.pass,b.is_pay_only_channel,b.type as channel_type')//对应专栏相关课程列表
+                ->where(['a.isshow'=>'show','a.channel_id'=>$lecture['channel_id']])
+                ->order('a.id desc')
                 ->select();
         }
         //if($this->source == 'ANDROID'){
-            foreach($lecture_list as $key => $value){
-                $data[$key]['cost'] = 'pay_lecture';
-            }
+        //检测课程所属专栏是否免费
+        foreach($lecture_list as $key => $value){
+            $lecture_list[$key]['type'] = $this->check_pay_type($value,1);
+        }
         //}
         $lecture['name'] = $jiangshi['name'];
         $starttimes = strtotime($lecture['starttime']);
@@ -812,7 +817,7 @@ class Lecture extends Base
 
         //检测直播状态
         $lecture['live_status'] = $this->check_live_status($lecture_id);
-
+        $lecture['cost'] = $this->set_show_pay_money($lecture,$lecture['cost']);
         $result['lecture'] = $lecture;
         $result['jiangshi'] = $jiangshi;
         $result['lecture_list'] = $lecture_list;
@@ -1115,8 +1120,8 @@ class Lecture extends Base
                 }
                 $channel = db('channel')->field('memberid,type,lecturer,is_pay_only_channel,permanent,money,price_list')->where(['id'=>$lecture['channel_id']])->find();
                 if($channel['type'] == 'open_channel' || $channel['type'] == 'open'){
-                    $data['cost'] = 0;
                     $data['msg'] = '此专栏免费';
+                    $data['cost'] = $lecture['cost'];
                 }else{
                     if($channel['is_pay_only_channel'] == 1 && $channel['permanent'] == 1){//固定收费
                         $data['cost'] = $channel['money'];

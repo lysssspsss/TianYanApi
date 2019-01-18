@@ -953,7 +953,8 @@ class User extends Base
             $this->return_json(E_ARGS,'参数错误');
         }
         if($type==1){//课程购买记录
-            $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,c.mode,c.type,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("p.addtime desc")->select();
+            $data['coursepay']  = db('coursepay')->alias('p')->join('live_course c','p.courseid=c.id')->field("c.name,c.coverimg,c.sub_title,c.mode,c.type,c.channel_id,p.*")->where("p.status='finish' and p.memberid=".$this->user['id'])->order("p.addtime desc")->select();
+            $data['coursepay'] = $this->check_pay_type($data['coursepay']);
         }elseif($type==2){//专栏购买记录
             $data['channelpay'] = db('channelpay')->alias('p')->join('live_channel c','p.channelid=c.id')->field("c.name,c.cover_url,p.*,p.fee/100 as fee")->where("p.status='finish' and p.memberid=".$this->user['id']." and ((unix_timestamp(p.expire)>unix_timestamp(now())) or ( p.expire is null))")->order("p.addtime desc")->select();
             foreach($data['channelpay'] as $k => $v){
