@@ -211,11 +211,11 @@ if (!function_exists('arr_val_tran_str')) {
             if(is_array($value)){
                 $result[$key] = arr_val_tran_str($value,$source);
             }else{
-                if($source == 'ANDROID' && empty($value)){
+               /* if($source == 'ANDROID' && empty($value)){
                     $result[$key] = '0';
-                }else{
-                    $result[$key] = (string)$value;
-                }
+                }else{ }*/
+                $result[$key] = (string)$value;
+
             }
         }
         return $result;

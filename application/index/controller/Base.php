@@ -276,16 +276,12 @@ class Base extends Controller
     {
         $result['code'] = $code;
         $result['count'] = $count;
-        //$result['msg'] = $msg;
         if ($code != OK) {
             if (!empty($data) && !is_array($data)) {
                 $result['msg'] = $data;
             } elseif (is_array($data)) {
                 $result['data'] = $data;
             }
-            /*if($this->source == 'IOS'){
-                exit(json_encode($result, JSON_FORCE_OBJECT));
-            }*/
             exit(json_encode($result, JSON_UNESCAPED_UNICODE));
         }
         if (!empty($data)) {
@@ -296,10 +292,6 @@ class Base extends Controller
             $result['relogin'] = $relogin;
             $result['needRegister'] = $needRegister;
         }
-        //$result['result'] = $data;
-        /*if($this->source == 'IOS'){
-            exit(json_encode($result, JSON_FORCE_OBJECT));
-        }*/
         exit(json_encode($result, JSON_UNESCAPED_UNICODE));
     }
 
