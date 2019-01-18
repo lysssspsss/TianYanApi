@@ -950,11 +950,15 @@ class Lecture extends Base
         $channel = db('channel')
             ->field('id as channel_id,type,memberid as channel_memberid,cover_url,name as title,description,roomid,permanent,money,price_list,lecturer,is_pay_only_channel,create_time')
             ->where(['id'=>$channel_id,'isshow'=>'show'])->find();
-
         if(empty($channel)){
             $this->return_json(E_OP_FAIL,'找不到对应专栏');
         }
         $channel = $this->check_channel_type($channel);
+        if($channel['type']=='open' || $channel['type']=='open_channel'){
+            $channel['money'] = 0;
+        } elseif($channel['permanent'] == 0 && $channel['is_pay_only_channel'] == 1){
+            $channel['money'] = $this->get_price_list_money($channel);
+        }
         $where['id'] = $channel['channel_memberid'];
         if($channel['channel_memberid']== BANZHUREN && $channel['roomid']==24 && $channel['lecturer']) {
             $where['id'] = $channel['lecturer'];
@@ -1003,7 +1007,7 @@ class Lecture extends Base
             $result['is_pay'] = 'true';
         } else {
             $result['is_pay'] = 'false';
-            if (($channel['channel_id']==217 && $this->user['remarks']=='武汉峰会签到') || $this->user['id']==148327 || $this->user['id']==300 || $this->user['id']==23752 || $this->user['id']==75575 || $this->user['id']==5022 || $this->user['id']==4984 || $this->user['id']==2394 || $this->user['id']==2299 || $this->user['id']==141816|| $this->user['id']==126043 || $this->user['id']==8370 || $this->user['id']==127961 || $this->user['id']==232550 || $this->user['id']==224178 || $this->user['id']==75575 || $this->user['id']==117556 ){
+            if (($channel['channel_id']==217 && $this->user['remarks']=='武汉峰会签到') || $this->user['id']==148327 || $this->user['id']==300 || $this->user['id']==23752 || $this->user['id']==75575 || $this->user['id']==5022 || $this->user['id']==4984 || $this->user['id']==2394 || $this->user['id']==2299 || $this->user['id']==141816|| $this->user['id']==126043 || $this->user['id']==8370 || $this->user['id']==127961 || $this->user['id']==232550  || $this->user['id']==75575 || $this->user['id']==117556 ){
                 $result['is_pay'] = 'true';
             }
         }
