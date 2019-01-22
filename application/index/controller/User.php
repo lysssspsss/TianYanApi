@@ -658,22 +658,29 @@ class User extends Base
         $this->return_json(OK,$data);*/
     }
 
+    public function edit_msg($parem,$msg)
+    {
+        if(empty($parem)){
+            $this->return_json(E_ARGS,$msg.'不能为空');
+        }
+    }
+
     /**
      * 加V认证
      */
     public function vip()
     {
-        $lecture_obj = Factory::create_obj('lecture');
+        //$lecture_obj = Factory::create_obj('lecture');
         $tel = input('post.tel');
-        $lecture_obj->edit_msg($tel,'手机号码');
+        $this->edit_msg($tel,'手机号码');
         $wxcode = input('post.wxcode');
-        $lecture_obj->edit_msg($tel,'微信号');
+        $this->edit_msg($tel,'微信号');
         $name = input('post.name');
-        $lecture_obj->edit_msg($tel,'名字');
+        $this->edit_msg($tel,'名字');
         $company = input('post.company');
-        $lecture_obj->edit_msg($tel,'公司');
+        $this->edit_msg($tel,'公司');
         $intro = input('post.intro');
-        $lecture_obj->edit_msg($tel,'介绍');
+        $this->edit_msg($tel,'介绍');
         $result = $this->validate(
             [
                 'tel'  => $tel,
@@ -693,10 +700,10 @@ class User extends Base
         if($result !== true){
             $this->return_json(E_ARGS,'参数错误');
         }
-        $data['tel'] = $tel;
-        $data['wxcode'] = $wxcode;
-        $data['name'] = $name;
-        $data['company'] = $company;
+        $data['tel'] = $tel;//
+        $data['wxcode'] = $wxcode;//
+        $data['name'] = $name;//
+        $data['company'] = $company;//
         $data['address'] = '';
         $data['check_time'] = '';
         $data['memberid'] = $this->user['id'];
