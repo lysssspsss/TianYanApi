@@ -525,7 +525,7 @@ class Base extends Controller
     protected function get_user_redis($memberid,$refresh = false)
     {
         $idtotoken = $this->usertoken_rediskey.'_id:'.$memberid;//用戶token索引
-        $time = TOKEN_USER_LIVE_15DAY * 3600;
+        $time = TOKEN_USER_LIVE_6MOON * 3600;
         $user = $this->get_user($memberid);
         if(empty($user)){
             $this->return_json(E_OP_FAIL,'没有这个用户');

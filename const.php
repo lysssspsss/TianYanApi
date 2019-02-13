@@ -252,6 +252,7 @@ const TOKEN_USER_LIVE_TIME  =  1;        //会员toekn超时时间，单位：�
 const TOKEN_USER_LIVE_15DAY  =  360;        //会员toekn超时时间：半个月
 const TOKEN_USER_LIVE_1MOON  =  720;        //会员toekn超时时间：1个月
 const TOKEN_USER_LIVE_2MOON  =  1440;        //会员toekn超时时间：2个月
+const TOKEN_USER_LIVE_6MOON  =  4320;        //会员toekn超时时间：6个月
 const TOKEN_USER_OFF_LINE   = 15;       //会员自动离线时间，单位：分钟
 const USER_BANK_PWD_ERROR   = 5;        //取款密码错误次数
 /*密钥*/
