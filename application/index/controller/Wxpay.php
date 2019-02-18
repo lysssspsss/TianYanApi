@@ -635,7 +635,7 @@ class Wxpay extends Base
                 if ($msg){
                     db('msg')->where("message_id=".$msg['message_id'])->setField("isshow","show");
                     $msg['isshow'] = 'show';
-                    Tools::publish_msg(0,$earns['lectureid'],WORKERMAN_PUBLISH_URL,$this->tranfer($msg));
+                    //Tools::publish_msg(0,$earns['lectureid'],WORKERMAN_PUBLISH_URL,$this->tranfer($msg));//回调函数那边再推送
                 }
                 //\Common\Controller\LogController::W_P_Log("earns type is：".$type);
                 wlog($this->log_path,"earns type is：". $type);

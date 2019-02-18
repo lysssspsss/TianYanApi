@@ -766,6 +766,7 @@ class Lecture extends Base
         $lecture['pull_url'] = empty($mode[1]['pull_url']) ? 0 :$mode[1]['pull_url'];
         if($this->source == 'ANDROID') {
             $lecture['pass'] = empty($lecture['pass']) ? '0' : $lecture['pass'];
+            $lecture['intro'] = empty($lecture['intro']) ? '0' : $lecture['intro'];
         }
         //}
         if(empty($lecture['channel_id'])){

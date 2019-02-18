@@ -4,6 +4,11 @@ namespace app\index\controller;
 use app\tools\controller\Tools;
 use think\Config;
 
+/**
+ * 安卓支付接口 回调函数
+ * Class Wxpaynotify
+ * @package app\index\controller
+ */
 class Wxpaynotify
 {
     private $log_path = APP_PATH.'log/Wxpay_android.log';//日志路径
