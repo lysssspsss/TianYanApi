@@ -92,6 +92,7 @@ class Base extends Controller
             if($result !== true){
                 $this->return_json(E_ARGS,'参数错误1');
             }
+
             $user = $this->check_user_redis($memberid);
             if(!$user){
                 $this->return_json(E_OP_FAIL,'请重新登录1','',true,true);
