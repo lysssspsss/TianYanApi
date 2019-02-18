@@ -831,6 +831,7 @@ class Lecture extends Base
             db('course')->where(['id'=>$lecture['lecture_id']])->update($lecdata);
         }
 
+        $result['is_vip'] = 'false';
         if(!empty($this->user['unionid'])){
             //是否是vip会员
             if($lecture['is_for_vip']){
