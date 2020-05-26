@@ -15,8 +15,8 @@ const SERVER_URL_BACK = "";// 备用
 /**
  * 阿里云短信 相关
  */
-const ALIYUN_ACCESS_KEY_ID = 'UCguBiEKTCTelyZp';
-const ALIYUN_ACCESS_KEY_SECRET = 'TbNwocSPammIWDfTzV0Pd61xtHu3t5';
+const ALIYUN_ACCESS_KEY_ID = '';
+const ALIYUN_ACCESS_KEY_SECRET = '';
 const ALIYUN_TEMP_CODE1 = 'SMS_141115015';//身份验证验证码
 const ALIYUN_TEMP_CODE2 = 'SMS_141115014';//登录确认验证码
 const ALIYUN_TEMP_CODE3 = 'SMS_141115013';//登录异常验证码
